@@ -31,17 +31,16 @@ public class TokenBucket {
         return refillRate;
     }
 
-    public boolean tryConsume(int tokens) {
+    public synchronized boolean tryConsume(int tokens) {
         if (tokens <= 0 || tokens > currentTokens) {
             return false;
         }
 
         currentTokens -= tokens;
-
         return true;
     }
 
-    public long refill() {
+    public synchronized long refill() {
         long currentTime = System.currentTimeMillis();
         long timeSinceLastRefill = currentTime - lastRefillTime;
 
