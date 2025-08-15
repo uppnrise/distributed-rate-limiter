@@ -12,7 +12,7 @@ A simple in-memory token bucket rate limiter implementation in Java.
 
 1. Clone the repository:
    ```sh
-   git clone https://github.com/yourusername/distributed-rate-limiter.git
+   git clone https://github.com/uppnrise/distributed-rate-limiter.git
    ```
 2. Build the project:
    ```sh
@@ -25,5 +25,5 @@ A simple in-memory token bucket rate limiter implementation in Java.
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details.
 
