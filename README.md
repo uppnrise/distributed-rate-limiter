@@ -1,6 +1,6 @@
 # Distributed Rate Limiter
 
-A simple in-memory token bucket rate limiter implementation in Java.
+A distributed token bucket rate limiter implementation in Java.
 
 ## Features
 - Token bucket algorithm
