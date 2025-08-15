@@ -19,6 +19,11 @@ public class TokenBucketTest {
     }
 
     @Test
+    void test_zeroTokenConsumeRequest() {
+        assertFalse(tokenBucket.tryConsume(0));
+    }
+
+    @Test
     void test_shouldAllowConsumingTokensWhenBucketIsFull() {
 
         if (tokenBucket.getCurrentTokens() > 0) {
