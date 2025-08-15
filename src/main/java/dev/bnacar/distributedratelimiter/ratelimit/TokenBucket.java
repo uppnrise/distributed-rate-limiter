@@ -41,4 +41,13 @@ public class TokenBucket {
         return true;
     }
 
+    public long refill() {
+        long currentTime = System.currentTimeMillis();
+        long timeSinceLastRefill = currentTime - lastRefillTime;
+
+        int tokensToAdd = (int) (timeSinceLastRefill / 1000 * refillRate);
+        currentTokens = Math.min(capacity, currentTokens + tokensToAdd);
+        lastRefillTime = currentTime;
+        return lastRefillTime;
+    }
 }
