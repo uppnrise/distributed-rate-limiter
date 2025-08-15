@@ -32,6 +32,7 @@ public class TokenBucket {
     }
 
     public synchronized boolean tryConsume(int tokens) {
+        refill();
         if (tokens <= 0 || tokens > currentTokens) {
             return false;
         }
@@ -40,13 +41,12 @@ public class TokenBucket {
         return true;
     }
 
-    public synchronized long refill() {
+    private synchronized void refill() {
         long currentTime = System.currentTimeMillis();
         long timeSinceLastRefill = currentTime - lastRefillTime;
 
         int tokensToAdd = (int) (timeSinceLastRefill / 1000 * refillRate);
         currentTokens = Math.min(capacity, currentTokens + tokensToAdd);
         lastRefillTime = currentTime;
-        return lastRefillTime;
     }
 }
