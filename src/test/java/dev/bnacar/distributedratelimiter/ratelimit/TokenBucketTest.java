@@ -55,7 +55,7 @@ public class TokenBucketTest {
         Awaitility.await()
                 .pollInterval(1, TimeUnit.SECONDS)
                 .atMost(5, TimeUnit.SECONDS)
-                .until(() -> tokenBucket.refill() > 0);
+                .until(() -> tokenBucket.tryConsume(1));
 
         assertTrue(tokenBucket.getCurrentTokens() > 0);
     }
