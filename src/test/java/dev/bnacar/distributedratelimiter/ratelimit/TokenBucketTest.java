@@ -1,11 +1,13 @@
 package dev.bnacar.distributedratelimiter.ratelimit;
 
 
+import org.awaitility.Awaitility;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import java.util.concurrent.TimeUnit;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class TokenBucketTest {
 
@@ -38,5 +40,18 @@ public class TokenBucketTest {
         }
 
         assertFalse(tokenBucket.tryConsume(10));
+    }
+
+    @Test
+    void test_shouldRefillTokensOverTime() {
+        tokenBucket.tryConsume(10);
+
+        // Simulate passage of time
+        Awaitility.await()
+                .pollInterval(1, TimeUnit.SECONDS)
+                .atMost(5, TimeUnit.SECONDS)
+                .until(() -> tokenBucket.refill() > 0);
+
+        assertTrue(tokenBucket.getCurrentTokens() > 0);
     }
 }
