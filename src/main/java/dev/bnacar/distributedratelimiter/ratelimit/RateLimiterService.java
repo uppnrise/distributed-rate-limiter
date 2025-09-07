@@ -50,7 +50,7 @@ public class RateLimiterService {
 
     // Constructors for backward compatibility and testing
     public RateLimiterService() {
-        this(new ConfigurationResolver(createDefaultConfiguration()), createDefaultConfiguration());
+        this(DefaultConfiguration.RESOLVER, DefaultConfiguration.INSTANCE);
     }
 
     public RateLimiterService(int capacity, int refillRate) {
@@ -78,6 +78,12 @@ public class RateLimiterService {
 
     private static RateLimiterConfiguration createDefaultConfiguration() {
         return new RateLimiterConfiguration();
+    }
+
+    // Static holder for default configuration to avoid duplicate creation
+    private static final class DefaultConfiguration {
+        static final RateLimiterConfiguration INSTANCE = createDefaultConfiguration();
+        static final ConfigurationResolver RESOLVER = new ConfigurationResolver(INSTANCE);
     }
 
     public boolean isAllowed(String key, int tokens) {
