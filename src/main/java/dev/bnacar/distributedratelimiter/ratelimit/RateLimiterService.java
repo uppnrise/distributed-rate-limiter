@@ -12,18 +12,19 @@ import java.util.concurrent.TimeUnit;
 @Service
 public class RateLimiterService {
 
-    private final int capacity;
-    private final int refillRate;
+    private final ConfigurationResolver configurationResolver;
     private final long cleanupIntervalMs;
     private final ConcurrentHashMap<String, BucketHolder> buckets;
     private final ScheduledExecutorService cleanupExecutor;
 
     private static class BucketHolder {
         final TokenBucket bucket;
+        final RateLimitConfig config;
         volatile long lastAccessTime;
 
-        BucketHolder(TokenBucket bucket) {
+        BucketHolder(TokenBucket bucket, RateLimitConfig config) {
             this.bucket = bucket;
+            this.config = config;
             this.lastAccessTime = System.currentTimeMillis();
         }
 
@@ -33,12 +34,23 @@ public class RateLimiterService {
     }
 
     @Autowired
-    public RateLimiterService(RateLimiterConfiguration config) {
-        this(config.getCapacity(), config.getRefillRate(), config.getCleanupIntervalMs());
+    public RateLimiterService(ConfigurationResolver configurationResolver, RateLimiterConfiguration config) {
+        this.configurationResolver = configurationResolver;
+        this.cleanupIntervalMs = config.getCleanupIntervalMs();
+        this.buckets = new ConcurrentHashMap<>();
+        this.cleanupExecutor = Executors.newSingleThreadScheduledExecutor(r -> {
+            Thread t = new Thread(r, "RateLimiter-Cleanup");
+            t.setDaemon(true);
+            return t;
+        });
+        
+        // Start cleanup task
+        startCleanupTask();
     }
 
+    // Constructors for backward compatibility and testing
     public RateLimiterService() {
-        this(10, 2, 60000); // Default: 10 capacity, 2 tokens/sec, 60s cleanup interval
+        this(new ConfigurationResolver(createDefaultConfiguration()), createDefaultConfiguration());
     }
 
     public RateLimiterService(int capacity, int refillRate) {
@@ -46,8 +58,12 @@ public class RateLimiterService {
     }
 
     public RateLimiterService(int capacity, int refillRate, long cleanupIntervalMs) {
-        this.capacity = capacity;
-        this.refillRate = refillRate;
+        RateLimiterConfiguration config = createDefaultConfiguration();
+        config.setCapacity(capacity);
+        config.setRefillRate(refillRate);
+        config.setCleanupIntervalMs(cleanupIntervalMs);
+        
+        this.configurationResolver = new ConfigurationResolver(config);
         this.cleanupIntervalMs = cleanupIntervalMs;
         this.buckets = new ConcurrentHashMap<>();
         this.cleanupExecutor = Executors.newSingleThreadScheduledExecutor(r -> {
@@ -60,14 +76,20 @@ public class RateLimiterService {
         startCleanupTask();
     }
 
+    private static RateLimiterConfiguration createDefaultConfiguration() {
+        return new RateLimiterConfiguration();
+    }
+
     public boolean isAllowed(String key, int tokens) {
         if (tokens <= 0) {
             return false;
         }
 
-        BucketHolder holder = buckets.computeIfAbsent(key, k -> 
-            new BucketHolder(new TokenBucket(capacity, refillRate))
-        );
+        BucketHolder holder = buckets.computeIfAbsent(key, k -> {
+            RateLimitConfig config = configurationResolver.resolveConfig(k);
+            TokenBucket bucket = new TokenBucket(config.getCapacity(), config.getRefillRate());
+            return new BucketHolder(bucket, config);
+        });
         
         holder.updateAccessTime();
         return holder.bucket.tryConsume(tokens);
@@ -86,13 +108,23 @@ public class RateLimiterService {
         long currentTime = System.currentTimeMillis();
         buckets.entrySet().removeIf(entry -> {
             BucketHolder holder = entry.getValue();
-            return (currentTime - holder.lastAccessTime) > cleanupIntervalMs;
+            // Use the cleanup interval from the bucket's configuration
+            long bucketCleanupInterval = holder.config.getCleanupIntervalMs();
+            return (currentTime - holder.lastAccessTime) > bucketCleanupInterval;
         });
     }
 
-    // Package-private method for testing
-    int getBucketCount() {
+    // Public method for monitoring bucket count
+    public int getBucketCount() {
         return buckets.size();
+    }
+
+    /**
+     * Clear all buckets and configuration cache. Useful for configuration reloading.
+     */
+    public void clearBuckets() {
+        buckets.clear();
+        configurationResolver.clearCache();
     }
 
     // Shutdown method for cleanup
