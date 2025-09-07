@@ -2,8 +2,14 @@ package dev.bnacar.distributedratelimiter.controller;
 
 import dev.bnacar.distributedratelimiter.ratelimit.RateLimiterService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 
 @RestController
 @RequestMapping("/api/ratelimit")
@@ -16,14 +22,49 @@ public class RateLimitController {
         this.rateLimiterService = rateLimiterService;
     }
 
-    @GetMapping("/check")
-    public ResponseEntity<RateLimitResponse> checkRateLimit(
-            @RequestParam String key,
-            @RequestParam(defaultValue = "1") int tokens) {
+    @PostMapping("/check")
+    public ResponseEntity<RateLimitResponse> checkRateLimit(@Valid @RequestBody RateLimitRequest request) {
+        boolean allowed = rateLimiterService.isAllowed(request.getKey(), request.getTokens());
         
-        boolean allowed = rateLimiterService.isAllowed(key, tokens);
+        RateLimitResponse response = new RateLimitResponse(request.getKey(), request.getTokens(), allowed);
         
-        return ResponseEntity.ok(new RateLimitResponse(key, tokens, allowed));
+        if (allowed) {
+            return ResponseEntity.ok(response);
+        } else {
+            return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).body(response);
+        }
+    }
+
+    public static class RateLimitRequest {
+        @NotBlank(message = "Key cannot be blank")
+        private String key;
+        
+        @NotNull(message = "Tokens must be specified")
+        @Min(value = 1, message = "Tokens must be at least 1")
+        private Integer tokens = 1;
+
+        public RateLimitRequest() {}
+
+        public RateLimitRequest(String key, Integer tokens) {
+            this.key = key;
+            this.tokens = tokens;
+        }
+
+        public String getKey() {
+            return key;
+        }
+
+        public void setKey(String key) {
+            this.key = key;
+        }
+
+        public Integer getTokens() {
+            return tokens;
+        }
+
+        public void setTokens(Integer tokens) {
+            this.tokens = tokens;
+        }
     }
 
     public static class RateLimitResponse {
