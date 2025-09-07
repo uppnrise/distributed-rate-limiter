@@ -7,6 +7,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Map;
+
 /**
  * Controller for managing rate limiter configuration.
  */
@@ -31,8 +33,14 @@ public class RateLimitConfigController {
      * Get the current configuration.
      */
     @GetMapping
-    public ResponseEntity<RateLimiterConfiguration> getConfiguration() {
-        return ResponseEntity.ok(configuration);
+    public ResponseEntity<ConfigurationResponse> getConfiguration() {
+        ConfigurationResponse response = new ConfigurationResponse();
+        response.capacity = configuration.getCapacity();
+        response.refillRate = configuration.getRefillRate();
+        response.cleanupIntervalMs = configuration.getCleanupIntervalMs();
+        response.keyConfigs = configuration.getKeys();
+        response.patternConfigs = configuration.getPatterns();
+        return ResponseEntity.ok(response);
     }
 
     /**
@@ -116,6 +124,14 @@ public class RateLimitConfigController {
         stats.keyConfigCount = configuration.getKeys().size();
         stats.patternConfigCount = configuration.getPatterns().size();
         return ResponseEntity.ok(stats);
+    }
+
+    public static class ConfigurationResponse {
+        public int capacity;
+        public int refillRate;
+        public long cleanupIntervalMs;
+        public Map<String, RateLimiterConfiguration.KeyConfig> keyConfigs;
+        public Map<String, RateLimiterConfiguration.KeyConfig> patternConfigs;
     }
 
     public static class DefaultConfigRequest {
