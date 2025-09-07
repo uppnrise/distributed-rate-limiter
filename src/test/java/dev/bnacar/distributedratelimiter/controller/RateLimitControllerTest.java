@@ -1,6 +1,7 @@
 package dev.bnacar.distributedratelimiter.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import dev.bnacar.distributedratelimiter.models.RateLimitRequest;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -29,7 +30,7 @@ public class RateLimitControllerTest {
     public void testSuccessfulRateLimitCheck() throws Exception {
         when(rateLimiterService.isAllowed("user1", 5)).thenReturn(true);
         
-        RateLimitController.RateLimitRequest request = new RateLimitController.RateLimitRequest("user1", 5);
+        RateLimitRequest request = new RateLimitRequest("user1", 5);
         
         mockMvc.perform(post("/api/ratelimit/check")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -45,7 +46,7 @@ public class RateLimitControllerTest {
     public void testRateLimitExceeded() throws Exception {
         when(rateLimiterService.isAllowed("user2", 1)).thenReturn(false);
         
-        RateLimitController.RateLimitRequest request = new RateLimitController.RateLimitRequest("user2", 1);
+        RateLimitRequest request = new RateLimitRequest("user2", 1);
         
         mockMvc.perform(post("/api/ratelimit/check")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -61,7 +62,7 @@ public class RateLimitControllerTest {
     public void testRequestExceedsBucketCapacity() throws Exception {
         when(rateLimiterService.isAllowed("user3", 15)).thenReturn(false);
         
-        RateLimitController.RateLimitRequest request = new RateLimitController.RateLimitRequest("user3", 15);
+        RateLimitRequest request = new RateLimitRequest("user3", 15);
         
         mockMvc.perform(post("/api/ratelimit/check")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -74,7 +75,7 @@ public class RateLimitControllerTest {
 
     @Test
     public void testInvalidRequestBlankKey() throws Exception {
-        RateLimitController.RateLimitRequest request = new RateLimitController.RateLimitRequest("", 5);
+        RateLimitRequest request = new RateLimitRequest("", 5);
         
         mockMvc.perform(post("/api/ratelimit/check")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -84,7 +85,7 @@ public class RateLimitControllerTest {
 
     @Test
     public void testInvalidRequestZeroTokens() throws Exception {
-        RateLimitController.RateLimitRequest request = new RateLimitController.RateLimitRequest("user4", 0);
+        RateLimitRequest request = new RateLimitRequest("user4", 0);
         
         mockMvc.perform(post("/api/ratelimit/check")
                 .contentType(MediaType.APPLICATION_JSON)
