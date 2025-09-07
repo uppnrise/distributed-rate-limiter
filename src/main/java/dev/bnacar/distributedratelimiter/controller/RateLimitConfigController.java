@@ -1,5 +1,8 @@
 package dev.bnacar.distributedratelimiter.controller;
 
+import dev.bnacar.distributedratelimiter.models.ConfigurationResponse;
+import dev.bnacar.distributedratelimiter.models.ConfigurationStats;
+import dev.bnacar.distributedratelimiter.models.DefaultConfigRequest;
 import dev.bnacar.distributedratelimiter.ratelimit.ConfigurationResolver;
 import dev.bnacar.distributedratelimiter.ratelimit.RateLimiterConfiguration;
 import dev.bnacar.distributedratelimiter.ratelimit.RateLimiterService;
@@ -34,12 +37,13 @@ public class RateLimitConfigController {
      */
     @GetMapping
     public ResponseEntity<ConfigurationResponse> getConfiguration() {
-        ConfigurationResponse response = new ConfigurationResponse();
-        response.capacity = configuration.getCapacity();
-        response.refillRate = configuration.getRefillRate();
-        response.cleanupIntervalMs = configuration.getCleanupIntervalMs();
-        response.keyConfigs = configuration.getKeys();
-        response.patternConfigs = configuration.getPatterns();
+        ConfigurationResponse response = new ConfigurationResponse(
+            configuration.getCapacity(),
+            configuration.getRefillRate(),
+            configuration.getCleanupIntervalMs(),
+            configuration.getKeys(),
+            configuration.getPatterns()
+        );
         return ResponseEntity.ok(response);
     }
 
@@ -118,56 +122,13 @@ public class RateLimitConfigController {
      */
     @GetMapping("/stats")
     public ResponseEntity<ConfigurationStats> getConfigurationStats() {
-        ConfigurationStats stats = new ConfigurationStats();
-        stats.cacheSize = configurationResolver.getCacheSize();
-        stats.bucketCount = rateLimiterService.getBucketCount();
-        stats.keyConfigCount = configuration.getKeys().size();
-        stats.patternConfigCount = configuration.getPatterns().size();
+        ConfigurationStats stats = new ConfigurationStats(
+            configurationResolver.getCacheSize(),
+            rateLimiterService.getBucketCount(),
+            configuration.getKeys().size(),
+            configuration.getPatterns().size()
+        );
         return ResponseEntity.ok(stats);
     }
 
-    public static class ConfigurationResponse {
-        public int capacity;
-        public int refillRate;
-        public long cleanupIntervalMs;
-        public Map<String, RateLimiterConfiguration.KeyConfig> keyConfigs;
-        public Map<String, RateLimiterConfiguration.KeyConfig> patternConfigs;
-    }
-
-    public static class DefaultConfigRequest {
-        private Integer capacity;
-        private Integer refillRate;
-        private Long cleanupIntervalMs;
-
-        public Integer getCapacity() {
-            return capacity;
-        }
-
-        public void setCapacity(Integer capacity) {
-            this.capacity = capacity;
-        }
-
-        public Integer getRefillRate() {
-            return refillRate;
-        }
-
-        public void setRefillRate(Integer refillRate) {
-            this.refillRate = refillRate;
-        }
-
-        public Long getCleanupIntervalMs() {
-            return cleanupIntervalMs;
-        }
-
-        public void setCleanupIntervalMs(Long cleanupIntervalMs) {
-            this.cleanupIntervalMs = cleanupIntervalMs;
-        }
-    }
-
-    public static class ConfigurationStats {
-        public int cacheSize;
-        public int bucketCount;
-        public int keyConfigCount;
-        public int patternConfigCount;
-    }
 }
