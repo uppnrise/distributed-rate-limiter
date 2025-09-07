@@ -1,5 +1,6 @@
 package dev.bnacar.distributedratelimiter.controller;
 
+import dev.bnacar.distributedratelimiter.models.DefaultConfigRequest;
 import dev.bnacar.distributedratelimiter.ratelimit.ConfigurationResolver;
 import dev.bnacar.distributedratelimiter.ratelimit.RateLimiterConfiguration;
 import dev.bnacar.distributedratelimiter.ratelimit.RateLimiterService;
@@ -63,7 +64,7 @@ public class RateLimitConfigControllerTest {
 
     @Test
     void test_shouldUpdateDefaultConfiguration() throws Exception {
-        RateLimitConfigController.DefaultConfigRequest request = new RateLimitConfigController.DefaultConfigRequest();
+        DefaultConfigRequest request = new DefaultConfigRequest();
         request.setCapacity(15);
         request.setRefillRate(3);
 
