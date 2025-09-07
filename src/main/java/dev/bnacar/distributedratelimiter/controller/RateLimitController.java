@@ -1,9 +1,14 @@
 package dev.bnacar.distributedratelimiter.controller;
 
+import dev.bnacar.distributedratelimiter.models.RateLimitRequest;
+import dev.bnacar.distributedratelimiter.models.RateLimitResponse;
 import dev.bnacar.distributedratelimiter.ratelimit.RateLimiterService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api/ratelimit")
@@ -16,37 +21,16 @@ public class RateLimitController {
         this.rateLimiterService = rateLimiterService;
     }
 
-    @GetMapping("/check")
-    public ResponseEntity<RateLimitResponse> checkRateLimit(
-            @RequestParam String key,
-            @RequestParam(defaultValue = "1") int tokens) {
+    @PostMapping("/check")
+    public ResponseEntity<RateLimitResponse> checkRateLimit(@Valid @RequestBody RateLimitRequest request) {
+        boolean allowed = rateLimiterService.isAllowed(request.getKey(), request.getTokens());
         
-        boolean allowed = rateLimiterService.isAllowed(key, tokens);
+        RateLimitResponse response = new RateLimitResponse(request.getKey(), request.getTokens(), allowed);
         
-        return ResponseEntity.ok(new RateLimitResponse(key, tokens, allowed));
-    }
-
-    public static class RateLimitResponse {
-        private final String key;
-        private final int tokensRequested;
-        private final boolean allowed;
-
-        public RateLimitResponse(String key, int tokensRequested, boolean allowed) {
-            this.key = key;
-            this.tokensRequested = tokensRequested;
-            this.allowed = allowed;
-        }
-
-        public String getKey() {
-            return key;
-        }
-
-        public int getTokensRequested() {
-            return tokensRequested;
-        }
-
-        public boolean isAllowed() {
-            return allowed;
+        if (allowed) {
+            return ResponseEntity.ok(response);
+        } else {
+            return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).body(response);
         }
     }
 }
