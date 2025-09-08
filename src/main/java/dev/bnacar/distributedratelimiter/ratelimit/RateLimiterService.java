@@ -18,18 +18,22 @@ public class RateLimiterService {
     private final ScheduledExecutorService cleanupExecutor;
 
     private static class BucketHolder {
-        final TokenBucket bucket;
+        final RateLimiter rateLimiter;
         final RateLimitConfig config;
         volatile long lastAccessTime;
 
-        BucketHolder(TokenBucket bucket, RateLimitConfig config) {
-            this.bucket = bucket;
+        BucketHolder(RateLimiter rateLimiter, RateLimitConfig config) {
+            this.rateLimiter = rateLimiter;
             this.config = config;
             this.lastAccessTime = System.currentTimeMillis();
         }
 
         void updateAccessTime() {
             this.lastAccessTime = System.currentTimeMillis();
+        }
+        
+        boolean tryConsume(int tokens) {
+            return rateLimiter.tryConsume(tokens);
         }
     }
 
@@ -93,12 +97,26 @@ public class RateLimiterService {
 
         BucketHolder holder = buckets.computeIfAbsent(key, k -> {
             RateLimitConfig config = configurationResolver.resolveConfig(k);
-            TokenBucket bucket = new TokenBucket(config.getCapacity(), config.getRefillRate());
-            return new BucketHolder(bucket, config);
+            RateLimiter rateLimiter = createRateLimiter(config);
+            return new BucketHolder(rateLimiter, config);
         });
         
         holder.updateAccessTime();
-        return holder.bucket.tryConsume(tokens);
+        return holder.tryConsume(tokens);
+    }
+    
+    /**
+     * Factory method to create the appropriate rate limiter based on configuration.
+     */
+    private RateLimiter createRateLimiter(RateLimitConfig config) {
+        switch (config.getAlgorithm()) {
+            case TOKEN_BUCKET:
+                return new TokenBucket(config.getCapacity(), config.getRefillRate());
+            case SLIDING_WINDOW:
+                return new SlidingWindow(config.getCapacity(), config.getRefillRate());
+            default:
+                throw new IllegalArgumentException("Unknown algorithm: " + config.getAlgorithm());
+        }
     }
 
     private void startCleanupTask() {
