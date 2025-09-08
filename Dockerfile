@@ -8,11 +8,8 @@ WORKDIR /app
 # Copy the entire project
 COPY . .
 
-# Make mvnw executable
-RUN chmod +x mvnw
-
-# Build the application (this will download dependencies and build)
-RUN ./mvnw package -DskipTests -B
+# Make mvnw executable and build the application
+RUN chmod +x mvnw && ./mvnw package -DskipTests -B
 
 # Runtime stage
 FROM eclipse-temurin:21-jre AS runtime
@@ -21,8 +18,9 @@ FROM eclipse-temurin:21-jre AS runtime
 RUN apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/*
 
 # Create non-root user for security
-RUN groupadd -g 1000 appuser && \
-    useradd -d /app -g appuser -u 1000 appuser
+# Use a different UID/GID to avoid conflicts with existing users
+RUN groupadd -g 1001 appuser && \
+    useradd -d /app -g appuser -u 1001 appuser
 
 # Set working directory
 WORKDIR /app

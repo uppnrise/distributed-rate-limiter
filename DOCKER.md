@@ -176,6 +176,30 @@ The Dockerfile uses a multi-stage build:
    docker compose up -p 8081:8080
    ```
 
+4. **Docker build fails with network errors**
+   
+   If you encounter errors like "Failed to fetch https://repo.maven.apache.org/maven2/..." during Docker build:
+   
+   ```bash
+   # Option 1: Build JAR locally first
+   ./mvnw package -DskipTests -B
+   docker build -t distributed-rate-limiter:latest .
+   
+   # Option 2: Use Docker build with network mode
+   docker build --network=host -t distributed-rate-limiter:latest .
+   
+   # Option 3: Use Docker Compose which handles networking
+   docker compose build
+   ```
+   
+   This is common in restricted network environments where Maven repositories might be blocked during the Docker build process.
+
+5. **User/Group conflicts in Docker**
+   
+   If you see "GID '1000' already exists" error during build:
+   
+   The Dockerfile has been updated to use UID/GID 1001 to avoid conflicts with existing system users. This should resolve automatically with the current Dockerfile.
+
 ### Debugging
 
 ```bash
