@@ -56,7 +56,11 @@ class DistributedRateLimiterServiceTest {
         String key = "test:distributed";
         
         // Create two instances (simulating different app instances)
-        ConfigurationResolver resolver = new ConfigurationResolver(new RateLimiterConfiguration());
+        // Use a configuration that matches the test properties
+        RateLimiterConfiguration config = new RateLimiterConfiguration();
+        config.setCapacity(5);
+        config.setRefillRate(1);
+        ConfigurationResolver resolver = new ConfigurationResolver(config);
         DistributedRateLimiterService instance1 = new DistributedRateLimiterService(resolver, redisTemplate);
         DistributedRateLimiterService instance2 = new DistributedRateLimiterService(resolver, redisTemplate);
         
@@ -120,8 +124,11 @@ class DistributedRateLimiterServiceTest {
         final int threadCount = 10;
         final int tokensPerThread = 1;
         
-        // Create multiple service instances
-        ConfigurationResolver resolver = new ConfigurationResolver(new RateLimiterConfiguration());
+        // Create multiple service instances with proper configuration
+        RateLimiterConfiguration config = new RateLimiterConfiguration();
+        config.setCapacity(5);
+        config.setRefillRate(1);
+        ConfigurationResolver resolver = new ConfigurationResolver(config);
         DistributedRateLimiterService[] instances = new DistributedRateLimiterService[5];
         for (int i = 0; i < instances.length; i++) {
             instances[i] = new DistributedRateLimiterService(resolver, redisTemplate);
