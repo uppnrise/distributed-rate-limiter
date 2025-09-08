@@ -19,26 +19,6 @@ public class RateLimiterService {
     private final ScheduledExecutorService cleanupExecutor;
     private final MetricsService metricsService;
 
-    private static class BucketHolder {
-        final RateLimiter rateLimiter;
-        final RateLimitConfig config;
-        volatile long lastAccessTime;
-
-        BucketHolder(RateLimiter rateLimiter, RateLimitConfig config) {
-            this.rateLimiter = rateLimiter;
-            this.config = config;
-            this.lastAccessTime = System.currentTimeMillis();
-        }
-
-        void updateAccessTime() {
-            this.lastAccessTime = System.currentTimeMillis();
-        }
-        
-        boolean tryConsume(int tokens) {
-            return rateLimiter.tryConsume(tokens);
-        }
-    }
-
     @Autowired
     public RateLimiterService(ConfigurationResolver configurationResolver, 
                              RateLimiterConfiguration config, 
@@ -181,6 +161,85 @@ public class RateLimiterService {
     public void clearBuckets() {
         buckets.clear();
         configurationResolver.clearCache();
+    }
+
+    /**
+     * Get configuration for a specific key.
+     * @param key the key to get configuration for
+     * @return the configuration or null if not found
+     */
+    public RateLimitConfig getKeyConfiguration(String key) {
+        BucketHolder holder = buckets.get(key);
+        if (holder != null) {
+            return holder.config;
+        }
+        // If no active bucket, resolve configuration without creating bucket
+        return configurationResolver.resolveConfig(key);
+    }
+
+    /**
+     * Remove a specific key's bucket.
+     * @param key the key to remove
+     * @return true if the key was removed, false if not found
+     */
+    public boolean removeKey(String key) {
+        return buckets.remove(key) != null;
+    }
+
+    /**
+     * Get all active keys with their statistics.
+     * @return a list of key names with their stats
+     */
+    public java.util.List<String> getActiveKeys() {
+        return new java.util.ArrayList<>(buckets.keySet());
+    }
+
+    /**
+     * Get statistics for all active keys.
+     * @return a map of key to bucket holder for admin purposes
+     */
+    public java.util.Map<String, BucketHolder> getBucketHolders() {
+        return new java.util.HashMap<>(buckets);
+    }
+
+    /**
+     * Get statistics for a specific active key.
+     * @param key the key to get stats for
+     * @return bucket holder or null if not found
+     */
+    public BucketHolder getBucketHolder(String key) {
+        return buckets.get(key);
+    }
+
+    /**
+     * Make BucketHolder accessible for admin operations.
+     */
+    public static class BucketHolder {
+        final RateLimiter rateLimiter;
+        final RateLimitConfig config;
+        volatile long lastAccessTime;
+
+        public BucketHolder(RateLimiter rateLimiter, RateLimitConfig config) {
+            this.rateLimiter = rateLimiter;
+            this.config = config;
+            this.lastAccessTime = System.currentTimeMillis();
+        }
+
+        void updateAccessTime() {
+            this.lastAccessTime = System.currentTimeMillis();
+        }
+        
+        boolean tryConsume(int tokens) {
+            return rateLimiter.tryConsume(tokens);
+        }
+
+        public RateLimitConfig getConfig() {
+            return config;
+        }
+
+        public long getLastAccessTime() {
+            return lastAccessTime;
+        }
     }
 
     // Shutdown method for cleanup
