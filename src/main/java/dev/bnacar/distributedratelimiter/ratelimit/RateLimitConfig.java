@@ -7,11 +7,17 @@ public class RateLimitConfig {
     private final int capacity;
     private final int refillRate;
     private final long cleanupIntervalMs;
+    private final RateLimitAlgorithm algorithm;
 
-    public RateLimitConfig(int capacity, int refillRate, long cleanupIntervalMs) {
+    public RateLimitConfig(int capacity, int refillRate, long cleanupIntervalMs, RateLimitAlgorithm algorithm) {
         this.capacity = capacity;
         this.refillRate = refillRate;
         this.cleanupIntervalMs = cleanupIntervalMs;
+        this.algorithm = algorithm;
+    }
+
+    public RateLimitConfig(int capacity, int refillRate, long cleanupIntervalMs) {
+        this(capacity, refillRate, cleanupIntervalMs, RateLimitAlgorithm.TOKEN_BUCKET);
     }
 
     public RateLimitConfig(int capacity, int refillRate) {
@@ -30,12 +36,17 @@ public class RateLimitConfig {
         return cleanupIntervalMs;
     }
 
+    public RateLimitAlgorithm getAlgorithm() {
+        return algorithm;
+    }
+
     @Override
     public String toString() {
         return "RateLimitConfig{" +
                 "capacity=" + capacity +
                 ", refillRate=" + refillRate +
                 ", cleanupIntervalMs=" + cleanupIntervalMs +
+                ", algorithm=" + algorithm +
                 '}';
     }
 
@@ -46,11 +57,12 @@ public class RateLimitConfig {
         RateLimitConfig that = (RateLimitConfig) o;
         return capacity == that.capacity && 
                refillRate == that.refillRate && 
-               cleanupIntervalMs == that.cleanupIntervalMs;
+               cleanupIntervalMs == that.cleanupIntervalMs &&
+               algorithm == that.algorithm;
     }
 
     @Override
     public int hashCode() {
-        return java.util.Objects.hash(capacity, refillRate, cleanupIntervalMs);
+        return java.util.Objects.hash(capacity, refillRate, cleanupIntervalMs, algorithm);
     }
 }

@@ -1,6 +1,6 @@
 package dev.bnacar.distributedratelimiter.ratelimit;
 
-public class TokenBucket {
+public class TokenBucket implements RateLimiter {
 
     private final int capacity;
     private final int refillRate;

@@ -73,8 +73,11 @@ public class ConfigurationResolver {
         long cleanupInterval = keyConfig.getCleanupIntervalMs() != null && keyConfig.getCleanupIntervalMs() > 0 
             ? keyConfig.getCleanupIntervalMs() 
             : configuration.getCleanupIntervalMs();
+        RateLimitAlgorithm algorithm = keyConfig.getAlgorithm() != null 
+            ? keyConfig.getAlgorithm() 
+            : configuration.getAlgorithm();
             
-        return new RateLimitConfig(capacity, refillRate, cleanupInterval);
+        return new RateLimitConfig(capacity, refillRate, cleanupInterval, algorithm);
     }
     
     /**
