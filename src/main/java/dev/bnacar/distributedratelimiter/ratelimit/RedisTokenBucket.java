@@ -83,7 +83,7 @@ public class RedisTokenBucket implements RateLimiter {
             
             return capacity; // Default to full bucket if we can't read state
         } catch (Exception e) {
-            return capacity; // Default to full bucket on error
+            throw new RuntimeException("Redis operation failed", e);
         }
     }
     
