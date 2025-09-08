@@ -1,20 +1,27 @@
 package dev.bnacar.distributedratelimiter.ratelimit;
 
+import org.springframework.scheduling.annotation.Async;
+import org.springframework.stereotype.Component;
+
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * In-memory rate limiter backend.
  * Uses local JVM memory for rate limiter state.
  * This is the fallback when Redis is not available.
  */
+@Component
 public class InMemoryRateLimiterBackend implements RateLimiterBackend {
     
     private final ConcurrentHashMap<String, BucketHolder> buckets;
     private final ScheduledExecutorService cleanupExecutor;
     private final long defaultCleanupIntervalMs;
+    private final AtomicLong cleanupCounter = new AtomicLong(0);
+    private final AtomicLong lastCleanupTime = new AtomicLong(System.currentTimeMillis());
     
     private static class BucketHolder {
         final RateLimiter rateLimiter;
@@ -42,6 +49,8 @@ public class InMemoryRateLimiterBackend implements RateLimiterBackend {
         this.cleanupExecutor = Executors.newSingleThreadScheduledExecutor(r -> {
             Thread t = new Thread(r, "InMemoryRateLimiter-Cleanup");
             t.setDaemon(true);
+            // Lower priority for cleanup tasks
+            t.setPriority(Thread.NORM_PRIORITY - 1);
             return t;
         });
         
@@ -76,6 +85,20 @@ public class InMemoryRateLimiterBackend implements RateLimiterBackend {
     }
     
     /**
+     * Get cleanup statistics for monitoring.
+     */
+    public long getCleanupCount() {
+        return cleanupCounter.get();
+    }
+    
+    /**
+     * Get the last cleanup time.
+     */
+    public long getLastCleanupTime() {
+        return lastCleanupTime.get();
+    }
+    
+    /**
      * Factory method to create the appropriate rate limiter based on configuration.
      */
     private RateLimiter createRateLimiter(RateLimitConfig config) {
@@ -91,21 +114,44 @@ public class InMemoryRateLimiterBackend implements RateLimiterBackend {
     
     private void startCleanupTask() {
         cleanupExecutor.scheduleWithFixedDelay(
-            this::cleanupExpiredBuckets,
+            this::cleanupExpiredBucketsAsync,
             defaultCleanupIntervalMs,
             defaultCleanupIntervalMs,
             TimeUnit.MILLISECONDS
         );
     }
 
+    /**
+     * Async cleanup method that can be executed in background.
+     */
+    @Async("rateLimiterTaskExecutor")
+    protected void cleanupExpiredBucketsAsync() {
+        cleanupExpiredBuckets();
+    }
+
     private void cleanupExpiredBuckets() {
         long currentTime = System.currentTimeMillis();
+        int sizeBefore = buckets.size();
+        
         buckets.entrySet().removeIf(entry -> {
             BucketHolder holder = entry.getValue();
             // Use the cleanup interval from the bucket's configuration
             long bucketCleanupInterval = holder.config.getCleanupIntervalMs();
             return (currentTime - holder.lastAccessTime) > bucketCleanupInterval;
         });
+        
+        int sizeAfter = buckets.size();
+        if (sizeBefore != sizeAfter) {
+            cleanupCounter.incrementAndGet();
+            lastCleanupTime.set(currentTime);
+        }
+    }
+    
+    /**
+     * Force immediate cleanup for testing or manual triggers.
+     */
+    public void forceCleanup() {
+        cleanupExpiredBuckets();
     }
     
     public void shutdown() {
