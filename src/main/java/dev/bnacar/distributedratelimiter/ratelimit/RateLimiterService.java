@@ -18,11 +18,11 @@ public class RateLimiterService {
     private final ScheduledExecutorService cleanupExecutor;
 
     private static class BucketHolder {
-        final Object rateLimiter; // Either TokenBucket or SlidingWindow
+        final RateLimiter rateLimiter;
         final RateLimitConfig config;
         volatile long lastAccessTime;
 
-        BucketHolder(Object rateLimiter, RateLimitConfig config) {
+        BucketHolder(RateLimiter rateLimiter, RateLimitConfig config) {
             this.rateLimiter = rateLimiter;
             this.config = config;
             this.lastAccessTime = System.currentTimeMillis();
@@ -33,12 +33,7 @@ public class RateLimiterService {
         }
         
         boolean tryConsume(int tokens) {
-            if (rateLimiter instanceof TokenBucket) {
-                return ((TokenBucket) rateLimiter).tryConsume(tokens);
-            } else if (rateLimiter instanceof SlidingWindow) {
-                return ((SlidingWindow) rateLimiter).tryConsume(tokens);
-            }
-            throw new IllegalStateException("Unknown rate limiter type: " + rateLimiter.getClass());
+            return rateLimiter.tryConsume(tokens);
         }
     }
 
@@ -102,7 +97,7 @@ public class RateLimiterService {
 
         BucketHolder holder = buckets.computeIfAbsent(key, k -> {
             RateLimitConfig config = configurationResolver.resolveConfig(k);
-            Object rateLimiter = createRateLimiter(config);
+            RateLimiter rateLimiter = createRateLimiter(config);
             return new BucketHolder(rateLimiter, config);
         });
         
@@ -113,7 +108,7 @@ public class RateLimiterService {
     /**
      * Factory method to create the appropriate rate limiter based on configuration.
      */
-    private Object createRateLimiter(RateLimitConfig config) {
+    private RateLimiter createRateLimiter(RateLimitConfig config) {
         switch (config.getAlgorithm()) {
             case TOKEN_BUCKET:
                 return new TokenBucket(config.getCapacity(), config.getRefillRate());

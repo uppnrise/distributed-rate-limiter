@@ -8,7 +8,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * Tracks requests within a fixed time window and allows requests
  * if they don't exceed the configured capacity within that window.
  */
-public class SlidingWindow {
+public class SlidingWindow implements RateLimiter {
     
     private final int capacity;
     private final int refillRate; // For interface compatibility - represents requests per second
