@@ -145,4 +145,68 @@ public class RateLimiterServiceTest {
         // Zero token requests should be rejected
         assertFalse(rateLimiterService.isAllowed(key, 0));
     }
+
+    @Test
+    void test_shouldSupportAlgorithmSelection() {
+        // Create configuration with different algorithms for different keys
+        RateLimiterConfiguration config = new RateLimiterConfiguration();
+        config.setCapacity(10);
+        config.setRefillRate(2);
+        config.setAlgorithm(RateLimitAlgorithm.TOKEN_BUCKET); // Default
+        
+        // Configure sliding window for specific key pattern
+        RateLimiterConfiguration.KeyConfig slidingWindowConfig = new RateLimiterConfiguration.KeyConfig();
+        slidingWindowConfig.setCapacity(5);
+        slidingWindowConfig.setRefillRate(1);
+        slidingWindowConfig.setAlgorithm(RateLimitAlgorithm.SLIDING_WINDOW);
+        config.getPatterns().put("sliding:*", slidingWindowConfig);
+        
+        ConfigurationResolver resolver = new ConfigurationResolver(config);
+        RateLimiterService service = new RateLimiterService(resolver, config);
+        
+        // Test token bucket behavior (default)
+        String tokenBucketKey = "bucket:user1";
+        assertTrue(service.isAllowed(tokenBucketKey, 10)); // Should allow burst
+        assertFalse(service.isAllowed(tokenBucketKey, 1)); // Should fail after burst
+        
+        // Test sliding window behavior
+        String slidingWindowKey = "sliding:user1";
+        assertTrue(service.isAllowed(slidingWindowKey, 5)); // Should allow up to capacity
+        assertFalse(service.isAllowed(slidingWindowKey, 1)); // Should fail when at capacity
+    }
+
+    @Test
+    void test_shouldUseDifferentAlgorithmsForDifferentKeys() {
+        // Create a more complex configuration scenario
+        RateLimiterConfiguration config = new RateLimiterConfiguration();
+        config.setCapacity(10);
+        config.setRefillRate(2);
+        config.setAlgorithm(RateLimitAlgorithm.TOKEN_BUCKET);
+        
+        // Configure specific keys with different algorithms
+        RateLimiterConfiguration.KeyConfig slidingConfig = new RateLimiterConfiguration.KeyConfig();
+        slidingConfig.setCapacity(8);
+        slidingConfig.setRefillRate(2);
+        slidingConfig.setAlgorithm(RateLimitAlgorithm.SLIDING_WINDOW);
+        config.getKeys().put("api:v2:endpoint", slidingConfig);
+        
+        RateLimiterConfiguration.KeyConfig tokenConfig = new RateLimiterConfiguration.KeyConfig();
+        tokenConfig.setCapacity(15);
+        tokenConfig.setRefillRate(3);
+        tokenConfig.setAlgorithm(RateLimitAlgorithm.TOKEN_BUCKET);
+        config.getKeys().put("admin:actions", tokenConfig);
+        
+        ConfigurationResolver resolver = new ConfigurationResolver(config);
+        RateLimiterService service = new RateLimiterService(resolver, config);
+        
+        // Test each key uses correct configuration
+        assertTrue(service.isAllowed("api:v2:endpoint", 8)); // Sliding window, capacity 8
+        assertFalse(service.isAllowed("api:v2:endpoint", 1)); // Should fail
+        
+        assertTrue(service.isAllowed("admin:actions", 15)); // Token bucket, capacity 15
+        assertFalse(service.isAllowed("admin:actions", 1)); // Should fail
+        
+        assertTrue(service.isAllowed("other:key", 10)); // Default config, capacity 10
+        assertFalse(service.isAllowed("other:key", 1)); // Should fail
+    }
 }

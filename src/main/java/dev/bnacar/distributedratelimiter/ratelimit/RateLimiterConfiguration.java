@@ -14,6 +14,7 @@ public class RateLimiterConfiguration {
     private int capacity = 10;
     private int refillRate = 2;
     private long cleanupIntervalMs = 60000; // 60 seconds
+    private RateLimitAlgorithm algorithm = RateLimitAlgorithm.TOKEN_BUCKET;
     
     // Per-key overrides: key -> config properties
     private Map<String, KeyConfig> keys = new HashMap<>();
@@ -25,6 +26,7 @@ public class RateLimiterConfiguration {
         private int capacity;
         private int refillRate;
         private Long cleanupIntervalMs;
+        private RateLimitAlgorithm algorithm;
         
         public int getCapacity() {
             return capacity;
@@ -48,6 +50,14 @@ public class RateLimiterConfiguration {
         
         public void setCleanupIntervalMs(Long cleanupIntervalMs) {
             this.cleanupIntervalMs = cleanupIntervalMs;
+        }
+        
+        public RateLimitAlgorithm getAlgorithm() {
+            return algorithm;
+        }
+        
+        public void setAlgorithm(RateLimitAlgorithm algorithm) {
+            this.algorithm = algorithm;
         }
     }
     
@@ -76,6 +86,14 @@ public class RateLimiterConfiguration {
         this.cleanupIntervalMs = cleanupIntervalMs;
     }
     
+    public RateLimitAlgorithm getAlgorithm() {
+        return algorithm;
+    }
+    
+    public void setAlgorithm(RateLimitAlgorithm algorithm) {
+        this.algorithm = algorithm;
+    }
+    
     // Per-key and pattern configuration getters and setters
     public Map<String, KeyConfig> getKeys() {
         return keys;
@@ -97,6 +115,6 @@ public class RateLimiterConfiguration {
      * Get the default rate limit configuration.
      */
     public RateLimitConfig getDefaultConfig() {
-        return new RateLimitConfig(capacity, refillRate, cleanupIntervalMs);
+        return new RateLimitConfig(capacity, refillRate, cleanupIntervalMs, algorithm);
     }
 }
