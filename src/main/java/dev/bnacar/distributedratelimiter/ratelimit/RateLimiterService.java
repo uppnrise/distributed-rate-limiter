@@ -1,5 +1,6 @@
 package dev.bnacar.distributedratelimiter.ratelimit;
 
+import dev.bnacar.distributedratelimiter.monitoring.MetricsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -16,6 +17,7 @@ public class RateLimiterService {
     private final long cleanupIntervalMs;
     private final ConcurrentHashMap<String, BucketHolder> buckets;
     private final ScheduledExecutorService cleanupExecutor;
+    private final MetricsService metricsService;
 
     private static class BucketHolder {
         final RateLimiter rateLimiter;
@@ -38,10 +40,13 @@ public class RateLimiterService {
     }
 
     @Autowired
-    public RateLimiterService(ConfigurationResolver configurationResolver, RateLimiterConfiguration config) {
+    public RateLimiterService(ConfigurationResolver configurationResolver, 
+                             RateLimiterConfiguration config, 
+                             MetricsService metricsService) {
         this.configurationResolver = configurationResolver;
         this.cleanupIntervalMs = config.getCleanupIntervalMs();
         this.buckets = new ConcurrentHashMap<>();
+        this.metricsService = metricsService;
         this.cleanupExecutor = Executors.newSingleThreadScheduledExecutor(r -> {
             Thread t = new Thread(r, "RateLimiter-Cleanup");
             t.setDaemon(true);
@@ -54,7 +59,22 @@ public class RateLimiterService {
 
     // Constructors for backward compatibility and testing
     public RateLimiterService() {
-        this(DefaultConfiguration.RESOLVER, DefaultConfiguration.INSTANCE);
+        this(DefaultConfiguration.RESOLVER, DefaultConfiguration.INSTANCE, null);
+    }
+
+    public RateLimiterService(ConfigurationResolver configurationResolver, RateLimiterConfiguration config) {
+        this.configurationResolver = configurationResolver;
+        this.cleanupIntervalMs = config.getCleanupIntervalMs();
+        this.buckets = new ConcurrentHashMap<>();
+        this.metricsService = null; // No metrics for testing constructors
+        this.cleanupExecutor = Executors.newSingleThreadScheduledExecutor(r -> {
+            Thread t = new Thread(r, "RateLimiter-Cleanup");
+            t.setDaemon(true);
+            return t;
+        });
+        
+        // Start cleanup task
+        startCleanupTask();
     }
 
     public RateLimiterService(int capacity, int refillRate) {
@@ -70,6 +90,7 @@ public class RateLimiterService {
         this.configurationResolver = new ConfigurationResolver(config);
         this.cleanupIntervalMs = cleanupIntervalMs;
         this.buckets = new ConcurrentHashMap<>();
+        this.metricsService = null; // No metrics for testing constructors
         this.cleanupExecutor = Executors.newSingleThreadScheduledExecutor(r -> {
             Thread t = new Thread(r, "RateLimiter-Cleanup");
             t.setDaemon(true);
@@ -102,7 +123,18 @@ public class RateLimiterService {
         });
         
         holder.updateAccessTime();
-        return holder.tryConsume(tokens);
+        boolean allowed = holder.tryConsume(tokens);
+        
+        // Record metrics if available
+        if (metricsService != null) {
+            if (allowed) {
+                metricsService.recordAllowedRequest(key);
+            } else {
+                metricsService.recordDeniedRequest(key);
+            }
+        }
+        
+        return allowed;
     }
     
     /**
