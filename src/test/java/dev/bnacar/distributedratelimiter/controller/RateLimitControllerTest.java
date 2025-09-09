@@ -2,6 +2,10 @@ package dev.bnacar.distributedratelimiter.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import dev.bnacar.distributedratelimiter.models.RateLimitRequest;
+import dev.bnacar.distributedratelimiter.security.ApiKeyService;
+import dev.bnacar.distributedratelimiter.security.IpAddressExtractor;
+import dev.bnacar.distributedratelimiter.security.IpSecurityService;
+import dev.bnacar.distributedratelimiter.config.SecurityConfiguration;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -10,11 +14,14 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import dev.bnacar.distributedratelimiter.ratelimit.RateLimiterService;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import org.junit.jupiter.api.BeforeEach;
 
-@WebMvcTest(RateLimitController.class)
+@WebMvcTest(controllers = RateLimitController.class)
 public class RateLimitControllerTest {
 
     @Autowired
@@ -26,9 +33,35 @@ public class RateLimitControllerTest {
     @MockBean
     private RateLimiterService rateLimiterService;
 
+    @MockBean
+    private ApiKeyService apiKeyService;
+
+    @MockBean
+    private IpSecurityService ipSecurityService;
+
+    @MockBean
+    private IpAddressExtractor ipAddressExtractor;
+
+    @MockBean
+    private SecurityConfiguration securityConfiguration;
+
+    @BeforeEach
+    public void setUp() {
+        // Mock SecurityConfiguration to avoid NullPointerExceptions
+        SecurityConfiguration.Headers headers = new SecurityConfiguration.Headers();
+        headers.setEnabled(true);
+        when(securityConfiguration.getHeaders()).thenReturn(headers);
+        when(securityConfiguration.getMaxRequestSize()).thenReturn("1MB");
+    }
+
     @Test
     public void testSuccessfulRateLimitCheck() throws Exception {
-        when(rateLimiterService.isAllowed("user1", 5)).thenReturn(true);
+        // Mock all security services to allow the request
+        when(ipAddressExtractor.getClientIpAddress(any())).thenReturn("127.0.0.1");
+        when(ipSecurityService.isIpAllowed("127.0.0.1")).thenReturn(true);
+        when(apiKeyService.isValidApiKey(null)).thenReturn(true);
+        when(ipSecurityService.createIpBasedKey("user1", "127.0.0.1")).thenReturn("ip:127.0.0.1:user1");
+        when(rateLimiterService.isAllowed("ip:127.0.0.1:user1", 5)).thenReturn(true);
         
         RateLimitRequest request = new RateLimitRequest("user1", 5);
         
@@ -43,8 +76,68 @@ public class RateLimitControllerTest {
     }
 
     @Test
+    public void testSuccessfulRateLimitCheckWithApiKey() throws Exception {
+        // Mock all security services to allow the request with API key
+        when(ipAddressExtractor.getClientIpAddress(any())).thenReturn("127.0.0.1");
+        when(ipSecurityService.isIpAllowed("127.0.0.1")).thenReturn(true);
+        when(apiKeyService.isValidApiKey("valid-api-key")).thenReturn(true);
+        when(ipSecurityService.createIpBasedKey("user1", "127.0.0.1")).thenReturn("ip:127.0.0.1:user1");
+        when(rateLimiterService.isAllowed("ip:127.0.0.1:user1", 5)).thenReturn(true);
+        
+        RateLimitRequest request = new RateLimitRequest("user1", 5, "valid-api-key");
+        
+        mockMvc.perform(post("/api/ratelimit/check")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.key").value("user1"))
+                .andExpect(jsonPath("$.tokensRequested").value(5))
+                .andExpect(jsonPath("$.allowed").value(true));
+    }
+
+    @Test
+    public void testInvalidApiKey() throws Exception {
+        when(ipAddressExtractor.getClientIpAddress(any())).thenReturn("127.0.0.1");
+        when(ipSecurityService.isIpAllowed("127.0.0.1")).thenReturn(true);
+        when(apiKeyService.isValidApiKey("invalid-api-key")).thenReturn(false);
+        
+        RateLimitRequest request = new RateLimitRequest("user1", 5, "invalid-api-key");
+        
+        mockMvc.perform(post("/api/ratelimit/check")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isUnauthorized())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.key").value("user1"))
+                .andExpect(jsonPath("$.tokensRequested").value(5))
+                .andExpect(jsonPath("$.allowed").value(false));
+    }
+
+    @Test
+    public void testIpAddressBlocked() throws Exception {
+        when(ipAddressExtractor.getClientIpAddress(any())).thenReturn("192.168.1.100");
+        when(ipSecurityService.isIpAllowed("192.168.1.100")).thenReturn(false);
+        
+        RateLimitRequest request = new RateLimitRequest("user1", 5);
+        
+        mockMvc.perform(post("/api/ratelimit/check")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isForbidden())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.key").value("user1"))
+                .andExpect(jsonPath("$.tokensRequested").value(5))
+                .andExpect(jsonPath("$.allowed").value(false));
+    }
+
+    @Test
     public void testRateLimitExceeded() throws Exception {
-        when(rateLimiterService.isAllowed("user2", 1)).thenReturn(false);
+        when(ipAddressExtractor.getClientIpAddress(any())).thenReturn("127.0.0.1");
+        when(ipSecurityService.isIpAllowed("127.0.0.1")).thenReturn(true);
+        when(apiKeyService.isValidApiKey(null)).thenReturn(true);
+        when(ipSecurityService.createIpBasedKey("user2", "127.0.0.1")).thenReturn("ip:127.0.0.1:user2");
+        when(rateLimiterService.isAllowed("ip:127.0.0.1:user2", 1)).thenReturn(false);
         
         RateLimitRequest request = new RateLimitRequest("user2", 1);
         
@@ -55,21 +148,6 @@ public class RateLimitControllerTest {
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.key").value("user2"))
                 .andExpect(jsonPath("$.tokensRequested").value(1))
-                .andExpect(jsonPath("$.allowed").value(false));
-    }
-
-    @Test
-    public void testRequestExceedsBucketCapacity() throws Exception {
-        when(rateLimiterService.isAllowed("user3", 15)).thenReturn(false);
-        
-        RateLimitRequest request = new RateLimitRequest("user3", 15);
-        
-        mockMvc.perform(post("/api/ratelimit/check")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isTooManyRequests())
-                .andExpect(jsonPath("$.key").value("user3"))
-                .andExpect(jsonPath("$.tokensRequested").value(15))
                 .andExpect(jsonPath("$.allowed").value(false));
     }
 
@@ -95,7 +173,11 @@ public class RateLimitControllerTest {
 
     @Test
     public void testDefaultTokensValue() throws Exception {
-        when(rateLimiterService.isAllowed("user7", 1)).thenReturn(true);
+        when(ipAddressExtractor.getClientIpAddress(any())).thenReturn("127.0.0.1");
+        when(ipSecurityService.isIpAllowed("127.0.0.1")).thenReturn(true);
+        when(apiKeyService.isValidApiKey(null)).thenReturn(true);
+        when(ipSecurityService.createIpBasedKey("user7", "127.0.0.1")).thenReturn("ip:127.0.0.1:user7");
+        when(rateLimiterService.isAllowed("ip:127.0.0.1:user7", 1)).thenReturn(true);
         
         // Test that tokens defaults to 1 when not specified
         String requestJson = "{\"key\":\"user7\"}";
