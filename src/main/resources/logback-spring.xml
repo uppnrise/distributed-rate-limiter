@@ -80,8 +80,9 @@
         </root>
     </springProfile>
 
-    <!-- Rate limiter specific logging -->
-    <logger name="dev.bnacar.distributedratelimiter.ratelimit" level="${logging.level.ratelimiter:-INFO}"/>
-    <logger name="dev.bnacar.distributedratelimiter.monitoring" level="${logging.level.monitoring:-INFO}"/>
+    <!-- Rate limiter specific logging - use full package names -->
+    <logger name="dev.bnacar.distributedratelimiter.ratelimit" level="${logging.level.dev.bnacar.distributedratelimiter.ratelimit:-INFO}"/>
+    <logger name="dev.bnacar.distributedratelimiter.monitoring" level="${logging.level.dev.bnacar.distributedratelimiter.monitoring:-INFO}"/>
+    <logger name="dev.bnacar.distributedratelimiter.observability" level="${logging.level.dev.bnacar.distributedratelimiter.observability:-INFO}"/>
 
 </configuration>
