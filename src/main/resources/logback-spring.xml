@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
+    
+    <!-- Console Appender with JSON format -->
+    <appender name="CONSOLE_JSON" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder class="net.logstash.logback.encoder.LoggingEventCompositeJsonEncoder">
+            <providers>
+                <timestamp>
+                    <timeZone>UTC</timeZone>
+                </timestamp>
+                <version/>
+                <logLevel/>
+                <message/>
+                <mdc/>
+                <arguments/>
+                <stackTrace/>
+                <loggerName/>
+                <pattern>
+                    <pattern>
+                        {
+                        "service": "distributed-rate-limiter",
+                        "environment": "${spring.profiles.active:-default}"
+                        }
+                    </pattern>
+                </pattern>
+            </providers>
+        </encoder>
+    </appender>
+
+    <!-- Console Appender with readable format for development -->
+    <appender name="CONSOLE_READABLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level [%X{correlationId:-}] %logger{36} - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <!-- File Appender for structured logs -->
+    <appender name="FILE_JSON" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>logs/distributed-rate-limiter.json</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>logs/distributed-rate-limiter.%d{yyyy-MM-dd}.json.gz</fileNamePattern>
+            <maxHistory>30</maxHistory>
+        </rollingPolicy>
+        <encoder class="net.logstash.logback.encoder.LoggingEventCompositeJsonEncoder">
+            <providers>
+                <timestamp>
+                    <timeZone>UTC</timeZone>
+                </timestamp>
+                <version/>
+                <logLevel/>
+                <message/>
+                <mdc/>
+                <arguments/>
+                <stackTrace/>
+                <loggerName/>
+                <pattern>
+                    <pattern>
+                        {
+                        "service": "distributed-rate-limiter",
+                        "environment": "${spring.profiles.active:-default}"
+                        }
+                    </pattern>
+                </pattern>
+            </providers>
+        </encoder>
+    </appender>
+
+    <!-- Profile-specific configuration -->
+    <springProfile name="!prod">
+        <root level="${logging.level.root:-INFO}">
+            <appender-ref ref="CONSOLE_READABLE"/>
+        </root>
+    </springProfile>
+
+    <springProfile name="prod">
+        <root level="${logging.level.root:-INFO}">
+            <appender-ref ref="CONSOLE_JSON"/>
+            <appender-ref ref="FILE_JSON"/>
+        </root>
+    </springProfile>
+
+    <!-- Rate limiter specific logging - use full package names -->
+    <logger name="dev.bnacar.distributedratelimiter.ratelimit" level="${logging.level.dev.bnacar.distributedratelimiter.ratelimit:-INFO}"/>
+    <logger name="dev.bnacar.distributedratelimiter.monitoring" level="${logging.level.dev.bnacar.distributedratelimiter.monitoring:-INFO}"/>
+    <logger name="dev.bnacar.distributedratelimiter.observability" level="${logging.level.dev.bnacar.distributedratelimiter.observability:-INFO}"/>
+
+</configuration>
