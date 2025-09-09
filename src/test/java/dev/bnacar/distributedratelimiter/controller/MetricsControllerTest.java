@@ -2,6 +2,7 @@ package dev.bnacar.distributedratelimiter.controller;
 
 import dev.bnacar.distributedratelimiter.models.MetricsResponse;
 import dev.bnacar.distributedratelimiter.monitoring.MetricsService;
+import dev.bnacar.distributedratelimiter.config.SecurityConfiguration;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,10 +26,19 @@ public class MetricsControllerTest {
     @MockBean
     private MetricsService metricsService;
 
+    @MockBean
+    private SecurityConfiguration securityConfiguration;
+
     private MetricsResponse metricsResponse;
 
     @BeforeEach
     void setUp() {
+        // Mock SecurityConfiguration to avoid NullPointerExceptions
+        SecurityConfiguration.Headers headers = new SecurityConfiguration.Headers();
+        headers.setEnabled(true);
+        when(securityConfiguration.getHeaders()).thenReturn(headers);
+        when(securityConfiguration.getMaxRequestSize()).thenReturn("1MB");
+
         Map<String, MetricsResponse.KeyMetrics> keyMetrics = new HashMap<>();
         keyMetrics.put("user1", new MetricsResponse.KeyMetrics(5, 2, System.currentTimeMillis()));
         keyMetrics.put("user2", new MetricsResponse.KeyMetrics(3, 1, System.currentTimeMillis()));
