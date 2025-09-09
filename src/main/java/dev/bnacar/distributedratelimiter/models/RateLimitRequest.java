@@ -11,12 +11,20 @@ public class RateLimitRequest {
     @NotNull(message = "Tokens must be specified")
     @Min(value = 1, message = "Tokens must be at least 1")
     private Integer tokens = 1;
+    
+    private String apiKey;
 
     public RateLimitRequest() {}
 
     public RateLimitRequest(String key, Integer tokens) {
         this.key = key;
         this.tokens = tokens;
+    }
+
+    public RateLimitRequest(String key, Integer tokens, String apiKey) {
+        this.key = key;
+        this.tokens = tokens;
+        this.apiKey = apiKey;
     }
 
     public String getKey() {
@@ -33,5 +41,13 @@ public class RateLimitRequest {
 
     public void setTokens(Integer tokens) {
         this.tokens = tokens;
+    }
+
+    public String getApiKey() {
+        return apiKey;
+    }
+
+    public void setApiKey(String apiKey) {
+        this.apiKey = apiKey;
     }
 }
