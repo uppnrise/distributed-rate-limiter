@@ -2,7 +2,9 @@ package dev.bnacar.distributedratelimiter.controller;
 
 import dev.bnacar.distributedratelimiter.models.BenchmarkRequest;
 import dev.bnacar.distributedratelimiter.models.BenchmarkResponse;
+import dev.bnacar.distributedratelimiter.config.SecurityConfiguration;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -32,6 +34,18 @@ class BenchmarkControllerTest {
 
     @MockBean
     private RateLimiterService rateLimiterService;
+
+    @MockBean
+    private SecurityConfiguration securityConfiguration;
+
+    @BeforeEach
+    void setUp() {
+        // Mock SecurityConfiguration to avoid NullPointerExceptions
+        SecurityConfiguration.Headers headers = new SecurityConfiguration.Headers();
+        headers.setEnabled(true);
+        when(securityConfiguration.getHeaders()).thenReturn(headers);
+        when(securityConfiguration.getMaxRequestSize()).thenReturn("1MB");
+    }
 
     @Test
     void testBenchmarkHealthEndpoint() throws Exception {
