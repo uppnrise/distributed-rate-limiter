@@ -1,6 +1,8 @@
 package dev.bnacar.distributedratelimiter.monitoring;
 
 import dev.bnacar.distributedratelimiter.models.MetricsResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.stereotype.Service;
@@ -14,9 +16,14 @@ import java.util.concurrent.atomic.AtomicLong;
 @Service
 public class MetricsService {
     
+    private static final Logger logger = LoggerFactory.getLogger(MetricsService.class);
+    
     private final Map<String, KeyMetricsData> keyMetrics = new ConcurrentHashMap<>();
     private final AtomicLong totalAllowedRequests = new AtomicLong(0);
     private final AtomicLong totalDeniedRequests = new AtomicLong(0);
+    private final AtomicLong totalBucketCreations = new AtomicLong(0);
+    private final AtomicLong totalBucketCleanups = new AtomicLong(0);
+    private final AtomicLong totalProcessingTimeMs = new AtomicLong(0);
     private volatile boolean redisConnected = false;
     private ScheduledExecutorService healthCheckExecutor;
     private RedisConnectionFactory redisConnectionFactory;
@@ -24,6 +31,8 @@ public class MetricsService {
     private static class KeyMetricsData {
         final AtomicLong allowedRequests = new AtomicLong(0);
         final AtomicLong deniedRequests = new AtomicLong(0);
+        final AtomicLong bucketCreations = new AtomicLong(0);
+        final AtomicLong totalProcessingTime = new AtomicLong(0);
         volatile long lastAccessTime = System.currentTimeMillis();
 
         void updateAccessTime() {
@@ -52,10 +61,18 @@ public class MetricsService {
         if (redisConnectionFactory != null) {
             try {
                 redisConnectionFactory.getConnection().ping();
+                if (!redisConnected) {
+                    logger.info("Redis connection restored");
+                }
                 setRedisConnected(true);
             } catch (Exception e) {
+                if (redisConnected) {
+                    logger.error("Redis connection lost: {}", e.getMessage());
+                }
                 setRedisConnected(false);
             }
+        } else {
+            logger.debug("Redis connection factory not available");
         }
     }
 
@@ -79,6 +96,9 @@ public class MetricsService {
         data.allowedRequests.incrementAndGet();
         data.updateAccessTime();
         totalAllowedRequests.incrementAndGet();
+        
+        logger.debug("Recorded allowed request for key={}, total_allowed={}", 
+                key, totalAllowedRequests.get());
     }
 
     public void recordDeniedRequest(String key) {
@@ -86,6 +106,43 @@ public class MetricsService {
         data.deniedRequests.incrementAndGet();
         data.updateAccessTime();
         totalDeniedRequests.incrementAndGet();
+        
+        logger.info("Recorded denied request for key={}, total_denied={}, denied_ratio={}%", 
+                key, totalDeniedRequests.get(), calculateDeniedRatio());
+    }
+
+    public void recordBucketCreation(String key) {
+        KeyMetricsData data = keyMetrics.computeIfAbsent(key, k -> new KeyMetricsData());
+        data.bucketCreations.incrementAndGet();
+        data.updateAccessTime();
+        totalBucketCreations.incrementAndGet();
+        
+        logger.info("New bucket created for key={}, total_buckets_created={}", 
+                key, totalBucketCreations.get());
+    }
+
+    public void recordBucketCleanup(int cleanedCount) {
+        totalBucketCleanups.addAndGet(cleanedCount);
+        
+        logger.info("Bucket cleanup completed: cleaned={}, total_cleanups={}", 
+                cleanedCount, totalBucketCleanups.get());
+    }
+
+    public void recordProcessingTime(String key, long processingTimeMs) {
+        KeyMetricsData data = keyMetrics.computeIfAbsent(key, k -> new KeyMetricsData());
+        data.totalProcessingTime.addAndGet(processingTimeMs);
+        data.updateAccessTime();
+        totalProcessingTimeMs.addAndGet(processingTimeMs);
+        
+        if (processingTimeMs > 10) { // Log slow processing
+            logger.warn("Slow rate limit processing detected: key={}, processing_time_ms={}", 
+                    key, processingTimeMs);
+        }
+    }
+
+    private double calculateDeniedRatio() {
+        long total = totalAllowedRequests.get() + totalDeniedRequests.get();
+        return total > 0 ? (double) totalDeniedRequests.get() / total * 100 : 0.0;
     }
 
     public void setRedisConnected(boolean connected) {
