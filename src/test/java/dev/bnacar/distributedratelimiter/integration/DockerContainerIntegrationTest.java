@@ -75,7 +75,8 @@ class DockerContainerIntegrationTest {
         // Test Redis connectivity by making a rate limit request
         Map<String, Object> request = Map.of(
                 "key", "test-key",
-                "tokens", 1
+                "tokens", 1,
+                "apiKey", "api-key-1"
         );
 
         ResponseEntity<Map> response = restTemplate.postForEntity(
