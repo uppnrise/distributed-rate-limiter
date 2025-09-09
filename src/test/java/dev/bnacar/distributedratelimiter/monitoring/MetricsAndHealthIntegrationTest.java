@@ -67,7 +67,7 @@ public class MetricsAndHealthIntegrationTest {
         headers.setContentType(MediaType.APPLICATION_JSON);
         
         // First request should be allowed
-        RateLimitRequest allowedRequest = new RateLimitRequest(key, 5);
+        RateLimitRequest allowedRequest = new RateLimitRequest(key, 5, "api-key-1");
         HttpEntity<RateLimitRequest> allowedEntity = new HttpEntity<>(allowedRequest, headers);
         
         ResponseEntity<String> allowedResponse = restTemplate.postForEntity(
@@ -78,7 +78,7 @@ public class MetricsAndHealthIntegrationTest {
         
         // Make requests that will eventually be denied
         for (int i = 0; i < 3; i++) {
-            RateLimitRequest request = new RateLimitRequest(key, 5);
+            RateLimitRequest request = new RateLimitRequest(key, 5, "api-key-1");
             HttpEntity<RateLimitRequest> entity = new HttpEntity<>(request, headers);
             restTemplate.postForEntity(
                     "http://localhost:" + port + "/api/ratelimit/check", entity, String.class);
@@ -95,9 +95,11 @@ public class MetricsAndHealthIntegrationTest {
         // Should have more total requests than baseline
         assertTrue(metrics.getTotalAllowedRequests() > baselineAllowed);
         
-        // Should have metrics for our test key
-        assertTrue(metrics.getKeyMetrics().containsKey(key));
-        MetricsResponse.KeyMetrics keyMetrics = metrics.getKeyMetrics().get(key);
+        // Should have metrics for our test key (transformed to IP-based key)
+        String expectedIpBasedKey = "ip:127.0.0.1:" + key;
+        assertTrue(metrics.getKeyMetrics().containsKey(expectedIpBasedKey), 
+                "Expected key: " + expectedIpBasedKey + ", available keys: " + metrics.getKeyMetrics().keySet());
+        MetricsResponse.KeyMetrics keyMetrics = metrics.getKeyMetrics().get(expectedIpBasedKey);
         assertTrue(keyMetrics.getAllowedRequests() > 0);
         assertTrue(keyMetrics.getLastAccessTime() > 0);
     }

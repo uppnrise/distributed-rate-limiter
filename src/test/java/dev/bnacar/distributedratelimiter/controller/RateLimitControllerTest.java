@@ -5,6 +5,7 @@ import dev.bnacar.distributedratelimiter.models.RateLimitRequest;
 import dev.bnacar.distributedratelimiter.security.ApiKeyService;
 import dev.bnacar.distributedratelimiter.security.IpAddressExtractor;
 import dev.bnacar.distributedratelimiter.security.IpSecurityService;
+import dev.bnacar.distributedratelimiter.config.SecurityConfiguration;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -18,6 +19,7 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import org.junit.jupiter.api.BeforeEach;
 
 @WebMvcTest(controllers = RateLimitController.class)
 public class RateLimitControllerTest {
@@ -39,6 +41,18 @@ public class RateLimitControllerTest {
 
     @MockBean
     private IpAddressExtractor ipAddressExtractor;
+
+    @MockBean
+    private SecurityConfiguration securityConfiguration;
+
+    @BeforeEach
+    public void setUp() {
+        // Mock SecurityConfiguration to avoid NullPointerExceptions
+        SecurityConfiguration.Headers headers = new SecurityConfiguration.Headers();
+        headers.setEnabled(true);
+        when(securityConfiguration.getHeaders()).thenReturn(headers);
+        when(securityConfiguration.getMaxRequestSize()).thenReturn("1MB");
+    }
 
     @Test
     public void testSuccessfulRateLimitCheck() throws Exception {

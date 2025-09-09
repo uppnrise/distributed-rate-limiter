@@ -4,7 +4,9 @@ import dev.bnacar.distributedratelimiter.models.DefaultConfigRequest;
 import dev.bnacar.distributedratelimiter.ratelimit.ConfigurationResolver;
 import dev.bnacar.distributedratelimiter.ratelimit.RateLimiterConfiguration;
 import dev.bnacar.distributedratelimiter.ratelimit.RateLimiterService;
+import dev.bnacar.distributedratelimiter.config.SecurityConfiguration;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -12,6 +14,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
+import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -35,6 +38,18 @@ public class RateLimitConfigControllerTest {
 
     @MockBean
     private RateLimiterService rateLimiterService;
+
+    @MockBean
+    private SecurityConfiguration securityConfiguration;
+
+    @BeforeEach
+    void setUp() {
+        // Mock SecurityConfiguration to avoid NullPointerExceptions
+        SecurityConfiguration.Headers headers = new SecurityConfiguration.Headers();
+        headers.setEnabled(true);
+        when(securityConfiguration.getHeaders()).thenReturn(headers);
+        when(securityConfiguration.getMaxRequestSize()).thenReturn("1MB");
+    }
 
     @Test
     void test_shouldUpdateKeyConfiguration() throws Exception {
