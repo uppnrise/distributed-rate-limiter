@@ -1,6 +1,9 @@
 package dev.bnacar.distributedratelimiter.ratelimit;
 
 import dev.bnacar.distributedratelimiter.monitoring.MetricsService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -12,6 +15,8 @@ import java.util.concurrent.TimeUnit;
 
 @Service
 public class RateLimiterService {
+
+    private static final Logger logger = LoggerFactory.getLogger(RateLimiterService.class);
 
     private final ConfigurationResolver configurationResolver;
     private final long cleanupIntervalMs;
@@ -93,17 +98,53 @@ public class RateLimiterService {
 
     public boolean isAllowed(String key, int tokens) {
         if (tokens <= 0) {
+            logger.warn("Invalid token request: key={}, tokens={}", key, tokens);
             return false;
         }
 
+        long startTime = System.currentTimeMillis();
         BucketHolder holder = buckets.computeIfAbsent(key, k -> {
             RateLimitConfig config = configurationResolver.resolveConfig(k);
             RateLimiter rateLimiter = createRateLimiter(config);
+            logger.debug("Created new bucket for key={}, capacity={}, refillRate={}, algorithm={}", 
+                    k, config.getCapacity(), config.getRefillRate(), config.getAlgorithm());
+            
+            // Record bucket creation metric
+            if (metricsService != null) {
+                metricsService.recordBucketCreation(k);
+            }
+            
             return new BucketHolder(rateLimiter, config);
         });
         
         holder.updateAccessTime();
         boolean allowed = holder.tryConsume(tokens);
+        long processingTime = System.currentTimeMillis() - startTime;
+        
+        // Structured logging for rate limit events
+        if (allowed) {
+            logger.debug("Rate limit ALLOWED: key={}, tokens_requested={}, remaining_tokens={}, processing_time_ms={}", 
+                    key, tokens, getCurrentTokens(holder), processingTime);
+        } else {
+            logger.warn("Rate limit VIOLATED: key={}, tokens_requested={}, available_tokens={}, capacity={}, refill_rate={}, processing_time_ms={}", 
+                    key, tokens, getCurrentTokens(holder), holder.config.getCapacity(), 
+                    holder.config.getRefillRate(), processingTime);
+            
+            // Add rate limit violation context to MDC
+            MDC.put("rate_limit_violation", "true");
+            MDC.put("rate_limit_key", key);
+            MDC.put("rate_limit_tokens_requested", String.valueOf(tokens));
+            MDC.put("rate_limit_available_tokens", String.valueOf(getCurrentTokens(holder)));
+            try {
+                logger.info("Rate limit violation details captured for analysis");
+            } finally {
+                // Clear rate limit specific MDC entries
+                MDC.remove("rate_limit_violation");
+                MDC.remove("rate_limit_key");
+                MDC.remove("rate_limit_tokens_requested");
+                MDC.remove("rate_limit_available_tokens");
+            }
+        }
         
         // Record metrics if available
         if (metricsService != null) {
@@ -112,6 +153,7 @@ public class RateLimiterService {
             } else {
                 metricsService.recordDeniedRequest(key);
             }
+            metricsService.recordProcessingTime(key, processingTime);
         }
         
         return allowed;
@@ -131,6 +173,17 @@ public class RateLimiterService {
         }
     }
 
+    /**
+     * Get current token count for logging purposes.
+     */
+    private int getCurrentTokens(BucketHolder holder) {
+        if (holder.rateLimiter instanceof TokenBucket) {
+            return ((TokenBucket) holder.rateLimiter).getCurrentTokens();
+        }
+        // For other algorithms, return -1 to indicate unavailable
+        return -1;
+    }
+
     private void startCleanupTask() {
         cleanupExecutor.scheduleWithFixedDelay(
             this::cleanupExpiredBuckets,
@@ -142,12 +195,34 @@ public class RateLimiterService {
 
     private void cleanupExpiredBuckets() {
         long currentTime = System.currentTimeMillis();
+        int initialCount = buckets.size();
+        
         buckets.entrySet().removeIf(entry -> {
             BucketHolder holder = entry.getValue();
             // Use the cleanup interval from the bucket's configuration
             long bucketCleanupInterval = holder.config.getCleanupIntervalMs();
-            return (currentTime - holder.lastAccessTime) > bucketCleanupInterval;
+            boolean shouldRemove = (currentTime - holder.lastAccessTime) > bucketCleanupInterval;
+            
+            if (shouldRemove) {
+                logger.debug("Cleaning up expired bucket: key={}, last_access={}ms_ago", 
+                        entry.getKey(), currentTime - holder.lastAccessTime);
+            }
+            
+            return shouldRemove;
         });
+        
+        int finalCount = buckets.size();
+        int cleanedCount = initialCount - finalCount;
+        
+        if (cleanedCount > 0) {
+            logger.info("Bucket cleanup completed: removed={}, remaining={}", 
+                    cleanedCount, finalCount);
+            
+            // Record cleanup metrics
+            if (metricsService != null) {
+                metricsService.recordBucketCleanup(cleanedCount);
+            }
+        }
     }
 
     // Public method for monitoring bucket count
