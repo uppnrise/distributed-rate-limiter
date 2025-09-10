@@ -18,9 +18,9 @@ class BasicLoadTest extends Simulation {
     .userAgentHeader("GatlingLoadTest/1.0")
 
   // Test scenarios configuration
-  val loadTestDuration = Integer.getInteger("load.test.duration", 30).seconds
-  val maxUsers = Integer.getInteger("load.test.maxUsers", 50)
-  val rampUpDuration = Integer.getInteger("load.test.rampUp", 10).seconds
+  val loadTestDuration = Integer.getInteger("load.test.duration", 30).intValue.seconds
+  val maxUsers = Integer.getInteger("load.test.maxUsers", 50).intValue
+  val rampUpDuration = Integer.getInteger("load.test.rampUp", 10).intValue.seconds
 
   // Health check scenario
   val healthCheckScenario = scenario("Health Check")
@@ -59,7 +59,7 @@ class BasicLoadTest extends Simulation {
       .check(jsonPath("$.names").exists))
 
   // Performance thresholds for assertions
-  val responseTimeThreshold = Integer.getInteger("load.test.responseTime.threshold", 500)
+  val responseTimeThreshold = Integer.getInteger("load.test.responseTime.threshold", 500).intValue
   val successRateThreshold = java.lang.Double.parseDouble(System.getProperty("load.test.successRate.threshold", "95.0"))
 
   // Load test setup
