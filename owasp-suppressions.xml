@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<suppressions xmlns="https://jeremylong.github.io/DependencyCheck/dependency-suppression.1.3.xsd">
+    <!-- 
+    This file contains suppression rules for OWASP Dependency Check.
+    Add suppressions here for false positives or accepted risks.
+    -->
+    
+    <!-- Example suppression for test dependencies -->
+    <!--
+    <suppress>
+        <notes><![CDATA[
+        Test dependency - not used in production
+        ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.testcontainers/.*$</packageUrl>
+        <cve>CVE-2023-XXXXX</cve>
+    </suppress>
+    -->
+</suppressions>
