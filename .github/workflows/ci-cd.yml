@@ -54,9 +54,9 @@ jobs:
       
     - name: Check coverage threshold
       run: ./mvnw jacoco:check
-      
-    - name: Upload coverage reports
-      uses: codecov/codecov-action@v4
+
+    - name: Upload coverage results to Codecov
+      uses: codecov/codecov-action@v5
       with:
         file: ./target/site/jacoco/jacoco.xml
         fail_ci_if_error: true
