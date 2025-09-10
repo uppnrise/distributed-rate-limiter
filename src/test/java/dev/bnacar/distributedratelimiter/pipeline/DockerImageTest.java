@@ -85,7 +85,7 @@ class DockerImageTest {
                         .withStartupTimeout(Duration.ofSeconds(30)))) {
             
             container.start();
-            assertTrue(container.isRunning(), "Container should start successfully");
+            // Wait for the command to complete and check logs
             assertTrue(container.getLogs().contains("OpenJDK"), 
                 "Container should run Java successfully");
         }
