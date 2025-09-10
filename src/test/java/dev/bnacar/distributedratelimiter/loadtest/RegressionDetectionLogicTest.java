@@ -51,7 +51,8 @@ class RegressionDetectionLogicTest {
         assertFalse(result.isHasRegression());
         assertEquals(PerformanceRegressionResult.RegressionSeverity.NONE, result.getRegressionSeverity());
         assertNotNull(result.getRegressionDetails());
-        assertTrue(result.getRegressionDetails().contains("No historical data available"));
+        assertTrue(result.getRegressionDetails().stream()
+            .anyMatch(detail -> detail.contains("No historical data available")));
     }
 
     @Test
