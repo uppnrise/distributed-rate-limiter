@@ -18,10 +18,10 @@ class StressTest extends Simulation {
     .maxConnectionsPerHost(100)
 
   // Stress test configuration
-  val stressTestDuration = Integer.getInteger("stress.test.duration", 60).seconds
-  val maxUsers = Integer.getInteger("stress.test.maxUsers", 200)
-  val rampUpDuration = Integer.getInteger("stress.test.rampUp", 20).seconds
-  val plateauDuration = Integer.getInteger("stress.test.plateau", 30).seconds
+  val stressTestDuration = Integer.getInteger("stress.test.duration", 60).intValue.seconds
+  val maxUsers = Integer.getInteger("stress.test.maxUsers", 200).intValue
+  val rampUpDuration = Integer.getInteger("stress.test.rampUp", 20).intValue.seconds
+  val plateauDuration = Integer.getInteger("stress.test.plateau", 30).intValue.seconds
 
   // High-frequency rate limit scenario
   val highFrequencyScenario = scenario("High Frequency Rate Limiting")
