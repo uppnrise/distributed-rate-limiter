@@ -28,11 +28,11 @@ public class SecurityConfiguration {
         }
 
         public List<String> getValidKeys() {
-            return validKeys;
+            return validKeys != null ? new ArrayList<>(validKeys) : new ArrayList<>();
         }
 
         public void setValidKeys(List<String> validKeys) {
-            this.validKeys = validKeys;
+            this.validKeys = validKeys != null ? new ArrayList<>(validKeys) : new ArrayList<>();
         }
     }
 
@@ -41,19 +41,19 @@ public class SecurityConfiguration {
         private List<String> blacklist = new ArrayList<>();
 
         public List<String> getWhitelist() {
-            return whitelist;
+            return whitelist != null ? new ArrayList<>(whitelist) : new ArrayList<>();
         }
 
         public void setWhitelist(List<String> whitelist) {
-            this.whitelist = whitelist;
+            this.whitelist = whitelist != null ? new ArrayList<>(whitelist) : new ArrayList<>();
         }
 
         public List<String> getBlacklist() {
-            return blacklist;
+            return blacklist != null ? new ArrayList<>(blacklist) : new ArrayList<>();
         }
 
         public void setBlacklist(List<String> blacklist) {
-            this.blacklist = blacklist;
+            this.blacklist = blacklist != null ? new ArrayList<>(blacklist) : new ArrayList<>();
         }
     }
 

@@ -3,6 +3,8 @@ package dev.bnacar.distributedratelimiter.ratelimit;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.dao.DataAccessException;
 
+import java.util.Set;
+
 /**
  * Redis-based distributed rate limiter backend.
  * Uses Redis for shared state across multiple application instances.
@@ -45,7 +47,10 @@ public class RedisRateLimiterBackend implements RateLimiterBackend {
     public void clear() {
         try {
             // Delete all keys with our prefix
-            redisTemplate.delete(redisTemplate.keys(keyPrefix + "*"));
+            Set<String> keys = redisTemplate.keys(keyPrefix + "*");
+            if (keys != null && !keys.isEmpty()) {
+                redisTemplate.delete(keys);
+            }
         } catch (Exception e) {
             // Ignore errors during cleanup
         }
@@ -54,7 +59,8 @@ public class RedisRateLimiterBackend implements RateLimiterBackend {
     @Override
     public int getActiveCount() {
         try {
-            return redisTemplate.keys(keyPrefix + "*").size();
+            Set<String> keys = redisTemplate.keys(keyPrefix + "*");
+            return keys != null ? keys.size() : 0;
         } catch (Exception e) {
             return 0;
         }
