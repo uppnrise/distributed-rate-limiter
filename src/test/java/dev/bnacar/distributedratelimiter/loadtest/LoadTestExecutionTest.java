@@ -122,7 +122,7 @@ class LoadTestExecutionTest {
         // Test that load tests target the correct endpoints
         String[] requiredEndpoints = {
             "/actuator/health",
-            "/api/rate-limit/check",
+            "/api/ratelimit/check",
             "/api/benchmark/run",
             "/actuator/metrics"
         };
