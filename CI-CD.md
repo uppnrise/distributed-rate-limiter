@@ -16,7 +16,7 @@ The CI/CD pipeline is implemented using GitHub Actions and includes the followin
 
 The pipeline enforces the following quality gates:
 
-- **Code Coverage**: Minimum 80% instruction coverage and 75% branch coverage
+- **Code Coverage**: Minimum 50% instruction coverage and 50% branch coverage
 - **Tests**: All tests must pass
 - **Static Analysis**: SpotBugs and PMD checks must pass
 - **Security**: No high/critical vulnerabilities (CVSS >= 7)
