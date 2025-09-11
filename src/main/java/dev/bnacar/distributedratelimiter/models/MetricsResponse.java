@@ -1,5 +1,7 @@
 package dev.bnacar.distributedratelimiter.models;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.Map;
 
 public class MetricsResponse {
@@ -8,8 +10,11 @@ public class MetricsResponse {
     private final long totalAllowedRequests;
     private final long totalDeniedRequests;
 
-    public MetricsResponse(Map<String, KeyMetrics> keyMetrics, boolean redisConnected, 
-                          long totalAllowedRequests, long totalDeniedRequests) {
+    @JsonCreator
+    public MetricsResponse(@JsonProperty("keyMetrics") Map<String, KeyMetrics> keyMetrics, 
+                          @JsonProperty("redisConnected") boolean redisConnected, 
+                          @JsonProperty("totalAllowedRequests") long totalAllowedRequests, 
+                          @JsonProperty("totalDeniedRequests") long totalDeniedRequests) {
         this.keyMetrics = keyMetrics;
         this.redisConnected = redisConnected;
         this.totalAllowedRequests = totalAllowedRequests;
@@ -37,7 +42,10 @@ public class MetricsResponse {
         private final long deniedRequests;
         private final long lastAccessTime;
 
-        public KeyMetrics(long allowedRequests, long deniedRequests, long lastAccessTime) {
+        @JsonCreator
+        public KeyMetrics(@JsonProperty("allowedRequests") long allowedRequests, 
+                         @JsonProperty("deniedRequests") long deniedRequests, 
+                         @JsonProperty("lastAccessTime") long lastAccessTime) {
             this.allowedRequests = allowedRequests;
             this.deniedRequests = deniedRequests;
             this.lastAccessTime = lastAccessTime;

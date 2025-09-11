@@ -73,10 +73,34 @@
             <artifactId>junit-jupiter</artifactId>
             <scope>test</scope>
         </dependency>
+        
+        <!-- Scala Library for Gatling -->
+        <dependency>
+            <groupId>org.scala-lang</groupId>
+            <artifactId>scala-library</artifactId>
+            <version>2.13.12</version>
+            <scope>test</scope>
+        </dependency>
+        
+        <!-- Gatling Load Testing -->
+        <dependency>
+            <groupId>io.gatling.highcharts</groupId>
+            <artifactId>gatling-charts-highcharts</artifactId>
+            <version>3.12.0</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <build>
         <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.13.0</version>
+                <configuration>
+                    <parameters>true</parameters>
+                </configuration>
+            </plugin>
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
@@ -180,7 +204,43 @@
                     <suppressionFiles>
                         <suppressionFile>owasp-suppressions.xml</suppressionFile>
                     </suppressionFiles>
+                    <!-- NVD API Key configuration - set via environment variable -->
+                    <!-- Get your free API key from: https://nvd.nist.gov/developers/request-an-api-key -->
+                    <nvdApiKey>${env.NVD_API_KEY}</nvdApiKey>
                 </configuration>
+            </plugin>
+
+            <!-- Scala Maven Plugin for Gatling Tests -->
+            <plugin>
+                <groupId>net.alchim31.maven</groupId>
+                <artifactId>scala-maven-plugin</artifactId>
+                <version>4.8.1</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>compile</goal>
+                            <goal>testCompile</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <scalaVersion>2.13.12</scalaVersion>
+                </configuration>
+            </plugin>
+
+            <!-- Gatling Load Testing - Disabled for CI/CD, run manually with: mvn gatling:test -->
+            <plugin>
+                <groupId>io.gatling</groupId>
+                <artifactId>gatling-maven-plugin</artifactId>
+                <version>4.10.0</version>
+                <configuration>
+                    <simulationClass>dev.bnacar.distributedratelimiter.loadtest.BasicLoadTest</simulationClass>
+                    <jvmArgs>
+                        <jvmArg>-Xmx1G</jvmArg>
+                        <jvmArg>-Xms512M</jvmArg>
+                    </jvmArgs>
+                </configuration>
+                <!-- executions removed to prevent automatic execution during CI/CD -->
             </plugin>
         </plugins>
     </build>
