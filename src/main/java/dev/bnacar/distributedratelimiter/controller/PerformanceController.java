@@ -89,7 +89,7 @@ public class PerformanceController {
      */
     @GetMapping("/baseline/{testName}")
     public ResponseEntity<List<PerformanceBaseline>> getBaselines(
-            @PathVariable String testName,
+            @PathVariable("testName") String testName,
             @RequestParam(defaultValue = "10") int limit) {
         try {
             List<PerformanceBaseline> baselines = regressionService.getPerformanceTrend(testName, limit);
@@ -104,7 +104,7 @@ public class PerformanceController {
      */
     @GetMapping("/trend/{testName}")
     public ResponseEntity<List<PerformanceBaseline>> getPerformanceTrend(
-            @PathVariable String testName,
+            @PathVariable("testName") String testName,
             @RequestParam(defaultValue = "20") int limit) {
         try {
             List<PerformanceBaseline> trend = regressionService.getPerformanceTrend(testName, limit);
