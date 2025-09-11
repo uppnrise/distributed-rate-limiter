@@ -41,7 +41,7 @@ public class AdminController {
      * Get current limits for a specific key.
      */
     @GetMapping("/limits/{key}")
-    public ResponseEntity<AdminLimitResponse> getKeyLimits(@PathVariable String key) {
+    public ResponseEntity<AdminLimitResponse> getKeyLimits(@PathVariable("key") String key) {
         RateLimitConfig config = rateLimiterService.getKeyConfiguration(key);
         if (config == null) {
             return ResponseEntity.notFound().build();
@@ -62,7 +62,7 @@ public class AdminController {
      * Update limits for a specific key.
      */
     @PutMapping("/limits/{key}")
-    public ResponseEntity<AdminLimitResponse> updateKeyLimits(@PathVariable String key,
+    public ResponseEntity<AdminLimitResponse> updateKeyLimits(@PathVariable("key") String key,
                                                              @Valid @RequestBody AdminLimitRequest request) {
         // Create new key configuration
         RateLimiterConfiguration.KeyConfig keyConfig = new RateLimiterConfiguration.KeyConfig();
@@ -95,7 +95,7 @@ public class AdminController {
      * Remove limits for a specific key.
      */
     @DeleteMapping("/limits/{key}")
-    public ResponseEntity<String> removeKeyLimits(@PathVariable String key) {
+    public ResponseEntity<String> removeKeyLimits(@PathVariable("key") String key) {
         // Remove from configuration
         boolean configRemoved = configuration.getKeys().remove(key) != null;
         
