@@ -31,8 +31,8 @@ class BasicLoadTest extends Simulation {
   // Rate limit check scenario
   val rateLimitScenario = scenario("Rate Limit Test")
     .exec(http("rate-limit-check")
-      .post("/api/rate-limit/check")
-      .body(StringBody("""{"key": "load-test-${__UUID()}", "tokensRequested": 1}""")).asJson
+      .post("/api/ratelimit/check")
+      .body(StringBody("""{"key": "load-test-${__gatlingUserId()}-${__counter()}", "tokens": 1}""")).asJson
       .check(status.in(200, 429))
       .check(jsonPath("$.allowed").exists))
 

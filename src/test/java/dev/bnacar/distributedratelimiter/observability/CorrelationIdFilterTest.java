@@ -92,7 +92,7 @@ class CorrelationIdFilterTest {
     void shouldLogRequestStartAndCompletion() throws ServletException, IOException {
         // Given
         request.setMethod("GET");
-        request.setRequestURI("/api/rate-limit");
+        request.setRequestURI("/api/ratelimit");
 
         // When
         correlationIdFilter.doFilterInternal(request, response, filterChain);
@@ -105,7 +105,7 @@ class CorrelationIdFilterTest {
         assertThat(startEvent.getLevel()).isEqualTo(Level.DEBUG);
         assertThat(startEvent.getFormattedMessage()).contains("Request started with correlation_id");
         assertThat(startEvent.getFormattedMessage()).contains("method=GET");
-        assertThat(startEvent.getFormattedMessage()).contains("uri=/api/rate-limit");
+        assertThat(startEvent.getFormattedMessage()).contains("uri=/api/ratelimit");
 
         ILoggingEvent endEvent = logEvents.get(1);
         assertThat(endEvent.getLevel()).isEqualTo(Level.DEBUG);

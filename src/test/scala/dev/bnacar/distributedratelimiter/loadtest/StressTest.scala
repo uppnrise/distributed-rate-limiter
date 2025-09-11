@@ -27,7 +27,7 @@ class StressTest extends Simulation {
   val highFrequencyScenario = scenario("High Frequency Rate Limiting")
     .during(stressTestDuration) {
       exec(http("high-freq-rate-limit")
-        .post("/api/rate-limit/check")
+        .post("/api/ratelimit/check")
         .body(StringBody("""{"key": "stress-test-${__threadNum()}", "tokensRequested": 1}""")).asJson
         .check(status.in(200, 429)))
         .pause(10.milliseconds, 50.milliseconds)
@@ -38,7 +38,7 @@ class StressTest extends Simulation {
     .during(stressTestDuration) {
       repeat(5) {
         exec(http("burst-request")
-          .post("/api/rate-limit/check")
+          .post("/api/ratelimit/check")
           .body(StringBody("""{"key": "burst-${__UUID()}", "tokensRequested": 5}""")).asJson
           .check(status.in(200, 429)))
       }
@@ -67,7 +67,7 @@ class StressTest extends Simulation {
     .during(stressTestDuration) {
       randomSwitch(
         40.0 -> exec(http("mixed-rate-limit")
-          .post("/api/rate-limit/check")
+          .post("/api/ratelimit/check")
           .body(StringBody("""{"key": "mixed-${__UUID()}", "tokensRequested": 1}""")).asJson
           .check(status.in(200, 429))),
         
@@ -80,7 +80,7 @@ class StressTest extends Simulation {
           .check(status.is(200))),
         
         10.0 -> exec(http("mixed-config")
-          .get("/api/rate-limit/config")
+          .get("/api/ratelimit/config")
           .check(status.is(200)))
       ).pause(50.milliseconds, 200.milliseconds)
     }
@@ -89,7 +89,7 @@ class StressTest extends Simulation {
   val resourceExhaustionScenario = scenario("Resource Exhaustion")
     .during(stressTestDuration) {
       exec(http("resource-test")
-        .post("/api/rate-limit/check")
+        .post("/api/ratelimit/check")
         .body(StringBody("""{"key": "resource-${__UUID()}", "tokensRequested": 10}""")).asJson
         .check(status.in(200, 429, 503)))
         .pause(1.millisecond, 10.milliseconds)
