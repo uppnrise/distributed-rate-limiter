@@ -94,6 +94,14 @@
     <build>
         <plugins>
             <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.13.0</version>
+                <configuration>
+                    <parameters>true</parameters>
+                </configuration>
+            </plugin>
+            <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
             </plugin>
@@ -217,7 +225,7 @@
                 </configuration>
             </plugin>
 
-            <!-- Gatling Load Testing -->
+            <!-- Gatling Load Testing - Disabled for CI/CD, run manually with: mvn gatling:test -->
             <plugin>
                 <groupId>io.gatling</groupId>
                 <artifactId>gatling-maven-plugin</artifactId>
@@ -229,15 +237,7 @@
                         <jvmArg>-Xms512M</jvmArg>
                     </jvmArgs>
                 </configuration>
-                <executions>
-                    <execution>
-                        <id>load-test</id>
-                        <goals>
-                            <goal>test</goal>
-                        </goals>
-                        <phase>integration-test</phase>
-                    </execution>
-                </executions>
+                <!-- executions removed to prevent automatic execution during CI/CD -->
             </plugin>
         </plugins>
     </build>
