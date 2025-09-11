@@ -204,6 +204,9 @@
                     <suppressionFiles>
                         <suppressionFile>owasp-suppressions.xml</suppressionFile>
                     </suppressionFiles>
+                    <!-- NVD API Key configuration - set via environment variable -->
+                    <!-- Get your free API key from: https://nvd.nist.gov/developers/request-an-api-key -->
+                    <nvdApiKey>${env.NVD_API_KEY}</nvdApiKey>
                 </configuration>
             </plugin>
 
