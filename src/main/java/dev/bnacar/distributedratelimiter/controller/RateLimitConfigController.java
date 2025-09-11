@@ -51,7 +51,7 @@ public class RateLimitConfigController {
      * Update per-key configuration.
      */
     @PostMapping("/keys/{key}")
-    public ResponseEntity<String> updateKeyConfiguration(@PathVariable String key,
+    public ResponseEntity<String> updateKeyConfiguration(@PathVariable("key") String key,
                                                         @RequestBody RateLimiterConfiguration.KeyConfig keyConfig) {
         configuration.getKeys().put(key, keyConfig);
         reloadConfiguration();
@@ -62,7 +62,7 @@ public class RateLimitConfigController {
      * Update pattern configuration.
      */
     @PostMapping("/patterns/{pattern}")
-    public ResponseEntity<String> updatePatternConfiguration(@PathVariable String pattern,
+    public ResponseEntity<String> updatePatternConfiguration(@PathVariable("pattern") String pattern,
                                                             @RequestBody RateLimiterConfiguration.KeyConfig keyConfig) {
         configuration.getPatterns().put(pattern, keyConfig);
         reloadConfiguration();
@@ -91,7 +91,7 @@ public class RateLimitConfigController {
      * Remove per-key configuration.
      */
     @DeleteMapping("/keys/{key}")
-    public ResponseEntity<String> removeKeyConfiguration(@PathVariable String key) {
+    public ResponseEntity<String> removeKeyConfiguration(@PathVariable("key") String key) {
         configuration.getKeys().remove(key);
         reloadConfiguration();
         return ResponseEntity.ok("Configuration removed for key: " + key);
@@ -101,7 +101,7 @@ public class RateLimitConfigController {
      * Remove pattern configuration.
      */
     @DeleteMapping("/patterns/{pattern}")
-    public ResponseEntity<String> removePatternConfiguration(@PathVariable String pattern) {
+    public ResponseEntity<String> removePatternConfiguration(@PathVariable("pattern") String pattern) {
         configuration.getPatterns().remove(pattern);
         reloadConfiguration();
         return ResponseEntity.ok("Configuration removed for pattern: " + pattern);
