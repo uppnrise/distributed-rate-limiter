@@ -139,6 +139,8 @@ jobs:
       run: ./mvnw clean package -DskipTests
       
     - name: Run dependency vulnerability scan
+      env:
+        NVD_API_KEY: ${{ secrets.NVD_API_KEY }}
       run: ./mvnw org.owasp:dependency-check-maven:check
       
     - name: Upload security scan results
