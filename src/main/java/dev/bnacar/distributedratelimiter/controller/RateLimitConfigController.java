@@ -6,6 +6,14 @@ import dev.bnacar.distributedratelimiter.models.DefaultConfigRequest;
 import dev.bnacar.distributedratelimiter.ratelimit.ConfigurationResolver;
 import dev.bnacar.distributedratelimiter.ratelimit.RateLimiterConfiguration;
 import dev.bnacar.distributedratelimiter.ratelimit.RateLimiterService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ExampleObject;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -17,6 +25,7 @@ import java.util.Map;
  */
 @RestController
 @RequestMapping("/api/ratelimit/config")
+@Tag(name = "Rate Limit Configuration", description = "Configuration management for rate limiter settings")
 public class RateLimitConfigController {
 
     private final RateLimiterConfiguration configuration;
@@ -36,6 +45,12 @@ public class RateLimitConfigController {
      * Get the current configuration.
      */
     @GetMapping
+    @Operation(summary = "Get current rate limiter configuration",
+               description = "Retrieves the current configuration including default settings, per-key configurations, and patterns")
+    @ApiResponse(responseCode = "200", 
+                description = "Current configuration retrieved successfully",
+                content = @Content(mediaType = "application/json",
+                                 schema = @Schema(implementation = ConfigurationResponse.class)))
     public ResponseEntity<ConfigurationResponse> getConfiguration() {
         ConfigurationResponse response = new ConfigurationResponse(
             configuration.getCapacity(),
