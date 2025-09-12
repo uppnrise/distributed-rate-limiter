@@ -1,0 +1,25 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: rate-limiter-dev
+  labels:
+    app.kubernetes.io/name: distributed-rate-limiter
+    app.kubernetes.io/component: namespace
+    environment: development
+  annotations:
+    description: "Development namespace for distributed rate limiter service"
+---
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: dev-rate-limiter-quota
+  namespace: rate-limiter-dev
+spec:
+  hard:
+    requests.cpu: "2"
+    requests.memory: 4Gi
+    limits.cpu: "4"
+    limits.memory: 8Gi
+    persistentvolumeclaims: "1"
+    pods: "5"
+    services: "3"
