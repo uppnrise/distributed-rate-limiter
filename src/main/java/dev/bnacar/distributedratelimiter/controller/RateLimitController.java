@@ -6,6 +6,14 @@ import dev.bnacar.distributedratelimiter.ratelimit.RateLimiterService;
 import dev.bnacar.distributedratelimiter.security.ApiKeyService;
 import dev.bnacar.distributedratelimiter.security.IpAddressExtractor;
 import dev.bnacar.distributedratelimiter.security.IpSecurityService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ExampleObject;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -16,6 +24,7 @@ import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api/ratelimit")
+@Tag(name = "Rate Limit", description = "Rate limiting operations for token bucket algorithm")
 public class RateLimitController {
 
     private final RateLimiterService rateLimiterService;
@@ -35,8 +44,34 @@ public class RateLimitController {
     }
 
     @PostMapping("/check")
-    public ResponseEntity<RateLimitResponse> checkRateLimit(@Valid @RequestBody RateLimitRequest request,
-                                                           HttpServletRequest httpRequest) {
+    @Operation(summary = "Check rate limit for a key",
+               description = "Checks if a request is allowed based on the configured rate limits for the given key")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", 
+                    description = "Request allowed",
+                    content = @Content(mediaType = "application/json",
+                                     schema = @Schema(implementation = RateLimitResponse.class),
+                                     examples = @ExampleObject(value = "{\"key\":\"user:123\",\"tokensRequested\":1,\"allowed\":true}"))),
+        @ApiResponse(responseCode = "429", 
+                    description = "Rate limit exceeded",
+                    content = @Content(mediaType = "application/json",
+                                     schema = @Schema(implementation = RateLimitResponse.class),
+                                     examples = @ExampleObject(value = "{\"key\":\"user:123\",\"tokensRequested\":1,\"allowed\":false}"))),
+        @ApiResponse(responseCode = "401", 
+                    description = "Invalid API key",
+                    content = @Content(mediaType = "application/json",
+                                     schema = @Schema(implementation = RateLimitResponse.class))),
+        @ApiResponse(responseCode = "403", 
+                    description = "IP address not allowed",
+                    content = @Content(mediaType = "application/json",
+                                     schema = @Schema(implementation = RateLimitResponse.class)))
+    })
+    public ResponseEntity<RateLimitResponse> checkRateLimit(
+            @Parameter(description = "Rate limit request containing key, tokens, and optional API key",
+                      required = true,
+                      content = @Content(examples = @ExampleObject(value = "{\"key\":\"user:123\",\"tokens\":1,\"apiKey\":\"your-api-key\"}")))
+            @Valid @RequestBody RateLimitRequest request,
+            HttpServletRequest httpRequest) {
         
         // Extract client IP address
         String clientIp = ipAddressExtractor.getClientIpAddress(httpRequest);
