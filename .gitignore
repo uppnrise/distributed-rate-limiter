@@ -31,3 +31,14 @@ build/
 
 ### VS Code ###
 .vscode/
+
+### React Testing App ###
+react-testing-app/node_modules/
+react-testing-app/dist/
+react-testing-app/.env.local
+react-testing-app/.env.development.local
+react-testing-app/.env.test.local
+react-testing-app/.env.production.local
+react-testing-app/npm-debug.log*
+react-testing-app/yarn-debug.log*
+react-testing-app/yarn-error.log*
