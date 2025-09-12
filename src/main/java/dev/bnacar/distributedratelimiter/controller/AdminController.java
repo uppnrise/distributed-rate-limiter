@@ -72,7 +72,7 @@ public class AdminController {
         keyConfig.setAlgorithm(request.getAlgorithm() != null ? request.getAlgorithm() : dev.bnacar.distributedratelimiter.ratelimit.RateLimitAlgorithm.TOKEN_BUCKET);
 
         // Update configuration
-        configuration.getKeys().put(key, keyConfig);
+        configuration.putKey(key, keyConfig);
         
         // Clear existing bucket to apply new configuration
         rateLimiterService.removeKey(key);
@@ -97,7 +97,7 @@ public class AdminController {
     @DeleteMapping("/limits/{key}")
     public ResponseEntity<String> removeKeyLimits(@PathVariable("key") String key) {
         // Remove from configuration
-        boolean configRemoved = configuration.getKeys().remove(key) != null;
+        boolean configRemoved = configuration.removeKey(key) != null;
         
         // Remove active bucket
         boolean bucketRemoved = rateLimiterService.removeKey(key);

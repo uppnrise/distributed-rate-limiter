@@ -46,6 +46,21 @@ public class PerformanceBaseline {
     // Default constructor
     public PerformanceBaseline() {}
 
+    // Copy constructor for defensive copying
+    public PerformanceBaseline(PerformanceBaseline other) {
+        if (other != null) {
+            this.testName = other.testName;
+            this.averageResponseTime = other.averageResponseTime;
+            this.maxResponseTime = other.maxResponseTime;
+            this.throughputPerSecond = other.throughputPerSecond;
+            this.successRate = other.successRate;
+            this.timestamp = other.timestamp;
+            this.commitHash = other.commitHash;
+            this.buildNumber = other.buildNumber;
+            this.environment = other.environment;
+        }
+    }
+
     // Constructor for creating baseline from test results
     public PerformanceBaseline(String testName, Double averageResponseTime, Double maxResponseTime,
                              Double throughputPerSecond, Double successRate) {
