@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: rate-limiter
+  namespace: rate-limiter-dev
+spec:
+  replicas: 1
+  template:
+    spec:
+      containers:
+      - name: rate-limiter
+        env:
+        - name: SPRING_PROFILES_ACTIVE
+          value: "dev"
+        - name: JAVA_OPTS
+          value: "-Xmx512m -Xms256m -XX:+UseG1GC"
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "100m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+        livenessProbe:
+          initialDelaySeconds: 30
+          periodSeconds: 30
+        readinessProbe:
+          initialDelaySeconds: 15
+          periodSeconds: 10
+        startupProbe:
+          initialDelaySeconds: 15
+          periodSeconds: 5
+          failureThreshold: 20

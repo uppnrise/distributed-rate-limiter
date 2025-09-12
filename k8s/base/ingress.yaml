@@ -1,0 +1,92 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: rate-limiter-ingress
+  namespace: rate-limiter
+  labels:
+    app.kubernetes.io/name: distributed-rate-limiter
+    app.kubernetes.io/component: ingress
+  annotations:
+    # NGINX Ingress Controller annotations
+    nginx.ingress.kubernetes.io/rewrite-target: /
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/use-regex: "true"
+    nginx.ingress.kubernetes.io/proxy-body-size: "1m"
+    nginx.ingress.kubernetes.io/proxy-connect-timeout: "60"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "60"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "60"
+    
+    # Rate limiting at ingress level (complement to application-level)
+    nginx.ingress.kubernetes.io/rate-limit-burst: "50"
+    nginx.ingress.kubernetes.io/rate-limit-rpm: "1000"
+    nginx.ingress.kubernetes.io/rate-limit-connections: "10"
+    
+    # Security headers
+    nginx.ingress.kubernetes.io/configuration-snippet: |
+      more_set_headers "X-Frame-Options: DENY";
+      more_set_headers "X-Content-Type-Options: nosniff";
+      more_set_headers "X-XSS-Protection: 1; mode=block";
+      more_set_headers "Referrer-Policy: strict-origin-when-cross-origin";
+      more_set_headers "Content-Security-Policy: default-src 'self'";
+    
+    # Certificate management (uncomment if using cert-manager)
+    # cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    # cert-manager.io/acme-challenge-type: http01
+spec:
+  ingressClassName: nginx
+  tls:
+  - hosts:
+    - rate-limiter.example.com  # Replace with actual domain
+    secretName: rate-limiter-tls
+  rules:
+  - host: rate-limiter.example.com  # Replace with actual domain
+    http:
+      paths:
+      - path: /api
+        pathType: Prefix
+        backend:
+          service:
+            name: rate-limiter-service
+            port:
+              number: 80
+      - path: /actuator/health
+        pathType: Exact
+        backend:
+          service:
+            name: rate-limiter-service
+            port:
+              number: 80
+      - path: /actuator/prometheus
+        pathType: Exact
+        backend:
+          service:
+            name: rate-limiter-service
+            port:
+              number: 80
+---
+# Internal ingress for monitoring (no external access)
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: rate-limiter-monitoring
+  namespace: rate-limiter
+  labels:
+    app.kubernetes.io/name: distributed-rate-limiter
+    app.kubernetes.io/component: monitoring-ingress
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+    nginx.ingress.kubernetes.io/whitelist-source-range: "10.0.0.0/8,172.16.0.0/12,192.168.0.0/16"  # Internal IPs only
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: rate-limiter-internal.example.com  # Replace with internal domain
+    http:
+      paths:
+      - path: /actuator
+        pathType: Prefix
+        backend:
+          service:
+            name: rate-limiter-service
+            port:
+              number: 80

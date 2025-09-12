@@ -1,0 +1,84 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: rate-limiter-config
+  namespace: rate-limiter
+  labels:
+    app.kubernetes.io/name: distributed-rate-limiter
+    app.kubernetes.io/component: config
+data:
+  application.properties: |
+    # Spring Boot Configuration
+    spring.profiles.active=production
+    spring.application.name=distributed-rate-limiter
+    
+    # Server Configuration
+    server.port=8080
+    server.shutdown=graceful
+    server.tomcat.threads.max=200
+    server.tomcat.connection-timeout=20000
+    
+    # Redis Configuration
+    spring.redis.host=redis-service
+    spring.redis.port=6379
+    spring.redis.database=0
+    spring.redis.timeout=2000ms
+    spring.redis.connect-timeout=2000ms
+    
+    # Redis Connection Pool
+    spring.redis.lettuce.pool.enabled=true
+    spring.redis.lettuce.pool.max-active=20
+    spring.redis.lettuce.pool.max-idle=10
+    spring.redis.lettuce.pool.min-idle=5
+    spring.redis.lettuce.pool.max-wait=5000ms
+    spring.redis.lettuce.pool.time-between-eviction-runs=30s
+    
+    # Rate Limiter Configuration
+    ratelimiter.capacity=10
+    ratelimiter.refillRate=2
+    ratelimiter.cleanupIntervalMs=60000
+    
+    # Actuator Configuration
+    management.endpoints.web.exposure.include=health,metrics,prometheus,info
+    management.endpoint.health.show-details=when-authorized
+    management.endpoint.health.probes.enabled=true
+    management.health.redis.enabled=true
+    management.metrics.export.prometheus.enabled=true
+    
+    # Logging Configuration
+    logging.level.dev.bnacar.distributedratelimiter=INFO
+    logging.level.org.springframework.data.redis=WARN
+    logging.pattern.console=%d{HH:mm:ss.SSS} [%thread] %-5level [%X{traceId:-},%X{spanId:-}] %logger{36} - %msg%n
+    logging.pattern.file=%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level [%X{traceId:-},%X{spanId:-}] %logger{36} - %msg%n
+  
+  logback-spring.xml: |
+    <?xml version="1.0" encoding="UTF-8"?>
+    <configuration>
+        <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
+        
+        <springProfile name="!dev">
+            <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+                <encoder class="net.logstash.logback.encoder.LoggingEventCompositeJsonEncoder">
+                    <providers>
+                        <timestamp/>
+                        <logLevel/>
+                        <loggerName/>
+                        <message/>
+                        <mdc/>
+                        <stackTrace/>
+                    </providers>
+                </encoder>
+            </appender>
+            
+            <root level="INFO">
+                <appender-ref ref="CONSOLE"/>
+            </root>
+        </springProfile>
+        
+        <springProfile name="dev">
+            <include resource="org/springframework/boot/logging/logback/console-appender.xml"/>
+            <root level="INFO">
+                <appender-ref ref="CONSOLE"/>
+            </root>
+        </springProfile>
+    </configuration>
