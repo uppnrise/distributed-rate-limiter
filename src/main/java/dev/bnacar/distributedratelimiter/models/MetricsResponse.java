@@ -3,6 +3,7 @@ package dev.bnacar.distributedratelimiter.models;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.Map;
+import java.util.HashMap;
 
 public class MetricsResponse {
     private final Map<String, KeyMetrics> keyMetrics;
@@ -15,14 +16,14 @@ public class MetricsResponse {
                           @JsonProperty("redisConnected") boolean redisConnected, 
                           @JsonProperty("totalAllowedRequests") long totalAllowedRequests, 
                           @JsonProperty("totalDeniedRequests") long totalDeniedRequests) {
-        this.keyMetrics = keyMetrics;
+        this.keyMetrics = keyMetrics != null ? new HashMap<>(keyMetrics) : new HashMap<>();
         this.redisConnected = redisConnected;
         this.totalAllowedRequests = totalAllowedRequests;
         this.totalDeniedRequests = totalDeniedRequests;
     }
 
     public Map<String, KeyMetrics> getKeyMetrics() {
-        return keyMetrics;
+        return new HashMap<>(keyMetrics);
     }
 
     public boolean isRedisConnected() {

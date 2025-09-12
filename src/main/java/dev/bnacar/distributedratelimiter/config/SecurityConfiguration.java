@@ -70,19 +70,19 @@ public class SecurityConfiguration {
     }
 
     public ApiKeys getApiKeys() {
-        return apiKeys;
+        return apiKeys;  // Note: ApiKeys class already implements defensive copying in its own getters/setters
     }
 
     public void setApiKeys(ApiKeys apiKeys) {
-        this.apiKeys = apiKeys;
+        this.apiKeys = apiKeys;  // Note: ApiKeys class handles defensive copying internally
     }
 
     public Ip getIp() {
-        return ip;
+        return ip;  // Note: Ip class already implements defensive copying in its own getters/setters
     }
 
     public void setIp(Ip ip) {
-        this.ip = ip;
+        this.ip = ip;  // Note: Ip class handles defensive copying internally
     }
 
     public String getMaxRequestSize() {
@@ -94,10 +94,10 @@ public class SecurityConfiguration {
     }
 
     public Headers getHeaders() {
-        return headers;
+        return headers;  // Note: Headers class only contains primitives, no mutable state to protect
     }
 
     public void setHeaders(Headers headers) {
-        this.headers = headers;
+        this.headers = headers;  // Note: Headers class only contains primitives, no mutable state to protect
     }
 }
