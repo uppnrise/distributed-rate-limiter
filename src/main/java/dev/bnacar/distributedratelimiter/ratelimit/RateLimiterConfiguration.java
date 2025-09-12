@@ -111,6 +111,23 @@ public class RateLimiterConfiguration {
         this.patterns = patterns != null ? new HashMap<>(patterns) : new HashMap<>();
     }
     
+    // Methods for safe modification of keys and patterns
+    public void putKey(String key, KeyConfig config) {
+        this.keys.put(key, config);
+    }
+    
+    public KeyConfig removeKey(String key) {
+        return this.keys.remove(key);
+    }
+    
+    public void putPattern(String pattern, KeyConfig config) {
+        this.patterns.put(pattern, config);
+    }
+    
+    public KeyConfig removePattern(String pattern) {
+        return this.patterns.remove(pattern);
+    }
+    
     /**
      * Get the default rate limit configuration.
      */
