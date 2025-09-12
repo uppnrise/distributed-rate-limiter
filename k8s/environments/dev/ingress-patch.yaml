@@ -1,0 +1,23 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: rate-limiter-ingress
+  namespace: rate-limiter-dev
+  annotations:
+    # Development ingress - more permissive
+    nginx.ingress.kubernetes.io/rate-limit-burst: "100"
+    nginx.ingress.kubernetes.io/rate-limit-rpm: "5000"
+    nginx.ingress.kubernetes.io/ssl-redirect: "false"
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "false"
+spec:
+  rules:
+  - host: rate-limiter-dev.example.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: rate-limiter-service
+            port:
+              number: 80
