@@ -3,6 +3,14 @@ package dev.bnacar.distributedratelimiter.controller;
 import dev.bnacar.distributedratelimiter.models.BenchmarkRequest;
 import dev.bnacar.distributedratelimiter.models.BenchmarkResponse;
 import dev.bnacar.distributedratelimiter.ratelimit.RateLimiterService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ExampleObject;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -17,6 +25,7 @@ import java.util.concurrent.atomic.AtomicLong;
  */
 @RestController
 @RequestMapping("/api/benchmark")
+@Tag(name = "benchmark-controller", description = "Performance benchmarking and load testing utilities")
 public class BenchmarkController {
 
     private final RateLimiterService rateLimiterService;
@@ -37,7 +46,21 @@ public class BenchmarkController {
      * Tests throughput under specified load conditions.
      */
     @PostMapping("/run")
-    public ResponseEntity<BenchmarkResponse> runBenchmark(@Valid @RequestBody BenchmarkRequest request) {
+    @Operation(summary = "Run performance benchmark",
+               description = "Executes a performance benchmark with configurable load parameters to measure rate limiter throughput and latency")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", 
+                    description = "Benchmark completed successfully",
+                    content = @Content(mediaType = "application/json",
+                                     schema = @Schema(implementation = BenchmarkResponse.class),
+                                     examples = @ExampleObject(value = "{\"totalRequests\":1000,\"successCount\":850,\"errorCount\":0,\"durationSeconds\":10.5,\"throughputPerSecond\":95.2,\"successRate\":85.0,\"concurrentThreads\":10,\"requestsPerThread\":100}"))),
+        @ApiResponse(responseCode = "400", 
+                    description = "Benchmark configuration invalid or benchmark failed")
+    })
+    public ResponseEntity<BenchmarkResponse> runBenchmark(
+            @Parameter(description = "Benchmark configuration parameters", required = true,
+                      content = @Content(examples = @ExampleObject(value = "{\"concurrentThreads\":10,\"requestsPerThread\":100,\"durationSeconds\":30,\"keyPrefix\":\"benchmark\",\"tokensPerRequest\":1,\"delayBetweenRequestsMs\":0}")))
+            @Valid @RequestBody BenchmarkRequest request) {
         long startTime = System.nanoTime();
         
         AtomicLong successCount = new AtomicLong(0);
@@ -101,6 +124,10 @@ public class BenchmarkController {
      * Simple health check endpoint for the benchmark service.
      */
     @GetMapping("/health")
+    @Operation(summary = "Benchmark service health check",
+               description = "Check if the benchmark service is operational")
+    @ApiResponse(responseCode = "200", 
+                description = "Benchmark service is healthy")
     public ResponseEntity<String> health() {
         return ResponseEntity.ok("Benchmark service is healthy");
     }
