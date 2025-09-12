@@ -51,6 +51,15 @@ public class PerformanceRegressionResult {
 
         public RegressionThresholds() {}
 
+        // Copy constructor for defensive copying
+        public RegressionThresholds(RegressionThresholds other) {
+            if (other != null) {
+                this.responseTimeThreshold = other.responseTimeThreshold;
+                this.throughputThreshold = other.throughputThreshold;
+                this.successRateThreshold = other.successRateThreshold;
+            }
+        }
+
         public RegressionThresholds(double responseTimeThreshold, double throughputThreshold, double successRateThreshold) {
             this.responseTimeThreshold = responseTimeThreshold;
             this.throughputThreshold = throughputThreshold;
@@ -89,8 +98,8 @@ public class PerformanceRegressionResult {
     public PerformanceRegressionResult(String testName, PerformanceBaseline currentBaseline, 
                                      PerformanceBaseline previousBaseline) {
         this.testName = testName;
-        this.currentBaseline = currentBaseline;
-        this.previousBaseline = previousBaseline;
+        this.currentBaseline = currentBaseline != null ? new PerformanceBaseline(currentBaseline) : null;
+        this.previousBaseline = previousBaseline != null ? new PerformanceBaseline(previousBaseline) : null;
         this.thresholds = new RegressionThresholds();
     }
 
@@ -112,19 +121,19 @@ public class PerformanceRegressionResult {
     }
 
     public PerformanceBaseline getCurrentBaseline() {
-        return currentBaseline;
+        return currentBaseline != null ? new PerformanceBaseline(currentBaseline) : null;
     }
 
     public void setCurrentBaseline(PerformanceBaseline currentBaseline) {
-        this.currentBaseline = currentBaseline;
+        this.currentBaseline = currentBaseline != null ? new PerformanceBaseline(currentBaseline) : null;
     }
 
     public PerformanceBaseline getPreviousBaseline() {
-        return previousBaseline;
+        return previousBaseline != null ? new PerformanceBaseline(previousBaseline) : null;
     }
 
     public void setPreviousBaseline(PerformanceBaseline previousBaseline) {
-        this.previousBaseline = previousBaseline;
+        this.previousBaseline = previousBaseline != null ? new PerformanceBaseline(previousBaseline) : null;
     }
 
     public List<String> getRegressionDetails() {
@@ -144,11 +153,11 @@ public class PerformanceRegressionResult {
     }
 
     public RegressionThresholds getThresholds() {
-        return thresholds;
+        return thresholds != null ? new RegressionThresholds(thresholds) : null;
     }
 
     public void setThresholds(RegressionThresholds thresholds) {
-        this.thresholds = thresholds;
+        this.thresholds = thresholds != null ? new RegressionThresholds(thresholds) : null;
     }
 
     @Override

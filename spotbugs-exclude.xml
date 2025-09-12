@@ -1,53 +1,77 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <FindBugsFilter>
     <!-- Suppress EI_EXPOSE_REP2 warnings for Spring dependency injection constructors -->
+    <!-- These are legitimate uses where Spring manages the lifecycle -->
     <Match>
         <Bug pattern="EI_EXPOSE_REP2"/>
         <Or>
-            <!-- Spring Services with @Autowired constructors -->
-            <Class name="dev.bnacar.distributedratelimiter.security.ApiKeyService"/>
-            <Class name="dev.bnacar.distributedratelimiter.security.IpSecurityService"/>
-            <Class name="dev.bnacar.distributedratelimiter.security.SecurityFilter"/>
-            <Class name="dev.bnacar.distributedratelimiter.ratelimit.RateLimiterService"/>
-            <Class name="dev.bnacar.distributedratelimiter.ratelimit.RedisRateLimiterBackend"/>
-            <Class name="dev.bnacar.distributedratelimiter.ratelimit.RedisTokenBucket"/>
-            <!-- Spring Configuration classes -->
-            <Class name="dev.bnacar.distributedratelimiter.config.FilterConfiguration"/>
+            <!-- Spring Services with @Autowired constructors - dependency injection -->
+            <And>
+                <Class name="dev.bnacar.distributedratelimiter.security.ApiKeyService"/>
+                <Method name="&lt;init&gt;"/>
+            </And>
+            <And>
+                <Class name="dev.bnacar.distributedratelimiter.security.IpSecurityService"/>
+                <Method name="&lt;init&gt;"/>
+            </And>
+            <And>
+                <Class name="dev.bnacar.distributedratelimiter.security.SecurityFilter"/>
+                <Method name="&lt;init&gt;"/>
+            </And>
+            <And>
+                <Class name="dev.bnacar.distributedratelimiter.ratelimit.RateLimiterService"/>
+                <Method name="&lt;init&gt;"/>
+            </And>
+            <And>
+                <Class name="dev.bnacar.distributedratelimiter.ratelimit.RedisRateLimiterBackend"/>
+                <Method name="&lt;init&gt;"/>
+            </And>
+            <And>
+                <Class name="dev.bnacar.distributedratelimiter.ratelimit.RedisTokenBucket"/>
+                <Method name="&lt;init&gt;"/>
+            </And>
+            <!-- Spring Configuration classes - dependency injection -->
+            <And>
+                <Class name="dev.bnacar.distributedratelimiter.config.FilterConfiguration"/>
+                <Method name="&lt;init&gt;"/>
+            </And>
             <!-- Spring Controllers with dependency injection -->
-            <Class name="dev.bnacar.distributedratelimiter.controller.AdminController"/>
-            <Class name="dev.bnacar.distributedratelimiter.controller.BenchmarkController"/>
-            <Class name="dev.bnacar.distributedratelimiter.controller.MetricsController"/>
-            <Class name="dev.bnacar.distributedratelimiter.controller.RateLimitConfigController"/>
-            <Class name="dev.bnacar.distributedratelimiter.controller.RateLimitController"/>
+            <And>
+                <Class name="dev.bnacar.distributedratelimiter.controller.AdminController"/>
+                <Method name="&lt;init&gt;"/>
+            </And>
+            <And>
+                <Class name="dev.bnacar.distributedratelimiter.controller.BenchmarkController"/>
+                <Method name="&lt;init&gt;"/>
+            </And>
+            <And>
+                <Class name="dev.bnacar.distributedratelimiter.controller.MetricsController"/>
+                <Method name="&lt;init&gt;"/>
+            </And>
+            <And>
+                <Class name="dev.bnacar.distributedratelimiter.controller.RateLimitConfigController"/>
+                <Method name="&lt;init&gt;"/>
+            </And>
+            <And>
+                <Class name="dev.bnacar.distributedratelimiter.controller.RateLimitController"/>
+                <Method name="&lt;init&gt;"/>
+            </And>
+            <!-- Service classes with dependency injection -->
+            <And>
+                <Class name="dev.bnacar.distributedratelimiter.ratelimit.ConfigurationResolver"/>
+                <Method name="&lt;init&gt;"/>
+            </And>
+            <And>
+                <Class name="dev.bnacar.distributedratelimiter.ratelimit.DistributedRateLimiterService"/>
+                <Method name="&lt;init&gt;"/>
+            </And>
         </Or>
     </Match>
     
     <!-- Suppress EI_EXPOSE_REP and EI_EXPOSE_REP2 for Spring Configuration Properties -->
+    <!-- These classes need to work with Spring's property binding mechanism -->
     <Match>
         <Bug pattern="EI_EXPOSE_REP,EI_EXPOSE_REP2"/>
-        <Or>
-            <Class name="dev.bnacar.distributedratelimiter.config.SecurityConfiguration"/>
-            <Class name="dev.bnacar.distributedratelimiter.ratelimit.RateLimiterConfiguration"/>
-        </Or>
-    </Match>
-    
-    <!-- Suppress EI_EXPOSE_REP and EI_EXPOSE_REP2 for DTO/Response model classes -->
-    <Match>
-        <Bug pattern="EI_EXPOSE_REP,EI_EXPOSE_REP2"/>
-        <Or>
-            <Class name="dev.bnacar.distributedratelimiter.models.AdminKeysResponse"/>
-            <Class name="dev.bnacar.distributedratelimiter.models.ConfigurationResponse"/>
-            <Class name="dev.bnacar.distributedratelimiter.models.MetricsResponse"/>
-            <Class name="dev.bnacar.distributedratelimiter.models.PerformanceRegressionResult"/>
-        </Or>
-    </Match>
-    
-    <!-- Suppress EI_EXPOSE_REP2 for remaining service classes -->
-    <Match>
-        <Bug pattern="EI_EXPOSE_REP2"/>
-        <Or>
-            <Class name="dev.bnacar.distributedratelimiter.ratelimit.ConfigurationResolver"/>
-            <Class name="dev.bnacar.distributedratelimiter.ratelimit.DistributedRateLimiterService"/>
-        </Or>
+        <Class name="dev.bnacar.distributedratelimiter.config.SecurityConfiguration"/>
     </Match>
 </FindBugsFilter>
