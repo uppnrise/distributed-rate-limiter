@@ -184,7 +184,10 @@ public class PerformanceRegressionService {
     
     private void saveBaselines(List<PerformanceBaseline> baselines) throws IOException {
         File file = new File(baselineStoragePath);
-        file.getParentFile().mkdirs();
+        File parentDir = file.getParentFile();
+        if (parentDir != null && !parentDir.exists() && !parentDir.mkdirs()) {
+            throw new IOException("Failed to create directory: " + parentDir.getAbsolutePath());
+        }
         objectMapper.writeValue(file, baselines);
     }
     
