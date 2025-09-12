@@ -1,0 +1,55 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+metadata:
+  name: rate-limiter-dev
+  namespace: rate-limiter-dev
+
+namespace: rate-limiter-dev
+
+namePrefix: dev-
+
+resources:
+- ../../base/namespace.yaml
+- ../../base/configmap.yaml
+- ../../base/secrets.yaml
+- ../../base/rbac.yaml
+- ../../base/redis.yaml
+- ../../base/deployment.yaml
+- ../../base/ingress.yaml
+
+patchesStrategicMerge:
+- namespace-patch.yaml
+- deployment-patch.yaml
+- configmap-patch.yaml
+- ingress-patch.yaml
+
+images:
+- name: ghcr.io/uppnrise/distributed-rate-limiter
+  newTag: dev-latest
+
+configMapGenerator:
+- name: rate-limiter-config
+  behavior: merge
+  literals:
+  - |
+    application-dev.properties=
+    # Development overrides
+    spring.profiles.active=dev
+    ratelimiter.capacity=100
+    ratelimiter.refillRate=20
+    management.endpoints.web.exposure.include=*
+    management.endpoint.health.show-details=always
+    logging.level.dev.bnacar.distributedratelimiter=DEBUG
+
+secretGenerator:
+- name: rate-limiter-secrets
+  behavior: merge
+  literals:
+  - redis-password=""
+  - admin-password=ZGV2LXBhc3N3b3Jk  # "dev-password" base64
+  - api-keys=ZGV2LWFwaS1rZXk=  # "dev-api-key" base64
+
+replicas:
+- name: rate-limiter
+  count: 1

@@ -1,0 +1,38 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: rate-limiter-config
+  namespace: rate-limiter-dev
+data:
+  application.properties: |
+    # Development Spring Boot Configuration
+    spring.profiles.active=dev
+    spring.application.name=distributed-rate-limiter
+    
+    # Server Configuration
+    server.port=8080
+    
+    # Redis Configuration
+    spring.redis.host=redis-service
+    spring.redis.port=6379
+    spring.redis.database=0
+    
+    # Relaxed Redis Pool for Development
+    spring.redis.lettuce.pool.max-active=10
+    spring.redis.lettuce.pool.max-idle=5
+    spring.redis.lettuce.pool.min-idle=2
+    
+    # Permissive Rate Limiter for Development
+    ratelimiter.capacity=100
+    ratelimiter.refillRate=20
+    ratelimiter.cleanupIntervalMs=30000
+    
+    # Full Actuator Access for Development
+    management.endpoints.web.exposure.include=*
+    management.endpoint.health.show-details=always
+    management.endpoint.health.probes.enabled=true
+    
+    # Debug Logging for Development
+    logging.level.dev.bnacar.distributedratelimiter=DEBUG
+    logging.level.org.springframework.data.redis=DEBUG
+    logging.pattern.console=%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n
