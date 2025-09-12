@@ -1,0 +1,127 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: prometheus-rules
+  namespace: monitoring
+  labels:
+    app.kubernetes.io/name: prometheus
+    app.kubernetes.io/component: rules
+data:
+  rate-limiter.yml: |
+    groups:
+    - name: rate-limiter.rules
+      interval: 30s
+      rules:
+      
+      # Application Health Rules
+      - alert: RateLimiterDown
+        expr: up{job="rate-limiter"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          service: rate-limiter
+        annotations:
+          summary: "Rate Limiter service is down"
+          description: "Rate Limiter service {{ $labels.kubernetes_pod_name }} in namespace {{ $labels.kubernetes_namespace }} has been down for more than 1 minute."
+          runbook_url: "https://github.com/uppnrise/distributed-rate-limiter/blob/main/docs/runbook.md#rate-limiter-down"
+          
+      - alert: RateLimiterHighLatency
+        expr: histogram_quantile(0.95, rate(http_request_duration_seconds_bucket{job="rate-limiter"}[5m])) > 0.5
+        for: 5m
+        labels:
+          severity: warning
+          service: rate-limiter
+        annotations:
+          summary: "High latency detected in Rate Limiter"
+          description: "95th percentile latency is {{ $value }}s for Rate Limiter in namespace {{ $labels.kubernetes_namespace }}"
+          runbook_url: "https://github.com/uppnrise/distributed-rate-limiter/blob/main/docs/runbook.md#high-latency"
+          
+      - alert: RateLimiterHighErrorRate
+        expr: rate(http_requests_total{job="rate-limiter",status=~"5.."}[5m]) / rate(http_requests_total{job="rate-limiter"}[5m]) > 0.1
+        for: 5m
+        labels:
+          severity: critical
+          service: rate-limiter
+        annotations:
+          summary: "High error rate in Rate Limiter"
+          description: "Error rate is {{ $value | humanizePercentage }} for Rate Limiter in namespace {{ $labels.kubernetes_namespace }}"
+          runbook_url: "https://github.com/uppnrise/distributed-rate-limiter/blob/main/docs/runbook.md#high-error-rate"
+          
+      - alert: RateLimiterHighCPU
+        expr: rate(process_cpu_seconds_total{job="rate-limiter"}[5m]) * 100 > 80
+        for: 10m
+        labels:
+          severity: warning
+          service: rate-limiter
+        annotations:
+          summary: "High CPU usage in Rate Limiter"
+          description: "CPU usage is {{ $value }}% for Rate Limiter {{ $labels.kubernetes_pod_name }}"
+          runbook_url: "https://github.com/uppnrise/distributed-rate-limiter/blob/main/docs/runbook.md#high-cpu"
+          
+      - alert: RateLimiterHighMemory
+        expr: jvm_memory_used_bytes{job="rate-limiter",area="heap"} / jvm_memory_max_bytes{job="rate-limiter",area="heap"} > 0.9
+        for: 10m
+        labels:
+          severity: warning
+          service: rate-limiter
+        annotations:
+          summary: "High memory usage in Rate Limiter"
+          description: "Memory usage is {{ $value | humanizePercentage }} for Rate Limiter {{ $labels.kubernetes_pod_name }}"
+          runbook_url: "https://github.com/uppnrise/distributed-rate-limiter/blob/main/docs/runbook.md#high-memory"
+          
+      # Redis Health Rules
+      - alert: RedisDown
+        expr: up{job="redis"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          service: redis
+        annotations:
+          summary: "Redis is down"
+          description: "Redis service {{ $labels.kubernetes_pod_name }} in namespace {{ $labels.kubernetes_namespace }} has been down for more than 1 minute."
+          runbook_url: "https://github.com/uppnrise/distributed-rate-limiter/blob/main/docs/runbook.md#redis-down"
+          
+      - alert: RedisHighMemoryUsage
+        expr: redis_memory_used_bytes{job="redis"} / redis_memory_max_bytes{job="redis"} > 0.9
+        for: 10m
+        labels:
+          severity: warning
+          service: redis
+        annotations:
+          summary: "Redis high memory usage"
+          description: "Redis memory usage is {{ $value | humanizePercentage }} in namespace {{ $labels.kubernetes_namespace }}"
+          runbook_url: "https://github.com/uppnrise/distributed-rate-limiter/blob/main/docs/runbook.md#redis-high-memory"
+          
+      - alert: RedisConnectionPoolExhausted
+        expr: lettuce_command_pool_active{job="rate-limiter"} / lettuce_command_pool_max{job="rate-limiter"} > 0.9
+        for: 5m
+        labels:
+          severity: warning
+          service: rate-limiter
+        annotations:
+          summary: "Redis connection pool nearly exhausted"
+          description: "Redis connection pool usage is {{ $value | humanizePercentage }} for Rate Limiter {{ $labels.kubernetes_pod_name }}"
+          runbook_url: "https://github.com/uppnrise/distributed-rate-limiter/blob/main/docs/runbook.md#redis-pool-exhausted"
+          
+      # Rate Limiting Rules  
+      - alert: HighRateLimitViolations
+        expr: rate(rate_limiter_requests_denied_total{job="rate-limiter"}[5m]) > 100
+        for: 5m
+        labels:
+          severity: warning
+          service: rate-limiter
+        annotations:
+          summary: "High rate limit violations"
+          description: "Rate limit violations are {{ $value }}/sec for Rate Limiter in namespace {{ $labels.kubernetes_namespace }}"
+          runbook_url: "https://github.com/uppnrise/distributed-rate-limiter/blob/main/docs/runbook.md#high-violations"
+          
+      - alert: SuspiciousRateLimitActivity
+        expr: rate(rate_limiter_requests_denied_total{job="rate-limiter"}[1m]) > 1000
+        for: 1m
+        labels:
+          severity: critical
+          service: rate-limiter
+        annotations:
+          summary: "Suspicious rate limit activity detected"
+          description: "Extremely high rate limit violations: {{ $value }}/sec for Rate Limiter in namespace {{ $labels.kubernetes_namespace }}. Possible attack."
+          runbook_url: "https://github.com/uppnrise/distributed-rate-limiter/blob/main/docs/runbook.md#suspicious-activity"
