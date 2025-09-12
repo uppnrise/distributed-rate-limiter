@@ -159,7 +159,7 @@ public class RateLimiterServiceTest {
         slidingWindowConfig.setCapacity(5);
         slidingWindowConfig.setRefillRate(1);
         slidingWindowConfig.setAlgorithm(RateLimitAlgorithm.SLIDING_WINDOW);
-        config.getPatterns().put("sliding:*", slidingWindowConfig);
+        config.putPattern("sliding:*", slidingWindowConfig);
         
         ConfigurationResolver resolver = new ConfigurationResolver(config);
         RateLimiterService service = new RateLimiterService(resolver, config);
@@ -188,13 +188,13 @@ public class RateLimiterServiceTest {
         slidingConfig.setCapacity(8);
         slidingConfig.setRefillRate(2);
         slidingConfig.setAlgorithm(RateLimitAlgorithm.SLIDING_WINDOW);
-        config.getKeys().put("api:v2:endpoint", slidingConfig);
+        config.putKey("api:v2:endpoint", slidingConfig);
         
         RateLimiterConfiguration.KeyConfig tokenConfig = new RateLimiterConfiguration.KeyConfig();
         tokenConfig.setCapacity(15);
         tokenConfig.setRefillRate(3);
         tokenConfig.setAlgorithm(RateLimitAlgorithm.TOKEN_BUCKET);
-        config.getKeys().put("admin:actions", tokenConfig);
+        config.putKey("admin:actions", tokenConfig);
         
         ConfigurationResolver resolver = new ConfigurationResolver(config);
         RateLimiterService service = new RateLimiterService(resolver, config);
