@@ -96,19 +96,19 @@ public class RateLimiterConfiguration {
     
     // Per-key and pattern configuration getters and setters
     public Map<String, KeyConfig> getKeys() {
-        return keys;
+        return new HashMap<>(keys);
     }
     
     public void setKeys(Map<String, KeyConfig> keys) {
-        this.keys = keys;
+        this.keys = keys != null ? new HashMap<>(keys) : new HashMap<>();
     }
     
     public Map<String, KeyConfig> getPatterns() {
-        return patterns;
+        return new HashMap<>(patterns);
     }
     
     public void setPatterns(Map<String, KeyConfig> patterns) {
-        this.patterns = patterns;
+        this.patterns = patterns != null ? new HashMap<>(patterns) : new HashMap<>();
     }
     
     /**

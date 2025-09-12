@@ -3,6 +3,7 @@ package dev.bnacar.distributedratelimiter.models;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.List;
+import java.util.ArrayList;
 
 /**
  * Model representing the result of a performance regression analysis.
@@ -127,11 +128,11 @@ public class PerformanceRegressionResult {
     }
 
     public List<String> getRegressionDetails() {
-        return regressionDetails;
+        return regressionDetails != null ? new ArrayList<>(regressionDetails) : new ArrayList<>();
     }
 
     public void setRegressionDetails(List<String> regressionDetails) {
-        this.regressionDetails = regressionDetails;
+        this.regressionDetails = regressionDetails != null ? new ArrayList<>(regressionDetails) : new ArrayList<>();
     }
 
     public RegressionSeverity getRegressionSeverity() {
