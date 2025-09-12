@@ -18,18 +18,19 @@ public class OpenApiConfig {
         return new OpenAPI()
                 .info(new Info()
                         .title("Distributed Rate Limiter API")
-                        .description("A distributed token bucket rate limiter implementation with Redis support")
+                        .description("A comprehensive distributed token bucket rate limiter implementation with Redis support, " +
+                                   "featuring configurable capacity and refill rates, thread-safe operations, " +
+                                   "performance monitoring, and administrative controls.")
                         .version("0.0.1-SNAPSHOT")
                         .contact(new Contact()
-                                .name("Rate Limiter Team")
-                                .url("https://github.com/uppnrise/distributed-rate-limiter")
-                                .email("support@example.com"))
+                                .name("Distributed Rate Limiter")
+                                .url("https://github.com/uppnrise/distributed-rate-limiter"))
                         .license(new License()
                                 .name("MIT License")
                                 .url("https://opensource.org/licenses/MIT")))
                 .servers(List.of(
                         new Server().url("http://localhost:8080").description("Development server"),
-                        new Server().url("https://api.example.com").description("Production server")
+                        new Server().url("/").description("Current server")
                 ));
     }
 }
