@@ -1,0 +1,74 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+metadata:
+  name: rate-limiter-prod
+  namespace: rate-limiter
+
+namespace: rate-limiter
+
+resources:
+- ../../base/namespace.yaml
+- ../../base/configmap.yaml
+- ../../base/secrets.yaml
+- ../../base/rbac.yaml
+- ../../base/redis.yaml
+- ../../base/deployment.yaml
+- ../../base/ingress.yaml
+- hpa.yaml
+- network-policy.yaml
+
+patchesStrategicMerge:
+- deployment-patch.yaml
+- redis-patch.yaml
+- ingress-patch.yaml
+
+images:
+- name: ghcr.io/uppnrise/distributed-rate-limiter
+  newTag: v1.0.0  # Use specific version tags in production
+
+configMapGenerator:
+- name: rate-limiter-config
+  behavior: merge
+  literals:
+  - |
+    application-prod.properties=
+    # Production overrides
+    spring.profiles.active=production
+    ratelimiter.capacity=10
+    ratelimiter.refillRate=2
+    management.endpoints.web.exposure.include=health,metrics,prometheus,info
+    management.endpoint.health.show-details=when-authorized
+    logging.level.dev.bnacar.distributedratelimiter=INFO
+
+secretGenerator:
+- name: rate-limiter-secrets
+  behavior: merge
+  type: Opaque
+  options:
+    disableNameSuffixHash: true
+  files:
+  - redis-password=secrets/redis-password.txt
+  - admin-password=secrets/admin-password.txt
+  - api-keys=secrets/api-keys.txt
+
+replicas:
+- name: rate-limiter
+  count: 3
+
+patches:
+- target:
+    group: apps
+    version: v1
+    kind: Deployment
+    name: redis
+  patch: |-
+    - op: replace
+      path: /spec/replicas
+      value: 1
+    - op: replace
+      path: /spec/template/spec/containers/0/resources/requests/memory
+      value: "1Gi"
+    - op: replace
+      path: /spec/template/spec/containers/0/resources/limits/memory
+      value: "2Gi"

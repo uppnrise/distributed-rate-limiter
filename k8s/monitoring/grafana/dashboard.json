@@ -1,0 +1,230 @@
+{
+  "dashboard": {
+    "id": null,
+    "title": "Distributed Rate Limiter",
+    "tags": ["rate-limiter", "distributed", "redis"],
+    "style": "dark",
+    "timezone": "browser",
+    "refresh": "30s",
+    "time": {
+      "from": "now-1h",
+      "to": "now"
+    },
+    "panels": [
+      {
+        "id": 1,
+        "title": "Application Overview",
+        "type": "stat",
+        "gridPos": {"h": 8, "w": 24, "x": 0, "y": 0},
+        "targets": [
+          {
+            "expr": "up{job=\"rate-limiter\"}",
+            "legendFormat": "Instance Up",
+            "refId": "A"
+          },
+          {
+            "expr": "rate(http_requests_total{job=\"rate-limiter\"}[5m])",
+            "legendFormat": "Requests/sec",
+            "refId": "B"
+          },
+          {
+            "expr": "rate(rate_limiter_requests_denied_total{job=\"rate-limiter\"}[5m])",
+            "legendFormat": "Denials/sec",
+            "refId": "C"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "color": {"mode": "thresholds"},
+            "thresholds": {
+              "steps": [
+                {"color": "green", "value": null},
+                {"color": "red", "value": 0.8}
+              ]
+            }
+          }
+        }
+      },
+      {
+        "id": 2,
+        "title": "Request Rate",
+        "type": "graph",
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 8},
+        "targets": [
+          {
+            "expr": "rate(http_requests_total{job=\"rate-limiter\"}[5m])",
+            "legendFormat": "Total Requests/sec - {{kubernetes_pod_name}}",
+            "refId": "A"
+          },
+          {
+            "expr": "rate(http_requests_total{job=\"rate-limiter\", status=~\"2..\"}[5m])",
+            "legendFormat": "2xx Requests/sec - {{kubernetes_pod_name}}",
+            "refId": "B"
+          },
+          {
+            "expr": "rate(http_requests_total{job=\"rate-limiter\", status=~\"4..\"}[5m])",
+            "legendFormat": "4xx Requests/sec - {{kubernetes_pod_name}}",
+            "refId": "C"
+          },
+          {
+            "expr": "rate(http_requests_total{job=\"rate-limiter\", status=~\"5..\"}[5m])",
+            "legendFormat": "5xx Requests/sec - {{kubernetes_pod_name}}",
+            "refId": "D"
+          }
+        ],
+        "yAxes": [
+          {"label": "Requests/sec", "min": 0},
+          {"show": false}
+        ]
+      },
+      {
+        "id": 3,
+        "title": "Rate Limiting Metrics",
+        "type": "graph",
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 8},
+        "targets": [
+          {
+            "expr": "rate(rate_limiter_requests_allowed_total{job=\"rate-limiter\"}[5m])",
+            "legendFormat": "Allowed/sec - {{kubernetes_pod_name}}",
+            "refId": "A"
+          },
+          {
+            "expr": "rate(rate_limiter_requests_denied_total{job=\"rate-limiter\"}[5m])",
+            "legendFormat": "Denied/sec - {{kubernetes_pod_name}}",
+            "refId": "B"
+          }
+        ],
+        "yAxes": [
+          {"label": "Requests/sec", "min": 0},
+          {"show": false}
+        ]
+      },
+      {
+        "id": 4,
+        "title": "Response Times",
+        "type": "graph",
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 16},
+        "targets": [
+          {
+            "expr": "histogram_quantile(0.50, rate(http_request_duration_seconds_bucket{job=\"rate-limiter\"}[5m]))",
+            "legendFormat": "50th percentile",
+            "refId": "A"
+          },
+          {
+            "expr": "histogram_quantile(0.95, rate(http_request_duration_seconds_bucket{job=\"rate-limiter\"}[5m]))",
+            "legendFormat": "95th percentile",
+            "refId": "B"
+          },
+          {
+            "expr": "histogram_quantile(0.99, rate(http_request_duration_seconds_bucket{job=\"rate-limiter\"}[5m]))",
+            "legendFormat": "99th percentile",
+            "refId": "C"
+          }
+        ],
+        "yAxes": [
+          {"label": "Seconds", "min": 0},
+          {"show": false}
+        ]
+      },
+      {
+        "id": 5,
+        "title": "JVM Memory Usage",
+        "type": "graph",
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 16},
+        "targets": [
+          {
+            "expr": "jvm_memory_used_bytes{job=\"rate-limiter\", area=\"heap\"}",
+            "legendFormat": "Heap Used - {{kubernetes_pod_name}}",
+            "refId": "A"
+          },
+          {
+            "expr": "jvm_memory_max_bytes{job=\"rate-limiter\", area=\"heap\"}",
+            "legendFormat": "Heap Max - {{kubernetes_pod_name}}",
+            "refId": "B"
+          },
+          {
+            "expr": "jvm_memory_used_bytes{job=\"rate-limiter\", area=\"nonheap\"}",
+            "legendFormat": "Non-Heap Used - {{kubernetes_pod_name}}",
+            "refId": "C"
+          }
+        ],
+        "yAxes": [
+          {"label": "Bytes", "min": 0},
+          {"show": false}
+        ]
+      },
+      {
+        "id": 6,
+        "title": "Redis Metrics",
+        "type": "graph",
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 24},
+        "targets": [
+          {
+            "expr": "redis_connected_clients{job=\"redis\"}",
+            "legendFormat": "Connected Clients",
+            "refId": "A"
+          },
+          {
+            "expr": "rate(redis_commands_processed_total{job=\"redis\"}[5m])",
+            "legendFormat": "Commands/sec",
+            "refId": "B"
+          },
+          {
+            "expr": "redis_memory_used_bytes{job=\"redis\"}",
+            "legendFormat": "Memory Used",
+            "refId": "C"
+          }
+        ],
+        "yAxes": [
+          {"label": "Count/Bytes", "min": 0},
+          {"show": false}
+        ]
+      },
+      {
+        "id": 7,
+        "title": "Top Rate Limited Keys",
+        "type": "table",
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 24},
+        "targets": [
+          {
+            "expr": "topk(10, rate(rate_limiter_requests_denied_total{job=\"rate-limiter\"}[5m]))",
+            "legendFormat": "{{key}}",
+            "refId": "A"
+          }
+        ],
+        "transformations": [
+          {
+            "id": "organize",
+            "options": {
+              "excludeByName": {},
+              "indexByName": {},
+              "renameByName": {
+                "Value": "Denials/sec"
+              }
+            }
+          }
+        ]
+      }
+    ],
+    "templating": {
+      "list": [
+        {
+          "name": "namespace",
+          "type": "query",
+          "query": "label_values(up{job=\"rate-limiter\"}, kubernetes_namespace)",
+          "refresh": 1,
+          "includeAll": true,
+          "multi": false
+        },
+        {
+          "name": "pod",
+          "type": "query",
+          "query": "label_values(up{job=\"rate-limiter\", kubernetes_namespace=\"$namespace\"}, kubernetes_pod_name)",
+          "refresh": 1,
+          "includeAll": true,
+          "multi": true
+        }
+      ]
+    }
+  }
+}
