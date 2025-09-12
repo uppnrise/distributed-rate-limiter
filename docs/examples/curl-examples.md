@@ -138,6 +138,173 @@ curl -X GET http://localhost:8080/api/ratelimit/config/stats | jq .
 curl -X POST http://localhost:8080/api/ratelimit/config/reload
 ```
 
+## Administrative Operations
+
+> **Note**: Admin endpoints require HTTP Basic Authentication. Configure admin credentials:
+> ```properties
+> spring.security.user.name=${ADMIN_USERNAME:admin}
+> spring.security.user.password=${ADMIN_PASSWORD:changeme}
+> ```
+
+### Get All Active Keys
+
+```bash
+curl -u admin:changeme -X GET http://localhost:8080/admin/keys | jq .
+```
+
+**Response:**
+```json
+{
+  "keys": [
+    {
+      "key": "user:123",
+      "capacity": 10,
+      "refillRate": 2,
+      "cleanupIntervalMs": 60000,
+      "algorithm": "TOKEN_BUCKET",
+      "lastAccessTime": 1673123456789,
+      "active": true
+    }
+  ],
+  "totalKeys": 1,
+  "activeKeys": 1
+}
+```
+
+### Get Key Configuration
+
+```bash
+curl -u admin:changeme -X GET http://localhost:8080/admin/limits/user:123 | jq .
+```
+
+### Update Key Limits
+
+```bash
+curl -u admin:changeme -X PUT http://localhost:8080/admin/limits/premium_user \
+  -H "Content-Type: application/json" \
+  -d '{
+    "capacity": 100,
+    "refillRate": 25,
+    "cleanupIntervalMs": 30000,
+    "algorithm": "TOKEN_BUCKET"
+  }'
+```
+
+### Remove Key Limits
+
+```bash
+curl -u admin:changeme -X DELETE http://localhost:8080/admin/limits/old_user
+```
+
+## Performance Monitoring
+
+### Store Performance Baseline
+
+```bash
+curl -X POST http://localhost:8080/api/performance/baseline \
+  -H "Content-Type: application/json" \
+  -d '{
+    "testName": "rate-limiter-load-test",
+    "timestamp": "2024-01-15T10:30:00Z",
+    "averageResponseTime": 15.5,
+    "throughputPerSecond": 1250.0,
+    "successRate": 98.5,
+    "maxResponseTime": 45.2,
+    "p95ResponseTime": 25.0,
+    "errorRate": 1.5
+  }'
+```
+
+### Analyze Performance Regression
+
+```bash
+curl -X POST http://localhost:8080/api/performance/regression/analyze \
+  -H "Content-Type: application/json" \
+  -d '{
+    "testName": "rate-limiter-load-test",
+    "timestamp": "2024-01-15T11:00:00Z",
+    "averageResponseTime": 18.7,
+    "throughputPerSecond": 1180.0,
+    "successRate": 97.2,
+    "maxResponseTime": 52.1,
+    "p95ResponseTime": 28.5,
+    "errorRate": 2.8
+  }' | jq .
+```
+
+### Get Performance Trend
+
+```bash
+curl -X GET "http://localhost:8080/api/performance/trend/rate-limiter-load-test?limit=10" | jq .
+```
+
+## Benchmarking
+
+### Run Performance Benchmark
+
+```bash
+curl -X POST http://localhost:8080/api/benchmark/run \
+  -H "Content-Type: application/json" \
+  -d '{
+    "concurrentThreads": 10,
+    "requestsPerThread": 100,
+    "durationSeconds": 30,
+    "keyPrefix": "benchmark",
+    "tokensPerRequest": 1,
+    "delayBetweenRequestsMs": 0
+  }' | jq .
+```
+
+**Response:**
+```json
+{
+  "totalRequests": 1000,
+  "successCount": 850,
+  "errorCount": 0,
+  "durationSeconds": 30.2,
+  "throughputPerSecond": 28.15,
+  "successRate": 85.0,
+  "concurrentThreads": 10,
+  "requestsPerThread": 100
+}
+```
+
+### Benchmark Health Check
+
+```bash
+curl -X GET http://localhost:8080/api/benchmark/health
+```
+
+## System Metrics
+
+### Get Custom Metrics
+
+```bash
+curl -X GET http://localhost:8080/metrics | jq .
+```
+
+### Get Application Health
+
+```bash
+curl -X GET http://localhost:8080/actuator/health | jq .
+```
+
+### Get Detailed Metrics
+
+```bash
+curl -X GET http://localhost:8080/actuator/metrics | jq .
+
+# Get specific metric
+curl -X GET http://localhost:8080/actuator/metrics/rate.limiter.requests | jq .
+```
+
+### Get Prometheus Metrics
+
+```bash
+curl -X GET http://localhost:8080/actuator/prometheus
+```
+```
+
 ## Health and Monitoring
 
 ### Application Health

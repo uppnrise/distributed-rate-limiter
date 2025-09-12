@@ -8,6 +8,14 @@ import dev.bnacar.distributedratelimiter.ratelimit.ConfigurationResolver;
 import dev.bnacar.distributedratelimiter.ratelimit.RateLimitConfig;
 import dev.bnacar.distributedratelimiter.ratelimit.RateLimiterConfiguration;
 import dev.bnacar.distributedratelimiter.ratelimit.RateLimiterService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ExampleObject;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -22,6 +30,7 @@ import java.util.stream.Collectors;
  */
 @RestController
 @RequestMapping("/admin")
+@Tag(name = "admin-controller", description = "Administrative operations for rate limiter management")
 public class AdminController {
 
     private final RateLimiterService rateLimiterService;
@@ -41,7 +50,19 @@ public class AdminController {
      * Get current limits for a specific key.
      */
     @GetMapping("/limits/{key}")
-    public ResponseEntity<AdminLimitResponse> getKeyLimits(@PathVariable("key") String key) {
+    @Operation(summary = "Get rate limit configuration for a specific key",
+               description = "Retrieves the current rate limiting configuration for the specified key")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", 
+                    description = "Configuration found",
+                    content = @Content(mediaType = "application/json",
+                                     schema = @Schema(implementation = AdminLimitResponse.class))),
+        @ApiResponse(responseCode = "404", 
+                    description = "Key configuration not found")
+    })
+    public ResponseEntity<AdminLimitResponse> getKeyLimits(
+            @Parameter(description = "Rate limiting key", required = true, example = "user:123")
+            @PathVariable("key") String key) {
         RateLimitConfig config = rateLimiterService.getKeyConfiguration(key);
         if (config == null) {
             return ResponseEntity.notFound().build();
@@ -62,8 +83,19 @@ public class AdminController {
      * Update limits for a specific key.
      */
     @PutMapping("/limits/{key}")
-    public ResponseEntity<AdminLimitResponse> updateKeyLimits(@PathVariable("key") String key,
-                                                             @Valid @RequestBody AdminLimitRequest request) {
+    @Operation(summary = "Update rate limit configuration for a specific key",
+               description = "Sets new rate limiting configuration for the specified key")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", 
+                    description = "Configuration updated successfully",
+                    content = @Content(mediaType = "application/json",
+                                     schema = @Schema(implementation = AdminLimitResponse.class)))
+    })
+    public ResponseEntity<AdminLimitResponse> updateKeyLimits(
+            @Parameter(description = "Rate limiting key", required = true, example = "user:123")
+            @PathVariable("key") String key,
+            @Parameter(description = "New rate limit configuration", required = true)
+            @Valid @RequestBody AdminLimitRequest request) {
         // Create new key configuration
         RateLimiterConfiguration.KeyConfig keyConfig = new RateLimiterConfiguration.KeyConfig();
         keyConfig.setCapacity(request.getCapacity());
@@ -95,7 +127,17 @@ public class AdminController {
      * Remove limits for a specific key.
      */
     @DeleteMapping("/limits/{key}")
-    public ResponseEntity<String> removeKeyLimits(@PathVariable("key") String key) {
+    @Operation(summary = "Remove rate limit configuration for a specific key",
+               description = "Removes custom rate limiting configuration for the specified key, reverting to default settings")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", 
+                    description = "Configuration removed successfully"),
+        @ApiResponse(responseCode = "404", 
+                    description = "Key configuration not found")
+    })
+    public ResponseEntity<String> removeKeyLimits(
+            @Parameter(description = "Rate limiting key", required = true, example = "user:123")
+            @PathVariable("key") String key) {
         // Remove from configuration
         boolean configRemoved = configuration.removeKey(key) != null;
         
@@ -116,6 +158,12 @@ public class AdminController {
      * List all active keys with statistics.
      */
     @GetMapping("/keys")
+    @Operation(summary = "List all active rate limiting keys",
+               description = "Retrieves statistics for all currently active rate limiting keys")
+    @ApiResponse(responseCode = "200", 
+                description = "Active keys retrieved successfully",
+                content = @Content(mediaType = "application/json",
+                                 schema = @Schema(implementation = AdminKeysResponse.class)))
     public ResponseEntity<AdminKeysResponse> getAllKeys() {
         Map<String, RateLimiterService.BucketHolder> bucketHolders = rateLimiterService.getBucketHolders();
         long currentTime = System.currentTimeMillis();

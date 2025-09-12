@@ -3,6 +3,14 @@ package dev.bnacar.distributedratelimiter.controller;
 import dev.bnacar.distributedratelimiter.models.PerformanceBaseline;
 import dev.bnacar.distributedratelimiter.models.PerformanceRegressionResult;
 import dev.bnacar.distributedratelimiter.monitoring.PerformanceRegressionService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ExampleObject;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -16,6 +24,7 @@ import java.util.List;
  */
 @RestController
 @RequestMapping("/api/performance")
+@Tag(name = "performance-controller", description = "Performance monitoring and regression analysis for rate limiter operations")
 public class PerformanceController {
 
     private final PerformanceRegressionService regressionService;
@@ -29,7 +38,17 @@ public class PerformanceController {
      * Store a new performance baseline.
      */
     @PostMapping("/baseline")
-    public ResponseEntity<String> storeBaseline(@Valid @RequestBody PerformanceBaseline baseline) {
+    @Operation(summary = "Store performance baseline",
+               description = "Records a new performance baseline for future regression analysis")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", 
+                    description = "Baseline stored successfully"),
+        @ApiResponse(responseCode = "400", 
+                    description = "Invalid baseline data")
+    })
+    public ResponseEntity<String> storeBaseline(
+            @Parameter(description = "Performance baseline data", required = true)
+            @Valid @RequestBody PerformanceBaseline baseline) {
         try {
             regressionService.storeBaseline(baseline);
             return ResponseEntity.ok("Performance baseline stored successfully");
@@ -42,10 +61,24 @@ public class PerformanceController {
      * Analyze performance regression for a new baseline.
      */
     @PostMapping("/regression/analyze")
+    @Operation(summary = "Analyze performance regression",
+               description = "Compares current performance against historical baselines to detect regressions")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", 
+                    description = "Regression analysis completed",
+                    content = @Content(mediaType = "application/json",
+                                     schema = @Schema(implementation = PerformanceRegressionResult.class))),
+        @ApiResponse(responseCode = "400", 
+                    description = "Invalid performance data or analysis failed")
+    })
     public ResponseEntity<PerformanceRegressionResult> analyzeRegression(
+            @Parameter(description = "Current performance baseline to analyze", required = true)
             @Valid @RequestBody PerformanceBaseline currentBaseline,
+            @Parameter(description = "Custom response time regression threshold (percentage)", example = "20.0")
             @RequestParam(required = false) Double responseTimeThreshold,
+            @Parameter(description = "Custom throughput regression threshold (percentage)", example = "15.0")
             @RequestParam(required = false) Double throughputThreshold,
+            @Parameter(description = "Custom success rate regression threshold (percentage)", example = "5.0")
             @RequestParam(required = false) Double successRateThreshold) {
         
         try {
@@ -69,7 +102,18 @@ public class PerformanceController {
      * Store baseline and analyze regression in one call.
      */
     @PostMapping("/baseline/store-and-analyze")
+    @Operation(summary = "Store baseline and analyze regression",
+               description = "Performs regression analysis and then stores the baseline for future comparisons")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", 
+                    description = "Analysis and storage completed",
+                    content = @Content(mediaType = "application/json",
+                                     schema = @Schema(implementation = PerformanceRegressionResult.class))),
+        @ApiResponse(responseCode = "400", 
+                    description = "Invalid performance data or operation failed")
+    })
     public ResponseEntity<PerformanceRegressionResult> storeAndAnalyze(
+            @Parameter(description = "Performance baseline to analyze and store", required = true)
             @Valid @RequestBody PerformanceBaseline baseline) {
         try {
             // First analyze regression before storing
@@ -88,8 +132,20 @@ public class PerformanceController {
      * Get historical performance baselines for a test.
      */
     @GetMapping("/baseline/{testName}")
+    @Operation(summary = "Get performance baselines for a test",
+               description = "Retrieves historical performance baseline data for the specified test")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", 
+                    description = "Baselines retrieved successfully",
+                    content = @Content(mediaType = "application/json",
+                                     schema = @Schema(implementation = PerformanceBaseline.class))),
+        @ApiResponse(responseCode = "400", 
+                    description = "Failed to retrieve baselines")
+    })
     public ResponseEntity<List<PerformanceBaseline>> getBaselines(
+            @Parameter(description = "Name of the test", required = true, example = "rate-limiter-load-test")
             @PathVariable("testName") String testName,
+            @Parameter(description = "Maximum number of baselines to return", example = "10")
             @RequestParam(defaultValue = "10") int limit) {
         try {
             List<PerformanceBaseline> baselines = regressionService.getPerformanceTrend(testName, limit);
@@ -103,8 +159,20 @@ public class PerformanceController {
      * Get performance trend for a specific test.
      */
     @GetMapping("/trend/{testName}")
+    @Operation(summary = "Get performance trend for a test",
+               description = "Retrieves performance trend data showing how metrics have changed over time")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", 
+                    description = "Trend data retrieved successfully",
+                    content = @Content(mediaType = "application/json",
+                                     schema = @Schema(implementation = PerformanceBaseline.class))),
+        @ApiResponse(responseCode = "400", 
+                    description = "Failed to retrieve trend data")
+    })
     public ResponseEntity<List<PerformanceBaseline>> getPerformanceTrend(
+            @Parameter(description = "Name of the test", required = true, example = "rate-limiter-load-test")
             @PathVariable("testName") String testName,
+            @Parameter(description = "Maximum number of data points to return", example = "20")
             @RequestParam(defaultValue = "20") int limit) {
         try {
             List<PerformanceBaseline> trend = regressionService.getPerformanceTrend(testName, limit);
@@ -118,6 +186,10 @@ public class PerformanceController {
      * Health check for performance monitoring.
      */
     @GetMapping("/health")
+    @Operation(summary = "Performance monitoring health check",
+               description = "Check if the performance monitoring service is operational")
+    @ApiResponse(responseCode = "200", 
+                description = "Performance monitoring service is healthy")
     public ResponseEntity<String> health() {
         return ResponseEntity.ok("Performance monitoring service is healthy");
     }
