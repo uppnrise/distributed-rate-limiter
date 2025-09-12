@@ -153,7 +153,7 @@ public class BurstHandlingComparisonTest {
         apiConfig.setCapacity(5);
         apiConfig.setRefillRate(2);
         apiConfig.setAlgorithm(RateLimitAlgorithm.SLIDING_WINDOW);
-        config.getPatterns().put("api:*", apiConfig);
+        config.putPattern("api:*", apiConfig);
         
         ConfigurationResolver resolver = new ConfigurationResolver(config);
         RateLimiterService service = new RateLimiterService(resolver, config);

@@ -3,6 +3,7 @@ package dev.bnacar.distributedratelimiter.models;
 import dev.bnacar.distributedratelimiter.ratelimit.RateLimiterConfiguration;
 
 import java.util.Map;
+import java.util.HashMap;
 
 public class ConfigurationResponse {
     private final int capacity;
@@ -17,8 +18,8 @@ public class ConfigurationResponse {
         this.capacity = capacity;
         this.refillRate = refillRate;
         this.cleanupIntervalMs = cleanupIntervalMs;
-        this.keyConfigs = keyConfigs;
-        this.patternConfigs = patternConfigs;
+        this.keyConfigs = keyConfigs != null ? new HashMap<>(keyConfigs) : new HashMap<>();
+        this.patternConfigs = patternConfigs != null ? new HashMap<>(patternConfigs) : new HashMap<>();
     }
 
     public int getCapacity() {
@@ -34,10 +35,10 @@ public class ConfigurationResponse {
     }
 
     public Map<String, RateLimiterConfiguration.KeyConfig> getKeyConfigs() {
-        return keyConfigs;
+        return new HashMap<>(keyConfigs);
     }
 
     public Map<String, RateLimiterConfiguration.KeyConfig> getPatternConfigs() {
-        return patternConfigs;
+        return new HashMap<>(patternConfigs);
     }
 }
