@@ -33,7 +33,13 @@ class ApiClient {
 
   // Rate limiting operations
   async checkRateLimit(request: RateLimitRequest): Promise<RateLimitResponse> {
-    const response = await this.api.post<RateLimitResponse>('/api/ratelimit/check', request);
+    // Include API key from environment if not already provided
+    const requestWithApiKey = {
+      ...request,
+      apiKey: request.apiKey || import.meta.env.VITE_API_KEY
+    };
+    
+    const response = await this.api.post<RateLimitResponse>('/api/ratelimit/check', requestWithApiKey);
     return response.data;
   }
 
