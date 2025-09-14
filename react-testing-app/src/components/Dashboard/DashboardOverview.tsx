@@ -14,9 +14,9 @@ const DashboardOverview: React.FC<DashboardOverviewProps> = ({ metrics, health, 
         {[...Array(4)].map((_, i) => (
           <div key={i} className="card animate-pulse">
             <div className="card-body">
-              <div className="h-4 bg-dark-700 rounded w-3/4 mb-3"></div>
-              <div className="h-8 bg-dark-700 rounded w-1/2 mb-2"></div>
-              <div className="h-3 bg-dark-700 rounded w-2/3"></div>
+              <div className="h-4 bg-slate-700 rounded w-3/4 mb-3"></div>
+              <div className="h-8 bg-slate-700 rounded w-1/2 mb-2"></div>
+              <div className="h-3 bg-slate-700 rounded w-2/3"></div>
             </div>
           </div>
         ))}
@@ -33,7 +33,7 @@ const DashboardOverview: React.FC<DashboardOverviewProps> = ({ metrics, health, 
     subtitle, 
     icon, 
     gradient, 
-    textColor = 'text-dark-100',
+    textColor = 'text-slate-100',
     trend 
   }: {
     title: string;
@@ -51,16 +51,16 @@ const DashboardOverview: React.FC<DashboardOverviewProps> = ({ metrics, health, 
         
         <div className="relative flex items-start justify-between">
           <div className="flex-1">
-            <p className="text-sm font-semibold text-dark-400 uppercase tracking-wider mb-2">{title}</p>
+            <p className="text-sm font-semibold text-slate-400 uppercase tracking-wider mb-2">{title}</p>
             <p className={`text-3xl font-bold ${textColor} mb-1`}>
               {value}
             </p>
             {subtitle && (
-              <p className="text-sm text-dark-400">{subtitle}</p>
+              <p className="text-sm text-slate-400">{subtitle}</p>
             )}
             {trend && (
               <div className={`flex items-center space-x-1 mt-2 text-xs font-semibold ${
-                trend.positive ? 'text-success-400' : 'text-error-400'
+                trend.positive ? 'text-green-400' : 'text-red-400'
               }`}>
                 <span>{trend.positive ? '↗' : '↘'}</span>
                 <span>{Math.abs(trend.value)}%</span>
@@ -74,7 +74,7 @@ const DashboardOverview: React.FC<DashboardOverviewProps> = ({ metrics, health, 
         </div>
         
         {/* Animated border effect */}
-        <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-transparent via-primary-500/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+        <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-transparent via-blue-500/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
       </div>
     </div>
   );
@@ -83,10 +83,10 @@ const DashboardOverview: React.FC<DashboardOverviewProps> = ({ metrics, health, 
     <div className="space-y-8">
       {/* Header section */}
       <div className="text-center">
-        <h1 className="text-4xl font-bold bg-gradient-to-r from-primary-400 via-accent-400 to-primary-400 bg-clip-text text-transparent mb-2">
+        <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-400 via-cyan-400 to-blue-400 bg-clip-text text-transparent mb-2">
           System Overview
         </h1>
-        <p className="text-dark-400 text-lg">Real-time performance metrics and system health status</p>
+        <p className="text-slate-400 text-lg">Real-time performance metrics and system health status</p>
       </div>
 
       {/* Metrics Grid */}
@@ -96,7 +96,7 @@ const DashboardOverview: React.FC<DashboardOverviewProps> = ({ metrics, health, 
           value={totalRequests.toLocaleString()}
           subtitle="All-time requests processed"
           icon="📈"
-          gradient="bg-gradient-to-br from-primary-600 to-primary-700"
+          gradient="bg-gradient-to-br from-blue-600 to-blue-700"
           trend={{ value: 12.5, positive: true }}
         />
 
@@ -105,8 +105,8 @@ const DashboardOverview: React.FC<DashboardOverviewProps> = ({ metrics, health, 
           value={`${successRate.toFixed(1)}%`}
           subtitle="Requests allowed through"
           icon="✅"
-          gradient="bg-gradient-to-br from-success-600 to-success-700"
-          textColor={successRate >= 80 ? 'text-success-400' : successRate >= 50 ? 'text-warning-400' : 'text-error-400'}
+          gradient="bg-gradient-to-br from-green-600 to-green-700"
+          textColor={successRate >= 80 ? 'text-green-400' : successRate >= 50 ? 'text-yellow-400' : 'text-red-400'}
           trend={{ value: 3.2, positive: successRate >= 80 }}
         />
 
@@ -115,8 +115,8 @@ const DashboardOverview: React.FC<DashboardOverviewProps> = ({ metrics, health, 
           value={metrics?.totalDeniedRequests.toLocaleString() || '0'}
           subtitle="Rate limit violations"
           icon="🚫"
-          gradient="bg-gradient-to-br from-error-600 to-error-700"
-          textColor="text-error-400"
+          gradient="bg-gradient-to-br from-red-600 to-red-700"
+          textColor="text-red-400"
           trend={{ value: 8.1, positive: false }}
         />
 
@@ -125,8 +125,8 @@ const DashboardOverview: React.FC<DashboardOverviewProps> = ({ metrics, health, 
           value={health?.status || 'Unknown'}
           subtitle={metrics ? `Redis: ${metrics.redisConnected ? 'Connected' : 'Disconnected'}` : 'Checking status...'}
           icon={health?.status === 'UP' ? '💚' : '❤️‍🩹'}
-          gradient={`bg-gradient-to-br ${health?.status === 'UP' ? 'from-success-600 to-success-700' : 'from-error-600 to-error-700'}`}
-          textColor={health?.status === 'UP' ? 'text-success-400' : 'text-error-400'}
+          gradient={`bg-gradient-to-br ${health?.status === 'UP' ? 'from-green-600 to-green-700' : 'from-red-600 to-red-700'}`}
+          textColor={health?.status === 'UP' ? 'text-green-400' : 'text-red-400'}
         />
       </div>
 
@@ -136,30 +136,30 @@ const DashboardOverview: React.FC<DashboardOverviewProps> = ({ metrics, health, 
           {/* Performance insight */}
           <div className="card col-span-1 lg:col-span-2">
             <div className="card-header">
-              <h3 className="text-xl font-bold text-dark-100 flex items-center space-x-3">
+              <h3 className="text-xl font-bold text-slate-100 flex items-center space-x-3">
                 <span>⚡</span>
                 <span>Performance Insights</span>
               </h3>
             </div>
             <div className="card-body">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="text-center p-4 bg-dark-700/50 rounded-xl">
-                  <div className="text-2xl font-bold text-primary-400">
+                <div className="text-center p-4 bg-slate-700/50 rounded-xl">
+                  <div className="text-2xl font-bold text-blue-400">
                     {((metrics.totalAllowedRequests / totalRequests) * 100).toFixed(0)}%
                   </div>
-                  <div className="text-sm text-dark-400 mt-1">Efficiency Rate</div>
+                  <div className="text-sm text-slate-400 mt-1">Efficiency Rate</div>
                 </div>
-                <div className="text-center p-4 bg-dark-700/50 rounded-xl">
-                  <div className="text-2xl font-bold text-accent-400">
+                <div className="text-center p-4 bg-slate-700/50 rounded-xl">
+                  <div className="text-2xl font-bold text-cyan-400">
                     {Object.keys(metrics.keyMetrics || {}).length}
                   </div>
-                  <div className="text-sm text-dark-400 mt-1">Active Keys</div>
+                  <div className="text-sm text-slate-400 mt-1">Active Keys</div>
                 </div>
-                <div className="text-center p-4 bg-dark-700/50 rounded-xl">
-                  <div className="text-2xl font-bold text-success-400">
+                <div className="text-center p-4 bg-slate-700/50 rounded-xl">
+                  <div className="text-2xl font-bold text-green-400">
                     {metrics.redisConnected ? 'Online' : 'Offline'}
                   </div>
-                  <div className="text-sm text-dark-400 mt-1">Redis Status</div>
+                  <div className="text-sm text-slate-400 mt-1">Redis Status</div>
                 </div>
               </div>
             </div>
@@ -168,7 +168,7 @@ const DashboardOverview: React.FC<DashboardOverviewProps> = ({ metrics, health, 
           {/* Quick actions */}
           <div className="card">
             <div className="card-header">
-              <h3 className="text-xl font-bold text-dark-100 flex items-center space-x-3">
+              <h3 className="text-xl font-bold text-slate-100 flex items-center space-x-3">
                 <span>🎯</span>
                 <span>Quick Actions</span>
               </h3>
