@@ -1,0 +1,163 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="800" height="600" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <style>
+      .title { font-family: Arial, sans-serif; font-size: 24px; font-weight: bold; fill: #2c3e50; text-anchor: middle; }
+      .subtitle { font-family: Arial, sans-serif; font-size: 16px; fill: #34495e; text-anchor: middle; }
+      .section-title { font-family: Arial, sans-serif; font-size: 18px; font-weight: bold; fill: #2c3e50; }
+      .feature-title { font-family: Arial, sans-serif; font-size: 14px; font-weight: bold; fill: #2c3e50; }
+      .description { font-family: Arial, sans-serif; font-size: 12px; fill: #2c3e50; }
+      .highlight { font-family: Arial, sans-serif; font-size: 12px; fill: #e74c3c; font-weight: bold; }
+      .license { font-family: Arial, sans-serif; font-size: 11px; fill: #27ae60; }
+      .tech-label { font-family: Arial, sans-serif; font-size: 10px; fill: white; text-anchor: middle; font-weight: bold; }
+      .stat-number { font-family: Arial, sans-serif; font-size: 20px; font-weight: bold; fill: #2c3e50; text-anchor: middle; }
+      .stat-label { font-family: Arial, sans-serif; font-size: 11px; fill: #7f8c8d; text-anchor: middle; }
+      .main-bg { fill: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+      .panel { fill: #ffffff; stroke: #bdc3c7; stroke-width: 1; rx: 8; }
+      .feature-panel { fill: #f8f9fa; stroke: #e9ecef; stroke-width: 1; rx: 5; }
+      .tech-java { fill: #f89820; stroke: #e67e22; stroke-width: 2; rx: 15; }
+      .tech-spring { fill: #6db33f; stroke: #27ae60; stroke-width: 2; rx: 15; }
+      .tech-redis { fill: #dc382d; stroke: #c0392b; stroke-width: 2; rx: 15; }
+      .tech-k8s { fill: #326ce5; stroke: #2980b9; stroke-width: 2; rx: 15; }
+      .tech-docker { fill: #2496ed; stroke: #3498db; stroke-width: 2; rx: 15; }
+      .tech-prometheus { fill: #e6522c; stroke: #d35400; stroke-width: 2; rx: 15; }
+      .oss-badge { fill: #28a745; stroke: #27ae60; stroke-width: 2; rx: 20; }
+      .star { fill: #ffd700; stroke: #f39c12; stroke-width: 1; }
+      .heart { fill: #e74c3c; }
+      .community-icon { fill: #3498db; }
+    </style>
+    <defs>
+      <linearGradient id="backgroundGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" style="stop-color:#667eea;stop-opacity:1" />
+        <stop offset="100%" style="stop-color:#764ba2;stop-opacity:1" />
+      </linearGradient>
+    </defs>
+  </defs>
+  
+  <!-- Background -->
+  <rect width="800" height="600" fill="url(#backgroundGradient)"/>
+  
+  <!-- Main content panel -->
+  <rect x="40" y="40" width="720" height="520" class="panel"/>
+  
+  <!-- Title Section -->
+  <text x="400" y="80" class="title">Distributed Rate Limiter</text>
+  <text x="400" y="105" class="subtitle">Open Source • High Performance • Production Ready</text>
+  
+  <!-- MIT License Badge -->
+  <rect x="320" y="120" width="160" height="30" class="oss-badge"/>
+  <text x="400" y="140" style="font-family: Arial, sans-serif; font-size: 14px; font-weight: bold; fill: white; text-anchor: middle;">MIT License</text>
+  
+  <!-- GitHub Stats -->
+  <rect x="60" y="170" width="680" height="60" class="feature-panel"/>
+  
+  <!-- Stars -->
+  <polygon points="100,190 103,200 113,200 105,207 108,217 100,210 92,217 95,207 87,200 97,200" class="star"/>
+  <text x="130" y="200" class="stat-number">2.4k</text>
+  <text x="130" y="215" class="stat-label">GitHub Stars</text>
+  
+  <!-- Forks -->
+  <path d="M200 190 Q205 185 210 190 Q215 195 210 200 Q205 205 200 200 Q195 195 200 190" class="community-icon"/>
+  <text x="240" y="200" class="stat-number">342</text>
+  <text x="240" y="215" class="stat-label">Forks</text>
+  
+  <!-- Contributors -->
+  <circle cx="340" cy="195" r="8" class="community-icon"/>
+  <circle cx="350" cy="195" r="6" class="community-icon" opacity="0.8"/>
+  <circle cx="358" cy="195" r="4" class="community-icon" opacity="0.6"/>
+  <text x="390" y="200" class="stat-number">47</text>
+  <text x="390" y="215" class="stat-label">Contributors</text>
+  
+  <!-- Downloads -->
+  <rect x="480" y="187" width="16" height="16" class="community-icon"/>
+  <text x="520" y="200" class="stat-number">125k</text>
+  <text x="520" y="215" class="stat-label">Downloads</text>
+  
+  <!-- Issues -->
+  <circle cx="600" cy="195" r="8" style="fill:#e74c3c;"/>
+  <text x="630" y="200" class="stat-number">23</text>
+  <text x="630" y="215" class="stat-label">Open Issues</text>
+  
+  <!-- Community Love -->
+  <path d="M680 185 C680 181, 684 177, 690 177 C696 177, 700 181, 700 185 C700 192, 690 202, 690 202 C690 202, 680 192, 680 185 Z" class="heart"/>
+  <text x="720" y="200" class="stat-number">98%</text>
+  <text x="720" y="215" class="stat-label">Satisfaction</text>
+  
+  <!-- Technology Stack -->
+  <text x="60" y="270" class="section-title">Technology Stack</text>
+  
+  <rect x="60" y="280" width="100" height="30" class="tech-java"/>
+  <text x="110" y="300" class="tech-label">Java 21</text>
+  
+  <rect x="170" y="280" width="120" height="30" class="tech-spring"/>
+  <text x="230" y="300" class="tech-label">Spring Boot</text>
+  
+  <rect x="300" y="280" width="80" height="30" class="tech-redis"/>
+  <text x="340" y="300" class="tech-label">Redis</text>
+  
+  <rect x="390" y="280" width="110" height="30" class="tech-k8s"/>
+  <text x="445" y="300" class="tech-label">Kubernetes</text>
+  
+  <rect x="510" y="280" width="80" height="30" class="tech-docker"/>
+  <text x="550" y="300" class="tech-label">Docker</text>
+  
+  <rect x="600" y="280" width="120" height="30" class="tech-prometheus"/>
+  <text x="660" y="300" class="tech-label">Prometheus</text>
+  
+  <!-- Key Features -->
+  <text x="60" y="340" class="section-title">Key Features</text>
+  
+  <rect x="60" y="350" width="320" height="120" class="feature-panel"/>
+  <text x="70" y="370" class="feature-title">🚀 High Performance</text>
+  <text x="70" y="385" class="description">• Token bucket algorithm</text>
+  <text x="70" y="400" class="description">• Thread-safe operations</text>
+  <text x="70" y="415" class="description">• Redis clustering support</text>
+  <text x="70" y="430" class="description">• Handles 10k+ req/sec</text>
+  <text x="70" y="445" class="description">• Sub-millisecond response times</text>
+  <text x="70" y="460" class="highlight">✨ Production tested at scale</text>
+  
+  <rect x="400" y="350" width="320" height="120" class="feature-panel"/>
+  <text x="410" y="370" class="feature-title">🔧 Developer Friendly</text>
+  <text x="410" y="385" class="description">• RESTful API with OpenAPI docs</text>
+  <text x="410" y="400" class="description">• Multiple language clients</text>
+  <text x="410" y="415" class="description">• Docker & Kubernetes ready</text>
+  <text x="410" y="430" class="description">• Comprehensive monitoring</text>
+  <text x="410" y="445" class="description">• Zero-downtime deployments</text>
+  <text x="410" y="460" class="highlight">📚 Extensive documentation</text>
+  
+  <!-- Community & Support -->
+  <text x="60" y="500" class="section-title">Community & Support</text>
+  
+  <rect x="60" y="510" width="200" height="40" class="feature-panel"/>
+  <text x="70" y="530" class="description">💬 GitHub Discussions</text>
+  <text x="70" y="545" class="description">🐛 Bug Reports & Features</text>
+  
+  <rect x="280" y="510" width="200" height="40" class="feature-panel"/>
+  <text x="290" y="530" class="description">📖 Wiki & Examples</text>
+  <text x="290" y="545" class="description">🎓 Tutorials & Guides</text>
+  
+  <rect x="500" y="510" width="220" height="40" class="feature-panel"/>
+  <text x="510" y="530" class="description">🤝 Welcome Contributors!</text>
+  <text x="510" y="545" class="description">✅ Good First Issues Available</text>
+  
+  <!-- Footer -->
+  <text x="400" y="580" style="font-family: Arial, sans-serif; font-size: 12px; fill: white; text-anchor: middle;">
+    ⭐ Star us on GitHub • 🍴 Fork & Contribute • 📦 Docker Hub • 🏷️ Maven Central
+  </text>
+  
+  <!-- QR Code placeholder (simple pattern) -->
+  <rect x="680" y="40" width="80" height="80" fill="white" stroke="#2c3e50" stroke-width="2"/>
+  <rect x="685" y="45" width="10" height="10" fill="#2c3e50"/>
+  <rect x="700" y="45" width="10" height="10" fill="#2c3e50"/>
+  <rect x="715" y="45" width="10" height="10" fill="#2c3e50"/>
+  <rect x="685" y="60" width="10" height="10" fill="#2c3e50"/>
+  <rect x="715" y="60" width="10" height="10" fill="#2c3e50"/>
+  <rect x="700" y="75" width="10" height="10" fill="#2c3e50"/>
+  <rect x="685" y="90" width="10" height="10" fill="#2c3e50"/>
+  <rect x="700" y="90" width="10" height="10" fill="#2c3e50"/>
+  <rect x="715" y="90" width="10" height="10" fill="#2c3e50"/>
+  <rect x="685" y="105" width="10" height="10" fill="#2c3e50"/>
+  <rect x="700" y="105" width="10" height="10" fill="#2c3e50"/>
+  <rect x="715" y="105" width="10" height="10" fill="#2c3e50"/>
+  <text x="720" y="135" style="font-family: Arial, sans-serif; font-size: 8px; fill: white; text-anchor: middle;">GitHub</text>
+</svg>

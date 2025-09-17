@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="800" height="600" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <style>
+      .title { font-family: Arial, sans-serif; font-size: 20px; font-weight: bold; fill: #2c3e50; }
+      .subtitle { font-family: Arial, sans-serif; font-size: 14px; fill: #34495e; }
+      .box { fill: #ecf0f1; stroke: #3498db; stroke-width: 2; rx: 5; }
+      .redis-box { fill: #e74c3c; stroke: #c0392b; stroke-width: 2; rx: 5; }
+      .app-box { fill: #2ecc71; stroke: #27ae60; stroke-width: 2; rx: 5; }
+      .client-box { fill: #f39c12; stroke: #e67e22; stroke-width: 2; rx: 5; }
+      .monitor-box { fill: #9b59b6; stroke: #8e44ad; stroke-width: 2; rx: 5; }
+      .text { font-family: Arial, sans-serif; font-size: 12px; fill: white; text-anchor: middle; }
+      .label { font-family: Arial, sans-serif; font-size: 10px; fill: #2c3e50; text-anchor: middle; }
+      .arrow { stroke: #34495e; stroke-width: 2; fill: none; marker-end: url(#arrowhead); }
+      .flow-text { font-family: Arial, sans-serif; font-size: 10px; fill: #2c3e50; }
+    </style>
+    <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#34495e" />
+    </marker>
+  </defs>
+  
+  <!-- Title -->
+  <text x="400" y="30" class="title">Distributed Rate Limiter Architecture</text>
+  <text x="400" y="50" class="subtitle">Token Bucket Algorithm with Redis Backend</text>
+  
+  <!-- Clients -->
+  <rect x="50" y="100" width="120" height="60" class="client-box"/>
+  <text x="110" y="125" class="text">Client Applications</text>
+  <text x="110" y="140" class="text">(Java, Python, Node.js)</text>
+  
+  <!-- Load Balancer -->
+  <rect x="250" y="100" width="100" height="60" class="box"/>
+  <text x="300" y="125" class="text">Load Balancer</text>
+  <text x="300" y="140" class="text">(Optional)</text>
+  
+  <!-- Rate Limiter Instances -->
+  <rect x="450" y="80" width="120" height="40" class="app-box"/>
+  <text x="510" y="105" class="text">Rate Limiter #1</text>
+  
+  <rect x="450" y="130" width="120" height="40" class="app-box"/>
+  <text x="510" y="155" class="text">Rate Limiter #2</text>
+  
+  <rect x="450" y="180" width="120" height="40" class="app-box"/>
+  <text x="510" y="205" class="text">Rate Limiter #N</text>
+  
+  <!-- Redis -->
+  <rect x="650" y="130" width="100" height="60" class="redis-box"/>
+  <text x="700" y="150" class="text">Redis</text>
+  <text x="700" y="165" class="text">Distributed State</text>
+  <text x="700" y="180" class="text">Token Buckets</text>
+  
+  <!-- Monitoring -->
+  <rect x="450" y="280" width="120" height="60" class="monitor-box"/>
+  <text x="510" y="300" class="text">Monitoring</text>
+  <text x="510" y="315" class="text">Prometheus</text>
+  <text x="510" y="330" class="text">Grafana</text>
+  
+  <!-- Arrows -->
+  <line x1="170" y1="130" x2="245" y2="130" class="arrow"/>
+  <line x1="355" y1="130" x2="445" y2="130" class="arrow"/>
+  <line x1="575" y1="100" x2="645" y2="140" class="arrow"/>
+  <line x1="575" y1="150" x2="645" y2="150" class="arrow"/>
+  <line x1="575" y1="200" x2="645" y2="170" class="arrow"/>
+  <line x1="510" y1="225" x2="510" y2="275" class="arrow"/>
+  
+  <!-- Flow Labels -->
+  <text x="205" y="120" class="flow-text">HTTP/HTTPS</text>
+  <text x="400" y="120" class="flow-text">Rate Limit</text>
+  <text x="400" y="135" class="flow-text">Requests</text>
+  <text x="610" y="125" class="flow-text">Token</text>
+  <text x="610" y="140" class="flow-text">Operations</text>
+  <text x="525" y="255" class="flow-text">Metrics</text>
+  
+  <!-- Key Components -->
+  <text x="50" y="400" class="subtitle">Key Components:</text>
+  
+  <rect x="50" y="420" width="15" height="15" class="client-box"/>
+  <text x="75" y="432" class="label">Client Applications - Send rate limit requests</text>
+  
+  <rect x="50" y="445" width="15" height="15" class="app-box"/>
+  <text x="75" y="457" class="label">Rate Limiter Service - Token bucket algorithm implementation</text>
+  
+  <rect x="50" y="470" width="15" height="15" class="redis-box"/>
+  <text x="75" y="482" class="label">Redis - Distributed state storage for token buckets</text>
+  
+  <rect x="50" y="495" width="15" height="15" class="monitor-box"/>
+  <text x="75" y="507" class="label">Monitoring - Metrics collection and visualization</text>
+  
+  <!-- API Endpoints -->
+  <text x="400" y="400" class="subtitle">Core API Endpoints:</text>
+  <text x="400" y="425" class="label">POST /api/ratelimit/check - Check if request is allowed</text>
+  <text x="400" y="445" class="label">GET /api/ratelimit/config - Get current configuration</text>
+  <text x="400" y="465" class="label">POST /api/ratelimit/config/default - Update default limits</text>
+  <text x="400" y="485" class="label">GET /actuator/health - Service health status</text>
+  <text x="400" y="505" class="label">GET /actuator/metrics - Application metrics</text>
+  
+  <!-- Features -->
+  <text x="50" y="550" class="subtitle">Features: Token Bucket Algorithm | Redis Distributed State | Thread-Safe Operations | Performance Monitoring | Dynamic Configuration</text>
+</svg>

@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="1000" height="800" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <style>
+      .title { font-family: Arial, sans-serif; font-size: 20px; font-weight: bold; fill: #2c3e50; text-anchor: middle; }
+      .subtitle { font-family: Arial, sans-serif; font-size: 14px; fill: #34495e; text-anchor: middle; }
+      .section-title { font-family: Arial, sans-serif; font-size: 16px; font-weight: bold; fill: #2c3e50; }
+      .label { font-family: Arial, sans-serif; font-size: 12px; fill: white; text-anchor: middle; font-weight: bold; }
+      .small-label { font-family: Arial, sans-serif; font-size: 10px; fill: #2c3e50; text-anchor: middle; }
+      .cluster-box { fill: #ecf0f1; stroke: #3498db; stroke-width: 3; rx: 10; stroke-dasharray: 10,5; }
+      .namespace-box { fill: #f8f9fa; stroke: #6c757d; stroke-width: 2; rx: 8; }
+      .pod-box { fill: #2ecc71; stroke: #27ae60; stroke-width: 2; rx: 5; }
+      .service-box { fill: #3498db; stroke: #2980b9; stroke-width: 2; rx: 5; }
+      .redis-box { fill: #e74c3c; stroke: #c0392b; stroke-width: 2; rx: 5; }
+      .ingress-box { fill: #f39c12; stroke: #e67e22; stroke-width: 2; rx: 5; }
+      .config-box { fill: #9b59b6; stroke: #8e44ad; stroke-width: 2; rx: 5; }
+      .hpa-box { fill: #1abc9c; stroke: #16a085; stroke-width: 2; rx: 5; }
+      .pdb-box { fill: #e67e22; stroke: #d35400; stroke-width: 2; rx: 5; }
+      .arrow { stroke: #34495e; stroke-width: 2; fill: none; marker-end: url(#arrowhead); }
+      .connection { stroke: #7f8c8d; stroke-width: 1; stroke-dasharray: 3,3; }
+    </style>
+    <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#34495e" />
+    </marker>
+  </defs>
+  
+  <!-- Title -->
+  <text x="500" y="30" class="title">Kubernetes Deployment Architecture</text>
+  <text x="500" y="50" class="subtitle">Production-Ready Distributed Rate Limiter</text>
+  
+  <!-- Kubernetes Cluster -->
+  <rect x="50" y="80" width="900" height="650" class="cluster-box"/>
+  <text x="80" y="105" class="section-title">Kubernetes Cluster</text>
+  
+  <!-- Namespace: rate-limiter -->
+  <rect x="80" y="130" width="840" height="580" class="namespace-box"/>
+  <text x="110" y="155" class="section-title">Namespace: rate-limiter</text>
+  
+  <!-- Ingress -->
+  <rect x="100" y="180" width="800" height="50" class="ingress-box"/>
+  <text x="500" y="210" class="label">Ingress Controller (NGINX)</text>
+  <text x="500" y="225" class="small-label">rate-limiter.example.com → Service</text>
+  
+  <!-- Service -->
+  <rect x="300" y="260" width="400" height="40" class="service-box"/>
+  <text x="500" y="285" class="label">Service: rate-limiter-service (ClusterIP)</text>
+  
+  <!-- HPA -->
+  <rect x="750" y="330" width="150" height="40" class="hpa-box"/>
+  <text x="825" y="355" class="label">HPA</text>
+  <text x="825" y="368" class="small-label">3-10 replicas</text>
+  
+  <!-- PodDisruptionBudget -->
+  <rect x="750" y="380" width="150" height="40" class="pdb-box"/>
+  <text x="825" y="405" class="label">PodDisruptionBudget</text>
+  <text x="825" y="418" class="small-label">minAvailable: 2</text>
+  
+  <!-- Rate Limiter Pods -->
+  <rect x="120" y="330" width="120" height="80" class="pod-box"/>
+  <text x="180" y="360" class="label">Pod 1</text>
+  <text x="180" y="375" class="small-label">rate-limiter:latest</text>
+  <text x="180" y="390" class="small-label">CPU: 200m-1000m</text>
+  <text x="180" y="405" class="small-label">Memory: 512Mi-1Gi</text>
+  
+  <rect x="260" y="330" width="120" height="80" class="pod-box"/>
+  <text x="320" y="360" class="label">Pod 2</text>
+  <text x="320" y="375" class="small-label">rate-limiter:latest</text>
+  <text x="320" y="390" class="small-label">CPU: 200m-1000m</text>
+  <text x="320" y="405" class="small-label">Memory: 512Mi-1Gi</text>
+  
+  <rect x="400" y="330" width="120" height="80" class="pod-box"/>
+  <text x="460" y="360" class="label">Pod 3</text>
+  <text x="460" y="375" class="small-label">rate-limiter:latest</text>
+  <text x="460" y="390" class="small-label">CPU: 200m-1000m</text>
+  <text x="460" y="405" class="small-label">Memory: 512Mi-1Gi</text>
+  
+  <!-- ConfigMap and Secrets -->
+  <rect x="120" y="440" width="150" height="60" class="config-box"/>
+  <text x="195" y="465" class="label">ConfigMap</text>
+  <text x="195" y="480" class="small-label">rate-limiter-config</text>
+  <text x="195" y="495" class="small-label">application.properties</text>
+  
+  <rect x="290" y="440" width="150" height="60" class="config-box"/>
+  <text x="365" y="465" class="label">Secret</text>
+  <text x="365" y="480" class="small-label">redis-credentials</text>
+  <text x="365" y="495" class="small-label">API keys, passwords</text>
+  
+  <!-- Redis Deployment -->
+  <rect x="520" y="440" width="200" height="120" class="redis-box"/>
+  <text x="620" y="470" class="label">Redis Deployment</text>
+  <text x="620" y="490" class="small-label">Redis Pod 1</text>
+  <text x="620" y="505" class="small-label">redis:7-alpine</text>
+  <text x="620" y="520" class="small-label">Persistent Volume</text>
+  <text x="620" y="535" class="small-label">Redis Service</text>
+  <text x="620" y="550" class="small-label">port: 6379</text>
+  
+  <!-- Monitoring -->
+  <rect x="120" y="580" width="280" height="100" class="namespace-box"/>
+  <text x="130" y="605" class="section-title">Monitoring Stack</text>
+  
+  <rect x="130" y="620" width="80" height="30" class="service-box"/>
+  <text x="170" y="640" class="small-label">Prometheus</text>
+  
+  <rect x="220" y="620" width="80" height="30" class="service-box"/>
+  <text x="260" y="640" class="small-label">Grafana</text>
+  
+  <rect x="310" y="620" width="80" height="30" class="service-box"/>
+  <text x="350" y="640" class="small-label">AlertManager</text>
+  
+  <rect x="130" y="655" width="260" height="20" class="small-label"/>
+  <text x="260" y="668" class="small-label">ServiceMonitor for metrics scraping</text>
+  
+  <!-- Storage -->
+  <rect x="450" y="580" width="270" height="100" class="namespace-box"/>
+  <text x="460" y="605" class="section-title">Storage</text>
+  
+  <rect x="460" y="620" width="120" height="30" class="config-box"/>
+  <text x="520" y="640" class="small-label">PersistentVolume</text>
+  
+  <rect x="590" y="620" width="120" height="30" class="config-box"/>
+  <text x="650" y="640" class="small-label">StorageClass</text>
+  
+  <rect x="460" y="655" width="250" height="20" class="small-label"/>
+  <text x="585" y="668" class="small-label">Redis data persistence & backup</text>
+  
+  <!-- Arrows and connections -->
+  <line x1="500" y1="230" x2="500" y2="255" class="arrow"/>
+  <line x1="500" y1="300" x2="180" y2="325" class="arrow"/>
+  <line x1="500" y1="300" x2="320" y2="325" class="arrow"/>
+  <line x1="500" y1="300" x2="460" y2="325" class="arrow"/>
+  
+  <line x1="825" y1="370" x2="460" y2="350" class="connection"/>
+  <line x1="825" y1="420" x2="460" y2="370" class="connection"/>
+  
+  <line x1="180" y1="415" x2="195" y2="435" class="connection"/>
+  <line x1="320" y1="415" x2="365" y2="435" class="connection"/>
+  
+  <line x1="460" y1="415" x2="620" y2="435" class="connection"/>
+  <line x1="320" y1="415" x2="620" y2="435" class="connection"/>
+  <line x1="180" y1="415" x2="620" y2="435" class="connection"/>
+  
+  <!-- Environment labels -->
+  <text x="750" y="280" class="section-title">Environment: Production</text>
+  <text x="750" y="300" class="small-label">• Auto-scaling enabled</text>
+  <text x="750" y="315" class="small-label">• High availability setup</text>
+  
+  <!-- Features -->
+  <text x="80" y="750" class="section-title">Key Features:</text>
+  <text x="80" y="770" class="small-label">✓ Rolling updates with zero downtime  ✓ Auto-scaling (HPA)  ✓ Pod disruption budgets  ✓ Persistent Redis storage</text>
+  <text x="80" y="785" class="small-label">✓ Configuration management  ✓ Secret management  ✓ Health checks & readiness probes  ✓ Monitoring & alerting</text>
+</svg>

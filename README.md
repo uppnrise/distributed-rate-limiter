@@ -14,6 +14,75 @@ A distributed token bucket rate limiter implementation in Java with comprehensiv
 - **Performance benchmarking** tools for load testing and optimization
 - **Security features** including API key authentication and IP filtering
 
+## 🏗️ Architecture Overview
+
+### System Architecture
+
+![Architecture Overview](docs/images/architecture-overview.svg)
+
+The distributed rate limiter uses a token bucket algorithm with Redis as the backend for sharing state across multiple application instances. Each component is designed for high availability and scalability.
+
+### Rate Limiting Flow
+
+![Rate Limit Sequence](docs/images/rate-limit-sequence.svg)
+
+The rate limiting flow follows a simple but effective sequence:
+1. Client sends rate limit check request
+2. Service retrieves configuration for the key
+3. Current token bucket state is fetched from Redis
+4. Tokens are refilled based on elapsed time
+5. Request is allowed/denied based on available tokens
+6. Bucket state is updated in Redis
+7. Response is returned to client
+
+### Health Check Response
+
+![Health Check](https://github.com/user-attachments/assets/f1fd9923-7402-4cc8-84c7-04a15301cdc4)
+
+The health endpoint provides real-time status information about the application and its dependencies.
+
+### Interactive API Documentation
+
+![Swagger UI](https://github.com/user-attachments/assets/89ccf6fa-9144-43c0-9fbd-2893d3daab7b)
+
+Complete API documentation is available through Swagger UI, providing interactive testing capabilities for all endpoints.
+
+### Performance Metrics
+
+![Performance Metrics](docs/images/performance-metrics.svg)
+
+Real-time performance monitoring shows request rates, response times, and system resource utilization.
+
+### Monitoring Dashboard
+
+![Monitoring Dashboard](docs/images/monitoring-dashboard.svg)
+
+Comprehensive Grafana dashboard provides production-ready monitoring with alerts and SLA tracking.
+
+### Configuration Management
+
+![Configuration Dashboard](docs/images/configuration-dashboard.svg)
+
+Web-based configuration interface allows real-time updates to rate limiting rules without service restarts.
+
+### Kubernetes Deployment
+
+![Kubernetes Deployment](docs/images/kubernetes-deployment.svg)
+
+Production-ready Kubernetes deployment with auto-scaling, health checks, and persistent storage.
+
+### Metrics Endpoint
+
+![Metrics](https://github.com/user-attachments/assets/db440d91-dfa7-4dc1-875b-679a6f20340b)
+
+Prometheus-compatible metrics endpoint provides detailed application and business metrics.
+
+## 🌟 Open Source Community
+
+![Open Source](docs/images/community-open-source.svg)
+
+This project is proudly open source under the MIT License. We welcome contributions, bug reports, and feature requests from the community.
+
 ## 📚 Documentation
 
 ### API Documentation

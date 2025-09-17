@@ -1,0 +1,197 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="1000" height="700" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <style>
+      .title { font-family: Arial, sans-serif; font-size: 18px; font-weight: bold; fill: #2c3e50; text-anchor: middle; }
+      .chart-title { font-family: Arial, sans-serif; font-size: 14px; font-weight: bold; fill: #2c3e50; text-anchor: middle; }
+      .axis-label { font-family: Arial, sans-serif; font-size: 10px; fill: #34495e; text-anchor: middle; }
+      .legend { font-family: Arial, sans-serif; font-size: 10px; fill: #2c3e50; }
+      .grid { stroke: #bdc3c7; stroke-width: 0.5; }
+      .axis { stroke: #34495e; stroke-width: 2; }
+      .chart-bg { fill: #ffffff; stroke: #bdc3c7; stroke-width: 1; }
+      .requests-line { stroke: #3498db; stroke-width: 2; fill: none; }
+      .allowed-line { stroke: #2ecc71; stroke-width: 2; fill: none; }
+      .denied-line { stroke: #e74c3c; stroke-width: 2; fill: none; }
+      .response-time-line { stroke: #9b59b6; stroke-width: 2; fill: none; }
+      .cpu-area { fill: #f39c12; opacity: 0.3; }
+      .memory-area { fill: #1abc9c; opacity: 0.3; }
+      .metric-value { font-family: Arial, sans-serif; font-size: 16px; font-weight: bold; fill: #2c3e50; text-anchor: middle; }
+      .metric-label { font-family: Arial, sans-serif; font-size: 12px; fill: #7f8c8d; text-anchor: middle; }
+    </style>
+  </defs>
+  
+  <!-- Title -->
+  <text x="500" y="25" class="title">Performance Metrics Dashboard</text>
+  
+  <!-- Request Rate Chart -->
+  <rect x="50" y="50" width="400" height="250" class="chart-bg"/>
+  <text x="250" y="75" class="chart-title">Request Rate (requests/sec)</text>
+  
+  <!-- Grid lines for Request Rate -->
+  <line x1="50" y1="100" x2="450" y2="100" class="grid"/>
+  <line x1="50" y1="150" x2="450" y2="150" class="grid"/>
+  <line x1="50" y1="200" x2="450" y2="200" class="grid"/>
+  <line x1="50" y1="250" x2="450" y2="250" class="grid"/>
+  
+  <line x1="100" y1="80" x2="100" y2="280" class="grid"/>
+  <line x1="200" y1="80" x2="200" y2="280" class="grid"/>
+  <line x1="300" y1="80" x2="300" y2="280" class="grid"/>
+  <line x1="400" y1="80" x2="400" y2="280" class="grid"/>
+  
+  <!-- Axes for Request Rate -->
+  <line x1="50" y1="280" x2="450" y2="280" class="axis"/>
+  <line x1="50" y1="80" x2="50" y2="280" class="axis"/>
+  
+  <!-- Request Rate Lines -->
+  <polyline points="50,200 100,180 150,160 200,140 250,120 300,110 350,115 400,120 450,125" class="requests-line"/>
+  <polyline points="50,220 100,200 150,180 200,160 250,140 300,130 350,135 400,140 450,145" class="allowed-line"/>
+  <polyline points="50,270 100,265 150,260 200,250 250,240 300,245 350,250 400,255 450,260" class="denied-line"/>
+  
+  <!-- Labels for Request Rate -->
+  <text x="25" y="130" class="axis-label" transform="rotate(-90 25 130)">Requests/sec</text>
+  <text x="250" y="295" class="axis-label">Time</text>
+  
+  <!-- Y-axis labels -->
+  <text x="45" y="85" class="axis-label">200</text>
+  <text x="45" y="135" class="axis-label">150</text>
+  <text x="45" y="185" class="axis-label">100</text>
+  <text x="45" y="235" class="axis-label">50</text>
+  <text x="45" y="285" class="axis-label">0</text>
+  
+  <!-- Response Time Chart -->
+  <rect x="500" y="50" width="400" height="250" class="chart-bg"/>
+  <text x="700" y="75" class="chart-title">Response Time (ms)</text>
+  
+  <!-- Grid lines for Response Time -->
+  <line x1="500" y1="100" x2="900" y2="100" class="grid"/>
+  <line x1="500" y1="150" x2="900" y2="150" class="grid"/>
+  <line x1="500" y1="200" x2="900" y2="200" class="grid"/>
+  <line x1="500" y1="250" x2="900" y2="250" class="grid"/>
+  
+  <line x1="550" y1="80" x2="550" y2="280" class="grid"/>
+  <line x1="650" y1="80" x2="650" y2="280" class="grid"/>
+  <line x1="750" y1="80" x2="750" y2="280" class="grid"/>
+  <line x1="850" y1="80" x2="850" y2="280" class="grid"/>
+  
+  <!-- Axes for Response Time -->
+  <line x1="500" y1="280" x2="900" y2="280" class="axis"/>
+  <line x1="500" y1="80" x2="500" y2="280" class="axis"/>
+  
+  <!-- Response Time Line -->
+  <polyline points="500,250 550,240 600,230 650,220 700,210 750,200 800,195 850,190 900,185" class="response-time-line"/>
+  
+  <!-- Labels for Response Time -->
+  <text x="475" y="180" class="axis-label" transform="rotate(-90 475 180)">Milliseconds</text>
+  <text x="700" y="295" class="axis-label">Time</text>
+  
+  <!-- Y-axis labels for Response Time -->
+  <text x="495" y="85" class="axis-label">50</text>
+  <text x="495" y="135" class="axis-label">40</text>
+  <text x="495" y="185" class="axis-label">30</text>
+  <text x="495" y="235" class="axis-label">20</text>
+  <text x="495" y="285" class="axis-label">10</text>
+  
+  <!-- Resource Utilization Chart -->
+  <rect x="50" y="350" width="400" height="250" class="chart-bg"/>
+  <text x="250" y="375" class="chart-title">Resource Utilization (%)</text>
+  
+  <!-- Grid lines for Resource Utilization -->
+  <line x1="50" y1="400" x2="450" y2="400" class="grid"/>
+  <line x1="50" y1="450" x2="450" y2="450" class="grid"/>
+  <line x1="50" y1="500" x2="450" y2="500" class="grid"/>
+  <line x1="50" y1="550" x2="450" y2="550" class="grid"/>
+  
+  <line x1="100" y1="380" x2="100" y2="580" class="grid"/>
+  <line x1="200" y1="380" x2="200" y2="580" class="grid"/>
+  <line x1="300" y1="380" x2="300" y2="580" class="grid"/>
+  <line x1="400" y1="380" x2="400" y2="580" class="grid"/>
+  
+  <!-- Axes for Resource Utilization -->
+  <line x1="50" y1="580" x2="450" y2="580" class="axis"/>
+  <line x1="50" y1="380" x2="50" y2="580" class="axis"/>
+  
+  <!-- CPU Area -->
+  <polygon points="50,520 100,510 150,500 200,490 250,480 300,470 350,465 400,460 450,455 450,580 50,580" class="cpu-area"/>
+  
+  <!-- Memory Area -->
+  <polygon points="50,550 100,540 150,535 200,530 250,525 300,520 350,515 400,510 450,505 450,580 50,580" class="memory-area"/>
+  
+  <!-- Labels for Resource Utilization -->
+  <text x="25" y="480" class="axis-label" transform="rotate(-90 25 480)">Percentage</text>
+  <text x="250" y="595" class="axis-label">Time</text>
+  
+  <!-- Y-axis labels for Resource Utilization -->
+  <text x="45" y="385" class="axis-label">100</text>
+  <text x="45" y="435" class="axis-label">75</text>
+  <text x="45" y="485" class="axis-label">50</text>
+  <text x="45" y="535" class="axis-label">25</text>
+  <text x="45" y="585" class="axis-label">0</text>
+  
+  <!-- Key Metrics Dashboard -->
+  <rect x="500" y="350" width="400" height="250" class="chart-bg"/>
+  <text x="700" y="375" class="chart-title">Key Performance Indicators</text>
+  
+  <!-- Metric Boxes -->
+  <rect x="520" y="400" width="90" height="60" style="fill:#3498db;opacity:0.1;stroke:#3498db;stroke-width:1"/>
+  <text x="565" y="425" class="metric-value">1,847</text>
+  <text x="565" y="445" class="metric-label">Total Requests</text>
+  <text x="565" y="455" class="metric-label">/minute</text>
+  
+  <rect x="620" y="400" width="90" height="60" style="fill:#2ecc71;opacity:0.1;stroke:#2ecc71;stroke-width:1"/>
+  <text x="665" y="425" class="metric-value">1,832</text>
+  <text x="665" y="445" class="metric-label">Allowed</text>
+  <text x="665" y="455" class="metric-label">99.2%</text>
+  
+  <rect x="720" y="400" width="90" height="60" style="fill:#e74c3c;opacity:0.1;stroke:#e74c3c;stroke-width:1"/>
+  <text x="765" y="425" class="metric-value">15</text>
+  <text x="765" y="445" class="metric-label">Denied</text>
+  <text x="765" y="455" class="metric-label">0.8%</text>
+  
+  <rect x="820" y="400" width="70" height="60" style="fill:#9b59b6;opacity:0.1;stroke:#9b59b6;stroke-width:1"/>
+  <text x="855" y="425" class="metric-value">12ms</text>
+  <text x="855" y="445" class="metric-label">Avg Response</text>
+  <text x="855" y="455" class="metric-label">Time</text>
+  
+  <rect x="520" y="480" width="90" height="60" style="fill:#f39c12;opacity:0.1;stroke:#f39c12;stroke-width:1"/>
+  <text x="565" y="505" class="metric-value">45%</text>
+  <text x="565" y="525" class="metric-label">CPU Usage</text>
+  <text x="565" y="535" class="metric-label">Average</text>
+  
+  <rect x="620" y="480" width="90" height="60" style="fill:#1abc9c;opacity:0.1;stroke:#1abc9c;stroke-width:1"/>
+  <text x="665" y="505" class="metric-value">512MB</text>
+  <text x="665" y="525" class="metric-label">Memory Usage</text>
+  <text x="665" y="535" class="metric-label">Current</text>
+  
+  <rect x="720" y="480" width="90" height="60" style="fill:#e67e22;opacity:0.1;stroke:#e67e22;stroke-width:1"/>
+  <text x="765" y="505" class="metric-value">3</text>
+  <text x="765" y="525" class="metric-label">Active Pods</text>
+  <text x="765" y="535" class="metric-label">Healthy</text>
+  
+  <rect x="820" y="480" width="70" height="60" style="fill:#27ae60;opacity:0.1;stroke:#27ae60;stroke-width:1"/>
+  <text x="855" y="505" class="metric-value">UP</text>
+  <text x="855" y="525" class="metric-label">Redis</text>
+  <text x="855" y="535" class="metric-label">Status</text>
+  
+  <!-- Legend -->
+  <rect x="70" y="620" width="15" height="3" class="requests-line"/>
+  <text x="90" y="625" class="legend">Total Requests</text>
+  
+  <rect x="200" y="620" width="15" height="3" class="allowed-line"/>
+  <text x="220" y="625" class="legend">Allowed Requests</text>
+  
+  <rect x="340" y="620" width="15" height="3" class="denied-line"/>
+  <text x="360" y="625" class="legend">Denied Requests</text>
+  
+  <rect x="480" y="620" width="15" height="3" class="response-time-line"/>
+  <text x="500" y="625" class="legend">Response Time</text>
+  
+  <rect x="600" y="620" width="15" height="10" class="cpu-area"/>
+  <text x="620" y="630" class="legend">CPU Usage</text>
+  
+  <rect x="700" y="620" width="15" height="10" class="memory-area"/>
+  <text x="720" y="630" class="legend">Memory Usage</text>
+  
+  <!-- Performance indicators -->
+  <text x="50" y="660" class="axis-label">• Real-time monitoring with 15-second intervals • Auto-scaling triggers at 70% CPU • SLA: 99.5% uptime, &lt;50ms response time</text>
+  <text x="50" y="680" class="axis-label">• Prometheus metrics collection • Grafana dashboards • AlertManager notifications • Performance baseline tracking</text>
+</svg>

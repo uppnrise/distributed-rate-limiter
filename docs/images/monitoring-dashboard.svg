@@ -1,0 +1,285 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="1200" height="900" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <style>
+      .title { font-family: Arial, sans-serif; font-size: 20px; font-weight: bold; fill: #2c3e50; text-anchor: middle; }
+      .panel-title { font-family: Arial, sans-serif; font-size: 14px; font-weight: bold; fill: #2c3e50; }
+      .metric-title { font-family: Arial, sans-serif; font-size: 12px; font-weight: bold; fill: #2c3e50; text-anchor: middle; }
+      .metric-value { font-family: Arial, sans-serif; font-size: 24px; font-weight: bold; fill: #2c3e50; text-anchor: middle; }
+      .metric-unit { font-family: Arial, sans-serif; font-size: 10px; fill: #7f8c8d; text-anchor: middle; }
+      .label { font-family: Arial, sans-serif; font-size: 10px; fill: #2c3e50; }
+      .axis-label { font-family: Arial, sans-serif; font-size: 9px; fill: #7f8c8d; text-anchor: middle; }
+      .panel { fill: #ffffff; stroke: #bdc3c7; stroke-width: 1; rx: 5; }
+      .header { fill: #34495e; rx: 5; }
+      .metric-panel { fill: #ffffff; stroke: #bdc3c7; stroke-width: 1; rx: 3; }
+      .good { fill: #2ecc71; }
+      .warning { fill: #f39c12; }
+      .critical { fill: #e74c3c; }
+      .info { fill: #3498db; }
+      .grid { stroke: #ecf0f1; stroke-width: 0.5; }
+      .axis { stroke: #bdc3c7; stroke-width: 1; }
+      .line-blue { stroke: #3498db; stroke-width: 2; fill: none; }
+      .line-green { stroke: #2ecc71; stroke-width: 2; fill: none; }
+      .line-red { stroke: #e74c3c; stroke-width: 2; fill: none; }
+      .line-orange { stroke: #f39c12; stroke-width: 2; fill: none; }
+      .area-blue { fill: #3498db; opacity: 0.3; }
+      .area-green { fill: #2ecc71; opacity: 0.3; }
+    </style>
+  </defs>
+  
+  <!-- Title -->
+  <text x="600" y="25" class="title">Rate Limiter Monitoring Dashboard</text>
+  
+  <!-- Header -->
+  <rect x="20" y="40" width="1160" height="35" class="header"/>
+  <text x="30" y="62" style="font-family: Arial, sans-serif; font-size: 14px; font-weight: bold; fill: white;">Grafana Dashboard - Distributed Rate Limiter</text>
+  <text x="950" y="62" style="font-family: Arial, sans-serif; font-size: 11px; fill: white;">Last updated: 2025-01-15 10:35:23 UTC</text>
+  <text x="1100" y="62" style="font-family: Arial, sans-serif; font-size: 11px; fill: white;">Refresh: 15s</text>
+  
+  <!-- Key Metrics Row -->
+  <rect x="20" y="90" width="180" height="80" class="metric-panel"/>
+  <text x="110" y="110" class="metric-title">Total Requests</text>
+  <text x="110" y="135" class="metric-value">1,847</text>
+  <text x="110" y="150" class="metric-unit">/minute</text>
+  <text x="110" y="165" style="font-size: 10px; fill: #2ecc71; text-anchor: middle;">↑ 12.3%</text>
+  
+  <rect x="220" y="90" width="180" height="80" class="metric-panel"/>
+  <text x="310" y="110" class="metric-title">Success Rate</text>
+  <text x="310" y="135" class="metric-value">99.2%</text>
+  <text x="310" y="150" class="metric-unit">allowed</text>
+  <text x="310" y="165" style="font-size: 10px; fill: #2ecc71; text-anchor: middle;">✓ Excellent</text>
+  
+  <rect x="420" y="90" width="180" height="80" class="metric-panel"/>
+  <text x="510" y="110" class="metric-title">Avg Response Time</text>
+  <text x="510" y="135" class="metric-value">12ms</text>
+  <text x="510" y="150" class="metric-unit">p95: 18ms</text>
+  <text x="510" y="165" style="font-size: 10px; fill: #2ecc71; text-anchor: middle;">↓ 2.1ms</text>
+  
+  <rect x="620" y="90" width="180" height="80" class="metric-panel"/>
+  <text x="710" y="110" class="metric-title">Active Connections</text>
+  <text x="710" y="135" class="metric-value">2,107</text>
+  <text x="710" y="150" class="metric-unit">clients</text>
+  <text x="710" y="165" style="font-size: 10px; fill: #3498db; text-anchor: middle;">↑ 15 new</text>
+  
+  <rect x="820" y="90" width="180" height="80" class="metric-panel"/>
+  <text x="910" y="110" class="metric-title">Redis Latency</text>
+  <text x="910" y="135" class="metric-value">6ms</text>
+  <text x="910" y="150" class="metric-unit">avg</text>
+  <text x="910" y="165" style="font-size: 10px; fill: #2ecc71; text-anchor: middle;">✓ Healthy</text>
+  
+  <rect x="1020" y="90" width="160" height="80" class="metric-panel"/>
+  <text x="1100" y="110" class="metric-title">CPU Usage</text>
+  <text x="1100" y="135" class="metric-value">45%</text>
+  <text x="1100" y="150" class="metric-unit">3 pods</text>
+  <text x="1100" y="165" style="font-size: 10px; fill: #2ecc71; text-anchor: middle;">Normal</text>
+  
+  <!-- Request Rate Chart -->
+  <rect x="20" y="190" width="560" height="240" class="panel"/>
+  <text x="30" y="210" class="panel-title">Request Rate Over Time</text>
+  
+  <!-- Grid lines -->
+  <line x1="60" y1="230" x2="560" y2="230" class="grid"/>
+  <line x1="60" y1="270" x2="560" y2="270" class="grid"/>
+  <line x1="60" y1="310" x2="560" y2="310" class="grid"/>
+  <line x1="60" y1="350" x2="560" y2="350" class="grid"/>
+  <line x1="60" y1="390" x2="560" y2="390" class="grid"/>
+  
+  <line x1="120" y1="220" x2="120" y2="410" class="grid"/>
+  <line x1="220" y1="220" x2="220" y2="410" class="grid"/>
+  <line x1="320" y1="220" x2="320" y2="410" class="grid"/>
+  <line x1="420" y1="220" x2="420" y2="410" class="grid"/>
+  <line x1="520" y1="220" x2="520" y2="410" class="grid"/>
+  
+  <!-- Axes -->
+  <line x1="60" y1="410" x2="560" y2="410" class="axis"/>
+  <line x1="60" y1="220" x2="60" y2="410" class="axis"/>
+  
+  <!-- Lines -->
+  <polyline points="60,350 120,330 180,310 240,290 300,270 360,250 420,240 480,235 540,230" class="line-blue"/>
+  <polyline points="60,380 120,360 180,340 240,320 300,300 360,280 420,270 480,265 540,260" class="line-green"/>
+  <polyline points="60,400 120,395 180,390 240,385 300,380 360,375 420,370 480,365 540,360" class="line-red"/>
+  
+  <!-- Y-axis labels -->
+  <text x="55" y="225" class="axis-label">2000</text>
+  <text x="55" y="275" class="axis-label">1500</text>
+  <text x="55" y="325" class="axis-label">1000</text>
+  <text x="55" y="375" class="axis-label">500</text>
+  <text x="55" y="415" class="axis-label">0</text>
+  
+  <!-- X-axis labels -->
+  <text x="120" y="425" class="axis-label">10:20</text>
+  <text x="220" y="425" class="axis-label">10:25</text>
+  <text x="320" y="425" class="axis-label">10:30</text>
+  <text x="420" y="425" class="axis-label">10:35</text>
+  
+  <!-- Legend -->
+  <rect x="450" y="200" width="15" height="3" class="line-blue"/>
+  <text x="470" y="205" style="font-size: 10px; fill: #2c3e50;">Total</text>
+  <rect x="450" y="210" width="15" height="3" class="line-green"/>
+  <text x="470" y="215" style="font-size: 10px; fill: #2c3e50;">Allowed</text>
+  <rect x="500" y="200" width="15" height="3" class="line-red"/>
+  <text x="520" y="205" style="font-size: 10px; fill: #2c3e50;">Denied</text>
+  
+  <!-- Response Time Chart -->
+  <rect x="600" y="190" width="580" height="240" class="panel"/>
+  <text x="610" y="210" class="panel-title">Response Time Distribution</text>
+  
+  <!-- Grid lines -->
+  <line x1="640" y1="230" x2="1160" y2="230" class="grid"/>
+  <line x1="640" y1="270" x2="1160" y2="270" class="grid"/>
+  <line x1="640" y1="310" x2="1160" y2="310" class="grid"/>
+  <line x1="640" y1="350" x2="1160" y2="350" class="grid"/>
+  <line x1="640" y1="390" x2="1160" y2="390" class="grid"/>
+  
+  <line x1="720" y1="220" x2="720" y2="410" class="grid"/>
+  <line x1="840" y1="220" x2="840" y2="410" class="grid"/>
+  <line x1="960" y1="220" x2="960" y2="410" class="grid"/>
+  <line x1="1080" y1="220" x2="1080" y2="410" class="grid"/>
+  
+  <!-- Axes -->
+  <line x1="640" y1="410" x2="1160" y2="410" class="axis"/>
+  <line x1="640" y1="220" x2="640" y2="410" class="axis"/>
+  
+  <!-- Response time area chart -->
+  <polygon points="640,390 720,380 840,350 960,340 1080,330 1160,320 1160,410 640,410" class="area-blue"/>
+  <polyline points="640,390 720,380 840,350 960,340 1080,330 1160,320" class="line-blue"/>
+  
+  <!-- Y-axis labels -->
+  <text x="635" y="225" class="axis-label">50ms</text>
+  <text x="635" y="275" class="axis-label">40ms</text>
+  <text x="635" y="325" class="axis-label">30ms</text>
+  <text x="635" y="375" class="axis-label">20ms</text>
+  <text x="635" y="415" class="axis-label">10ms</text>
+  
+  <!-- Error Rate and Alerts -->
+  <rect x="20" y="450" width="280" height="200" class="panel"/>
+  <text x="30" y="470" class="panel-title">Error Rate & Alerts</text>
+  
+  <!-- Error rate gauge -->
+  <circle cx="160" cy="540" r="50" fill="none" stroke="#ecf0f1" stroke-width="8"/>
+  <circle cx="160" cy="540" r="50" fill="none" stroke="#2ecc71" stroke-width="8" 
+          stroke-dasharray="15 300" transform="rotate(-90 160 540)"/>
+  <text x="160" y="548" class="metric-value" style="font-size: 18px;">0.8%</text>
+  <text x="160" y="560" class="metric-unit">error rate</text>
+  
+  <!-- Alert indicators -->
+  <rect x="30" y="600" width="240" height="20" style="fill:#d5f4e6;stroke:#27ae60;stroke-width:1;rx:3"/>
+  <circle cx="40" cy="610" r="3" class="good"/>
+  <text x="50" y="614" style="font-size: 10px; fill: #27ae60;">All systems operational</text>
+  
+  <text x="30" y="635" style="font-size: 11px; fill: #2c3e50;">Last Alert:</text>
+  <text x="90" y="635" style="font-size: 11px; fill: #7f8c8d;">2 hours ago</text>
+  
+  <!-- Redis Performance -->
+  <rect x="320" y="450" width="280" height="200" class="panel"/>
+  <text x="330" y="470" class="panel-title">Redis Performance</text>
+  
+  <!-- Redis metrics -->
+  <text x="330" y="495" class="label">Connection Pool:</text>
+  <rect x="330" y="505" width="200" height="12" style="fill:#ecf0f1;stroke:#bdc3c7;stroke-width:1"/>
+  <rect x="330" y="505" width="140" height="12" class="good"/>
+  <text x="540" y="515" style="font-size: 10px; fill: #2c3e50;">70/100 active</text>
+  
+  <text x="330" y="535" class="label">Memory Usage:</text>
+  <rect x="330" y="545" width="200" height="12" style="fill:#ecf0f1;stroke:#bdc3c7;stroke-width:1"/>
+  <rect x="330" y="545" width="90" height="12" class="good"/>
+  <text x="540" y="555" style="font-size: 10px; fill: #2c3e50;">45.2MB/100MB</text>
+  
+  <text x="330" y="575" class="label">Operations/sec:</text>
+  <text x="450" y="575" style="font-size: 12px; fill: #2ecc71; font-weight: bold;">3,247</text>
+  
+  <text x="330" y="595" class="label">Hit Rate:</text>
+  <text x="450" y="595" style="font-size: 12px; fill: #2ecc71; font-weight: bold;">98.7%</text>
+  
+  <text x="330" y="615" class="label">Replication Lag:</text>
+  <text x="450" y="615" style="font-size: 12px; fill: #2ecc71; font-weight: bold;">2ms</text>
+  
+  <text x="330" y="635" class="label">Status:</text>
+  <circle cx="380" cy="630" r="4" class="good"/>
+  <text x="395" y="635" style="font-size: 11px; fill: #2ecc71;">Master/Replica Healthy</text>
+  
+  <!-- Pod Status -->
+  <rect x="620" y="450" width="280" height="200" class="panel"/>
+  <text x="630" y="470" class="panel-title">Pod Status & Resources</text>
+  
+  <!-- Pod status indicators -->
+  <rect x="630" y="490" width="80" height="50" style="fill:#d5f4e6;stroke:#27ae60;stroke-width:1;rx:3"/>
+  <circle cx="650" cy="505" r="4" class="good"/>
+  <text x="660" y="510" style="font-size: 10px; fill: #27ae60;">Pod 1</text>
+  <text x="640" y="525" style="font-size: 9px; fill: #2c3e50;">CPU: 45%</text>
+  <text x="640" y="535" style="font-size: 9px; fill: #2c3e50;">Mem: 512MB</text>
+  
+  <rect x="720" y="490" width="80" height="50" style="fill:#d5f4e6;stroke:#27ae60;stroke-width:1;rx:3"/>
+  <circle cx="740" cy="505" r="4" class="good"/>
+  <text x="750" y="510" style="font-size: 10px; fill: #27ae60;">Pod 2</text>
+  <text x="730" y="525" style="font-size: 9px; fill: #2c3e50;">CPU: 38%</text>
+  <text x="730" y="535" style="font-size: 9px; fill: #2c3e50;">Mem: 445MB</text>
+  
+  <rect x="810" y="490" width="80" height="50" style="fill:#d5f4e6;stroke:#27ae60;stroke-width:1;rx:3"/>
+  <circle cx="830" cy="505" r="4" class="good"/>
+  <text x="840" y="510" style="font-size: 10px; fill: #27ae60;">Pod 3</text>
+  <text x="820" y="525" style="font-size: 9px; fill: #2c3e50;">CPU: 52%</text>
+  <text x="820" y="535" style="font-size: 9px; fill: #2c3e50;">Mem: 587MB</text>
+  
+  <!-- HPA Status -->
+  <text x="630" y="565" class="label">Horizontal Pod Autoscaler:</text>
+  <text x="630" y="580" style="font-size: 11px; fill: #2c3e50;">Current: 3 pods</text>
+  <text x="630" y="595" style="font-size: 11px; fill: #2c3e50;">Target: 3-10 pods</text>
+  <text x="630" y="610" style="font-size: 11px; fill: #2c3e50;">Trigger: >70% CPU</text>
+  <text x="630" y="625" style="font-size: 11px; fill: #2ecc71;">Status: Stable</text>
+  
+  <!-- Network & Security -->
+  <rect x="920" y="450" width="260" height="200" class="panel"/>
+  <text x="930" y="470" class="panel-title">Network & Security</text>
+  
+  <text x="930" y="495" class="label">Ingress Traffic:</text>
+  <text x="1030" y="495" style="font-size: 11px; fill: #3498db;">1.2 MB/s</text>
+  
+  <text x="930" y="515" class="label">SSL Termination:</text>
+  <circle cx="1030" cy="510" r="3" class="good"/>
+  <text x="1040" y="515" style="font-size: 11px; fill: #2ecc71;">Active</text>
+  
+  <text x="930" y="535" class="label">Rate Limit Violations:</text>
+  <text x="1080" y="535" style="font-size: 11px; fill: #e74c3c;">15/min</text>
+  
+  <text x="930" y="555" class="label">DDoS Protection:</text>
+  <circle cx="1030" cy="550" r="3" class="good"/>
+  <text x="1040" y="555" style="font-size: 11px; fill: #2ecc71;">Active</text>
+  
+  <text x="930" y="575" class="label">API Key Validation:</text>
+  <text x="1080" y="575" style="font-size: 11px; fill: #2ecc71;">99.8%</text>
+  
+  <text x="930" y="595" class="label">Geographic Distribution:</text>
+  <text x="930" y="610" style="font-size: 10px; fill: #2c3e50;">US: 67% | EU: 28% | APAC: 5%</text>
+  
+  <text x="930" y="630" class="label">Security Score:</text>
+  <text x="1030" y="630" style="font-size: 12px; fill: #2ecc71; font-weight: bold;">A+</text>
+  
+  <!-- SLA & Uptime -->
+  <rect x="20" y="670" width="1160" height="80" class="panel"/>
+  <text x="30" y="690" class="panel-title">SLA & Uptime Dashboard</text>
+  
+  <text x="30" y="715" class="label">Current Uptime:</text>
+  <text x="130" y="715" style="font-size: 12px; fill: #2ecc71; font-weight: bold;">99.97%</text>
+  <text x="200" y="715" style="font-size: 10px; fill: #7f8c8d;">(42 days, 3 hours)</text>
+  
+  <text x="400" y="715" class="label">SLA Target:</text>
+  <text x="480" y="715" style="font-size: 12px; fill: #2c3e50;">99.95%</text>
+  <circle cx="540" cy="710" r="4" class="good"/>
+  <text x="550" y="715" style="font-size: 10px; fill: #2ecc71;">Meeting SLA</text>
+  
+  <text x="750" y="715" class="label">RTO/RPO:</text>
+  <text x="800" y="715" style="font-size: 11px; fill: #2c3e50;">< 5min / < 1min</text>
+  
+  <text x="950" y="715" class="label">Last Incident:</text>
+  <text x="1030" y="715" style="font-size: 11px; fill: #7f8c8d;">28 days ago</text>
+  
+  <text x="30" y="735" style="font-size: 10px; fill: #7f8c8d;">
+    ✓ Zero downtime deployments ✓ Automated failover ✓ Multi-region redundancy ✓ Real-time monitoring ✓ 24/7 alerting
+  </text>
+  
+  <!-- Footer -->
+  <text x="30" y="770" style="font-size: 10px; fill: #95a5a6;">
+    Dashboard: Grafana v9.3.2 | Data Source: Prometheus | Retention: 90 days | Export: PDF/PNG available
+  </text>
+</svg>

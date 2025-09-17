@@ -1,0 +1,210 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="1000" height="800" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <style>
+      .title { font-family: Arial, sans-serif; font-size: 20px; font-weight: bold; fill: #2c3e50; text-anchor: middle; }
+      .section-title { font-family: Arial, sans-serif; font-size: 16px; font-weight: bold; fill: #2c3e50; }
+      .label { font-family: Arial, sans-serif; font-size: 12px; fill: #2c3e50; }
+      .value { font-family: Arial, sans-serif; font-size: 12px; fill: #27ae60; font-weight: bold; }
+      .input { font-family: Arial, sans-serif; font-size: 11px; fill: #2c3e50; }
+      .button-text { font-family: Arial, sans-serif; font-size: 11px; fill: white; text-anchor: middle; font-weight: bold; }
+      .status-good { fill: #2ecc71; }
+      .status-warning { fill: #f39c12; }
+      .status-error { fill: #e74c3c; }
+      .panel { fill: #ffffff; stroke: #bdc3c7; stroke-width: 1; rx: 5; }
+      .header { fill: #34495e; stroke: #2c3e50; stroke-width: 1; rx: 5; }
+      .input-field { fill: #ffffff; stroke: #bdc3c7; stroke-width: 1; rx: 3; }
+      .button { fill: #3498db; stroke: #2980b9; stroke-width: 1; rx: 3; cursor: pointer; }
+      .button-success { fill: #2ecc71; stroke: #27ae60; stroke-width: 1; rx: 3; cursor: pointer; }
+      .button-danger { fill: #e74c3c; stroke: #c0392b; stroke-width: 1; rx: 3; cursor: pointer; }
+      .table-header { fill: #ecf0f1; stroke: #bdc3c7; stroke-width: 1; }
+      .table-row { fill: #ffffff; stroke: #ecf0f1; stroke-width: 1; }
+      .table-row-alt { fill: #f8f9fa; stroke: #ecf0f1; stroke-width: 1; }
+    </style>
+  </defs>
+  
+  <!-- Title -->
+  <text x="500" y="30" class="title">Rate Limiter Configuration Dashboard</text>
+  
+  <!-- Header Panel -->
+  <rect x="20" y="50" width="960" height="40" class="header"/>
+  <text x="40" y="75" style="font-family: Arial, sans-serif; font-size: 16px; font-weight: bold; fill: white;">Distributed Rate Limiter - Admin Console</text>
+  <text x="850" y="75" style="font-family: Arial, sans-serif; font-size: 12px; fill: white;">Status: </text>
+  <circle cx="905" cy="70" r="5" class="status-good"/>
+  <text x="920" y="75" style="font-family: Arial, sans-serif; font-size: 12px; fill: white;">Online</text>
+  
+  <!-- Default Configuration Panel -->
+  <rect x="20" y="110" width="460" height="200" class="panel"/>
+  <text x="30" y="135" class="section-title">Default Configuration</text>
+  
+  <text x="30" y="160" class="label">Capacity (tokens):</text>
+  <rect x="150" y="145" width="80" height="25" class="input-field"/>
+  <text x="155" y="162" class="input">10</text>
+  
+  <text x="30" y="185" class="label">Refill Rate (tokens/sec):</text>
+  <rect x="150" y="170" width="80" height="25" class="input-field"/>
+  <text x="155" y="187" class="input">2</text>
+  
+  <text x="30" y="210" class="label">Window Duration (sec):</text>
+  <rect x="150" y="195" width="80" height="25" class="input-field"/>
+  <text x="155" y="212" class="input">60</text>
+  
+  <rect x="350" y="160" width="80" height="30" class="button"/>
+  <text x="390" y="180" class="button-text">Update</text>
+  
+  <text x="30" y="240" class="label">Last Updated:</text>
+  <text x="120" y="240" class="value">2025-01-15 10:30:45 UTC</text>
+  
+  <text x="30" y="260" class="label">Applied To:</text>
+  <text x="120" y="260" class="value">1,247 keys using default</text>
+  
+  <text x="30" y="280" class="label">Status:</text>
+  <circle cx="90" cy="275" r="4" class="status-good"/>
+  <text x="105" y="280" class="value">Active</text>
+  
+  <!-- Quick Actions Panel -->
+  <rect x="520" y="110" width="460" height="200" class="panel"/>
+  <text x="530" y="135" class="section-title">Quick Actions</text>
+  
+  <rect x="530" y="150" width="120" height="30" class="button"/>
+  <text x="590" y="170" class="button-text">Reload Config</text>
+  
+  <rect x="660" y="150" width="120" height="30" class="button-success"/>
+  <text x="720" y="170" class="button-text">Export Config</text>
+  
+  <rect x="790" y="150" width="120" height="30" class="button-danger"/>
+  <text x="850" y="170" class="button-text">Reset All</text>
+  
+  <text x="530" y="210" class="label">System Performance:</text>
+  <rect x="530" y="220" width="200" height="15" style="fill:#ecf0f1;stroke:#bdc3c7;stroke-width:1;"/>
+  <rect x="530" y="220" width="140" height="15" class="status-good"/>
+  <text x="740" y="232" class="label">70% optimal</text>
+  
+  <text x="530" y="255" class="label">Active Connections:</text>
+  <text x="650" y="255" class="value">1,847 clients</text>
+  
+  <text x="530" y="275" class="label">Redis Status:</text>
+  <circle cx="620" cy="270" r="4" class="status-good"/>
+  <text x="635" y="275" class="value">Connected (6ms latency)</text>
+  
+  <!-- Key-Specific Configuration Panel -->
+  <rect x="20" y="330" width="960" height="280" class="panel"/>
+  <text x="30" y="355" class="section-title">Key-Specific Configurations</text>
+  
+  <!-- Add New Configuration -->
+  <text x="30" y="380" class="label">Add New Configuration:</text>
+  
+  <text x="30" y="405" class="label">Key Pattern:</text>
+  <rect x="120" y="390" width="150" height="25" class="input-field"/>
+  <text x="125" y="407" class="input">user:premium:*</text>
+  
+  <text x="290" y="405" class="label">Capacity:</text>
+  <rect x="350" y="390" width="80" height="25" class="input-field"/>
+  <text x="355" y="407" class="input">100</text>
+  
+  <text x="450" y="405" class="label">Refill Rate:</text>
+  <rect x="520" y="390" width="80" height="25" class="input-field"/>
+  <text x="525" y="407" class="input">20</text>
+  
+  <rect x="620" y="390" width="80" height="25" class="button"/>
+  <text x="660" y="407" class="button-text">Add</text>
+  
+  <!-- Configuration Table -->
+  <text x="30" y="445" class="section-title">Existing Configurations</text>
+  
+  <!-- Table Header -->
+  <rect x="30" y="460" width="920" height="25" class="table-header"/>
+  <text x="40" y="477" class="label">Key Pattern</text>
+  <text x="250" y="477" class="label">Capacity</text>
+  <text x="350" y="477" class="label">Refill Rate</text>
+  <text x="450" y="477" class="label">Active Keys</text>
+  <text x="550" y="477" class="label">Last Used</text>
+  <text x="700" y="477" class="label">Status</text>
+  <text x="800" y="477" class="label">Actions</text>
+  
+  <!-- Table Rows -->
+  <rect x="30" y="485" width="920" height="25" class="table-row"/>
+  <text x="40" y="502" class="input">user:premium:*</text>
+  <text x="250" y="502" class="input">100</text>
+  <text x="350" y="502" class="input">20</text>
+  <text x="450" y="502" class="input">47</text>
+  <text x="550" y="502" class="input">2 min ago</text>
+  <circle cx="720" cy="498" r="4" class="status-good"/>
+  <rect x="800" y="492" width="35" height="18" class="button"/>
+  <text x="817" y="503" style="font-family: Arial, sans-serif; font-size: 9px; fill: white; text-anchor: middle;">Edit</text>
+  <rect x="845" y="492" width="35" height="18" class="button-danger"/>
+  <text x="862" y="503" style="font-family: Arial, sans-serif; font-size: 9px; fill: white; text-anchor: middle;">Del</text>
+  
+  <rect x="30" y="510" width="920" height="25" class="table-row-alt"/>
+  <text x="40" y="527" class="input">api:v1:*</text>
+  <text x="250" y="527" class="input">50</text>
+  <text x="350" y="527" class="input">10</text>
+  <text x="450" y="527" class="input">234</text>
+  <text x="550" y="527" class="input">5 sec ago</text>
+  <circle cx="720" cy="523" r="4" class="status-good"/>
+  <rect x="800" y="517" width="35" height="18" class="button"/>
+  <text x="817" y="528" style="font-family: Arial, sans-serif; font-size: 9px; fill: white; text-anchor: middle;">Edit</text>
+  <rect x="845" y="517" width="35" height="18" class="button-danger"/>
+  <text x="862" y="528" style="font-family: Arial, sans-serif; font-size: 9px; fill: white; text-anchor: middle;">Del</text>
+  
+  <rect x="30" y="535" width="920" height="25" class="table-row"/>
+  <text x="40" y="552" class="input">admin:*</text>
+  <text x="250" y="552" class="input">1000</text>
+  <text x="350" y="552" class="input">100</text>
+  <text x="450" y="552" class="input">3</text>
+  <text x="550" y="552" class="input">1 hour ago</text>
+  <circle cx="720" cy="548" r="4" class="status-warning"/>
+  <rect x="800" y="542" width="35" height="18" class="button"/>
+  <text x="817" y="553" style="font-family: Arial, sans-serif; font-size: 9px; fill: white; text-anchor: middle;">Edit</text>
+  <rect x="845" y="542" width="35" height="18" class="button-danger"/>
+  <text x="862" y="553" style="font-family: Arial, sans-serif; font-size: 9px; fill: white; text-anchor: middle;">Del</text>
+  
+  <rect x="30" y="560" width="920" height="25" class="table-row-alt"/>
+  <text x="40" y="577" class="input">guest:*</text>
+  <text x="250" y="577" class="input">5</text>
+  <text x="350" y="577" class="input">1</text>
+  <text x="450" y="577" class="input">1,823</text>
+  <text x="550" y="577" class="input">now</text>
+  <circle cx="720" cy="573" r="4" class="status-good"/>
+  <rect x="800" y="567" width="35" height="18" class="button"/>
+  <text x="817" y="578" style="font-family: Arial, sans-serif; font-size: 9px; fill: white; text-anchor: middle;">Edit</text>
+  <rect x="845" y="567" width="35" height="18" class="button-danger"/>
+  <text x="862" y="578" style="font-family: Arial, sans-serif; font-size: 9px; fill: white; text-anchor: middle;">Del</text>
+  
+  <!-- Statistics Panel -->
+  <rect x="20" y="630" width="960" height="120" class="panel"/>
+  <text x="30" y="655" class="section-title">Configuration Statistics</text>
+  
+  <text x="30" y="680" class="label">Total Configurations:</text>
+  <text x="180" y="680" class="value">4 patterns + 1 default</text>
+  
+  <text x="30" y="700" class="label">Active Keys:</text>
+  <text x="180" y="700" class="value">2,107 unique keys</text>
+  
+  <text x="30" y="720" class="label">Memory Usage:</text>
+  <text x="180" y="720" class="value">45.2 MB (Redis)</text>
+  
+  <text x="400" y="680" class="label">Requests/minute:</text>
+  <text x="520" y="680" class="value">1,847 total</text>
+  
+  <text x="400" y="700" class="label">Success Rate:</text>
+  <text x="520" y="700" class="value">99.2% allowed</text>
+  
+  <text x="400" y="720" class="label">Avg Response Time:</text>
+  <text x="520" y="720" class="value">12ms</text>
+  
+  <text x="700" y="680" class="label">Last Config Change:</text>
+  <text x="840" y="680" class="value">2h 15m ago</text>
+  
+  <text x="700" y="700" class="label">Config Version:</text>
+  <text x="840" y="700" class="value">v2.1.3</text>
+  
+  <text x="700" y="720" class="label">Health Status:</text>
+  <circle cx="820" cy="715" r="4" class="status-good"/>
+  <text x="835" y="720" class="value">Healthy</text>
+  
+  <!-- Footer -->
+  <text x="30" y="775" style="font-family: Arial, sans-serif; font-size: 10px; fill: #7f8c8d;">
+    ✓ Real-time configuration updates  ✓ Zero-downtime reloads  ✓ Automatic backup  ✓ Pattern matching support  ✓ Bulk operations
+  </text>
+</svg>
