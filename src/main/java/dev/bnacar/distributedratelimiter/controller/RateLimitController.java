@@ -25,6 +25,7 @@ import jakarta.validation.Valid;
 @RestController
 @RequestMapping("/api/ratelimit")
 @Tag(name = "Rate Limit", description = "Rate limiting operations for token bucket algorithm")
+@CrossOrigin(origins = {"http://localhost:5173", "http://localhost:3000", "http://127.0.0.1:5173", "http://127.0.0.1:3000", "http://[::1]:5173", "http://[::1]:3000"})
 public class RateLimitController {
 
     private final RateLimiterService rateLimiterService;
