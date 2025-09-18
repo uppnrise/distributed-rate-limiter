@@ -10,9 +10,9 @@
     </parent>
     <groupId>dev.bnacar</groupId>
     <artifactId>distributed-rate-limiter</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>1.0.0</version>
     <name>distributed-rate-limiter</name>
-    <description>distributed-rate-limiter</description>
+    <description>Production-ready distributed rate limiter with Redis backend</description>
 
     <properties>
         <java.version>21</java.version>
