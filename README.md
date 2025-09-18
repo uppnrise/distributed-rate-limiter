@@ -247,6 +247,10 @@ ratelimiter.security.ip.blacklist=192.168.1.100
 5. Update documentation
 6. Submit a pull request
 
+## 🤖 Development with AI
+
+This project was developed with the assistance of **GitHub Copilot**, leveraging AI-powered code suggestions and documentation generation to accelerate development while maintaining high code quality and comprehensive testing.
+
 ## 📄 License
 
 This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details.
