@@ -669,28 +669,6 @@ java -version  # Should show OpenJDK 21.x.x
 
 ---
 
-## 🛣️ Roadmap
-
-### Version 1.1.0 (Q1 2025)
-- [ ] GraphQL API support
-- [ ] WebSocket rate limiting
-- [ ] Advanced algorithms (sliding window, fixed window)
-- [ ] Rate limit policies (hierarchical, cascading)
-
-### Version 1.2.0 (Q2 2025)
-- [ ] Multi-tenancy support
-- [ ] Advanced monitoring dashboard
-- [ ] Rate limit analytics and reporting
-- [ ] Machine learning-based dynamic limits
-
-### Version 2.0.0 (Q3 2025)
-- [ ] gRPC API support
-- [ ] Distributed caching layer
-- [ ] Edge deployment optimizations
-- [ ] Advanced security features
-
----
-
 ## 🤝 Contributing
 
 We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) for details.
