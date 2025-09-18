@@ -42,9 +42,52 @@ A distributed token bucket rate limiter implementation in Java with comprehensiv
 - **[Performance Guide](PERFORMANCE.md)** - Optimization and tuning
 - **[Load Testing Guide](LOAD-TESTING.md)** - Benchmarking and performance testing
 
-## 🚀 Quick Start
+## � Installation & Quick Start
 
-### Option 1: Docker Compose (Recommended)
+### Option 1: Download JAR (Recommended for Users)
+
+**Requirements**: Java 21+, Redis server
+
+```bash
+# Download the latest release
+wget https://github.com/uppnrise/distributed-rate-limiter/releases/download/v1.0.0/distributed-rate-limiter-1.0.0.jar
+
+# Start Redis (if not already running)
+docker run -d -p 6379:6379 redis:7-alpine
+
+# Run the application
+java -jar distributed-rate-limiter-1.0.0.jar
+
+# Test it works
+curl http://localhost:8080/actuator/health
+```
+
+**Quick Start Script**: Download [`quick-start.sh`](https://github.com/uppnrise/distributed-rate-limiter/releases/download/v1.0.0/quick-start.sh) from releases for guided setup.
+
+### Option 2: Docker (Recommended for Containers)
+
+```bash
+# Option A: Use Docker Compose (includes Redis)
+wget https://github.com/uppnrise/distributed-rate-limiter/releases/download/v1.0.0/docker-quick-start.sh
+chmod +x docker-quick-start.sh
+./docker-quick-start.sh
+
+# Option B: Run image directly
+docker run -p 8080:8080 \
+  -e SPRING_DATA_REDIS_HOST=your-redis-host \
+  ghcr.io/uppnrise/distributed-rate-limiter:1.0.0
+```
+
+### Option 3: Build from Source (Recommended for Developers)
+
+```bash
+git clone https://github.com/uppnrise/distributed-rate-limiter.git
+cd distributed-rate-limiter
+./mvnw clean install
+java -jar target/distributed-rate-limiter-1.0.0.jar
+```
+
+### Option 4: Docker Compose Development
 
 Start the entire stack with one command:
 
@@ -54,21 +97,20 @@ cd distributed-rate-limiter
 docker compose up -d
 ```
 
+### 🌐 Access Points
+
 The application will be available at:
 - **API**: http://localhost:8080
 - **Swagger UI**: http://localhost:8080/swagger-ui/index.html
 - **Health Check**: http://localhost:8080/actuator/health
 
-### Option 2: Local Development
+## 📋 Requirements
 
-1. **Prerequisites**: Java 21, Redis running on localhost:6379
+- **Java 21+** (OpenJDK or Oracle JDK)
+- **Redis server** (local or remote)
+- **2GB RAM minimum** for production usage
 
-2. **Clone and run**:
-   ```bash
-   git clone https://github.com/uppnrise/distributed-rate-limiter.git
-   cd distributed-rate-limiter
-   ./mvnw spring-boot:run
-   ```
+## � Basic Usage
 
 ### Test the API
 
@@ -246,6 +288,10 @@ ratelimiter.security.ip.blacklist=192.168.1.100
 4. Ensure all tests pass
 5. Update documentation
 6. Submit a pull request
+
+## 🤖 Development with AI
+
+This project was developed with the assistance of **GitHub Copilot**, leveraging AI-powered code suggestions and documentation generation to accelerate development while maintaining high code quality and comprehensive testing.
 
 ## 📄 License
 
