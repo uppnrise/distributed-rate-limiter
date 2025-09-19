@@ -4,7 +4,7 @@
 
 # 🚀 Distributed Rate Limiter
 
-**High-performance, Redis-backed token bucket rate limiter for Java applications**
+**High-performance, Redis-backed token bucket rate limiter service with REST API**
 
 [![Java](https://img.shields.io/badge/Java-21-orange.svg)](https://openjdk.java.net/projects/jdk/21/)
 [![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.5.4-brightgreen.svg)](https://spring.io/projects/spring-boot)
