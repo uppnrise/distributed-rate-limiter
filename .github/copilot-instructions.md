@@ -1,115 +1,155 @@
 # Distributed Rate Limiter
 
-A Java Spring Boot distributed token bucket rate limiter implementation with Redis support and comprehensive testing via Testcontainers.
+Production-ready distributed rate limiting service with REST API, multi-algorithm support (Token Bucket, Sliding Window), Redis backend, comprehensive monitoring, and 265+ tests.
 
 Always reference these instructions first and fallback to search or bash commands only when you encounter unexpected information that does not match the info here.
 
-## Working Effectively
+## Architecture Overview
 
-### Bootstrap the development environment:
-1. **Install Java 21** (CRITICAL - project requires Java 21, not Java 17):
-   ```bash
-   sudo apt update && sudo apt install -y openjdk-21-jdk
-   sudo update-alternatives --config java  # Select option 0 for Java 21
-   sudo update-alternatives --config javac # Select option 0 for Java 21
-   export JAVA_HOME=/usr/lib/jvm/java-21-openjdk-amd64
-   ```
+### Core Components
+- **Rate Limiting Algorithms**: `TokenBucket.java` (primary), `SlidingWindow.java` (alternative) 
+- **Distributed Backend**: `RedisRateLimiterBackend.java` for production, `InMemoryRateLimiterBackend.java` for testing
+- **Service Layer**: `RateLimiterService.java` coordinates rate limit checks with `DistributedRateLimiterService.java`
+- **Configuration**: `ConfigurationResolver.java` handles dynamic per-key and pattern-based limits
+- **Controllers**: 6 REST endpoints - RateLimit, Admin, Config, Metrics, Performance, Benchmark
 
-2. **Verify Java version**:
-   ```bash
-   java -version  # Should show OpenJDK 21.x.x
-   javac -version # Should show javac 21.x.x
-   ```
+### Request Flow
+1. `RateLimitController.checkRateLimit()` receives POST `/api/ratelimit/check`
+2. `RateLimiterService` resolves configuration via `ConfigurationResolver`
+3. Backend (`RedisRateLimiterBackend` or `InMemoryRateLimiterBackend`) performs algorithm check
+4. Response includes `{allowed: boolean, tokensRequested: int, key: string}`
 
-### Build and test the repository:
-- **Full build with tests**: `./mvnw clean install` -- takes 36 seconds with dependency downloads. NEVER CANCEL. Set timeout to 120+ seconds.
-- **Compile only**: `./mvnw clean compile` -- takes 4 seconds after dependencies downloaded. NEVER CANCEL. Set timeout to 60+ seconds.
-- **Run tests**: `./mvnw test` -- takes 11 seconds including Testcontainers Redis startup. NEVER CANCEL. Set timeout to 60+ seconds.
-- **Check code style**: `./mvnw checkstyle:check` -- takes 15 seconds. Expect 26+ style violations in current codebase.
+### Key Architecture Decisions (ADRs)
+- **Token Bucket Algorithm** (ADR-001): Chosen for burst handling and predictable behavior
+- **Redis Distributed State** (ADR-002): Atomic Lua scripts for consistency, TTL for cleanup
+- **Configuration Hierarchy**: Per-key (exact) > Pattern-based (wildcards) > Global defaults
+- **Fail-Open Strategy**: Service continues with in-memory backend when Redis unavailable
 
-### Run the application:
-- **Start application**: `./mvnw spring-boot:run` -- starts in 2.2 seconds on port 8080
-- **Start on different port**: `./mvnw spring-boot:run -Dspring-boot.run.arguments=--server.port=8081`
-- **Health check**: `curl http://localhost:8080/actuator/health` (may show DOWN if Redis not running)
-- **Actuator endpoints**: `curl http://localhost:8080/actuator`
+### API Structure (18 Endpoints)
+- **Rate Limiting**: `/api/ratelimit/check` (core functionality)
+- **Configuration**: `/api/ratelimit/config/*` (runtime config management)
+- **Admin Operations**: `/api/admin/*` (key resets, shutdown)
+- **Performance**: `/api/performance/*` (real-time metrics)
+- **Benchmarking**: `/api/benchmark/*` (load testing)
+- **Health/Metrics**: `/actuator/*` (Spring Boot actuator endpoints)
 
-## Validation
+### Configuration Hierarchy (application.properties)
+```properties
+# Global defaults
+ratelimiter.capacity=10
+ratelimiter.refillRate=2
 
-### Manual testing scenarios:
-1. **Build validation**: Always run `./mvnw clean install` after making changes to ensure compilation and tests pass
-2. **Application startup**: Start the application with `./mvnw spring-boot:run` and verify startup logs show "Started DistributedRateLimiterApplication in X.X seconds"
-3. **Health endpoint**: Test `curl http://localhost:8080/actuator/health` responds with JSON status
-4. **Code quality**: Run `./mvnw checkstyle:check` to validate code style (expect failures in current codebase)
+# Per-key exact matches (highest priority)
+ratelimiter.keys.premium_user.capacity=50
 
-### Dependencies and requirements:
-- **Java 21**: REQUIRED - project will not compile with Java 17 or earlier
-- **Docker**: Required for Testcontainers integration in tests
-- **Maven wrapper**: Use `./mvnw` commands, not global `mvn`
-- **Internet access**: Required for Maven dependency downloads
-
-### Pre-commit validation:
-- Always run `./mvnw clean install` before committing changes
-- Run `./mvnw checkstyle:check` to identify style issues (but don't block on existing violations)
-- For critical changes to TokenBucket class, run specific tests: `./mvnw test -Dtest=TokenBucketTest`
-
-## Common tasks
-
-### Project structure:
-```
-.
-├── README.md                    # Basic project documentation
-├── LICENSE.md                   # MIT license
-├── pom.xml                     # Maven configuration (Spring Boot 3.5.4, Java 21)
-├── mvnw / mvnw.cmd            # Maven wrapper scripts
-├── renovate.json              # Dependency update configuration
-└── src/
-    ├── main/java/dev/bnacar/distributedratelimiter/
-    │   ├── DistributedRateLimiterApplication.java  # Main Spring Boot application
-    │   └── ratelimit/
-    │       └── TokenBucket.java                    # Core rate limiting implementation
-    ├── main/resources/
-    │   └── application.properties                  # Spring configuration
-    └── test/java/dev/bnacar/distributedratelimiter/
-        ├── DistributedRateLimiterApplicationTests.java  # Integration tests
-        ├── TestcontainersConfiguration.java             # Redis test configuration
-        ├── TestDistributedRateLimiterApplication.java   # Test runner
-        └── ratelimit/
-            └── TokenBucketTest.java                      # Unit tests for TokenBucket
+# Pattern-based with wildcards (medium priority)
+ratelimiter.patterns.user:*.capacity=20
+ratelimiter.patterns.api:*.capacity=100
 ```
 
-### Key components:
-- **TokenBucket.java**: Core rate limiting algorithm with thread-safe token consumption
-- **DistributedRateLimiterApplication.java**: Spring Boot main class with web server and Redis integration
-- **TestcontainersConfiguration.java**: Redis container setup for integration testing
-- **TokenBucketTest.java**: Comprehensive unit tests including concurrency and timing tests
+## Development Workflow
 
-### Maven dependencies:
-- Spring Boot 3.5.4 (web, actuator, data-redis)
-- Redis for distributed state
-- Testcontainers for integration testing
-- Awaitility for time-based testing
-- JUnit 5 for testing
+### Environment Setup (macOS)
+```bash
+# Install Java 21 (CRITICAL - will not compile with Java 17)
+brew install openjdk@21
+export JAVA_HOME=/opt/homebrew/opt/openjdk@21/libexec/openjdk.jdk/Contents/Home
 
-### Build timing expectations:
-- **NEVER CANCEL**: All builds and tests may take longer than default timeouts
-- First build: 36+ seconds (dependency downloads)
-- Subsequent builds: 4-8 seconds
-- Test execution: 11+ seconds (includes Docker container startup)
-- Checkstyle: 15 seconds
+# Verify version
+java -version  # Must show 21.x.x
+```
 
-### Known issues:
-- Default Java 17 installation will cause build failure - must upgrade to Java 21
-- Checkstyle reports 26+ violations in current codebase - this is expected
-- Application health endpoint shows DOWN status when Redis is not available
-- Tests require Docker for Testcontainers Redis integration
+### Build & Test Commands
+- **Full build**: `./mvnw clean install` (120s timeout - includes 76+ test classes)
+- **Quick compile**: `./mvnw clean compile` (30s after dependencies cached)
+- **Run tests only**: `./mvnw test` (60s - includes Testcontainers Redis startup)
+- **Security scan**: `./mvnw dependency-check:check` (OWASP vulnerability scanning)
+- **Code coverage**: `./mvnw jacoco:report` (generates `target/site/jacoco/index.html`)
 
-### Redis configuration:
-- Tests automatically start Redis container via Testcontainers
-- Production application expects Redis connection (Spring Data Redis)
-- No explicit Redis configuration in application.properties (uses defaults)
+### Application Startup
+- **Development**: `./mvnw spring-boot:run` (port 8080, 2.2s startup)
+- **With Redis**: `docker-compose up -d redis && ./mvnw spring-boot:run`
+- **Production JAR**: `java -jar target/distributed-rate-limiter-1.0.0.jar`
 
-### Troubleshooting:
-- **"release version 21 not supported"**: Java version issue, install and configure Java 21
-- **Port 8080 already in use**: Kill existing process or use different port
-- **Testcontainers failures**: Ensure Docker is running and accessible
-- **Long build times**: Normal for first run with dependency downloads, use appropriate timeouts
+### API Testing
+- **Swagger UI**: http://localhost:8080/swagger-ui/index.html (18 documented endpoints)
+- **Rate limit check**: `curl -X POST http://localhost:8080/api/ratelimit/check -H "Content-Type: application/json" -d '{"key":"test","tokensRequested":1}'`
+- **Config management**: `curl http://localhost:8080/api/ratelimit/config` (view current settings)
+- **Load testing**: `curl -X POST http://localhost:8080/api/benchmark/load-test -d '{"requests":1000,"concurrency":10,"key":"test"}'`
+- **Health check**: `curl http://localhost:8080/actuator/health`
+- **Metrics**: `curl http://localhost:8080/actuator/prometheus` (Micrometer metrics)
+
+### Client Integration Examples
+- **Java/Spring Boot**: WebClient-based with retry logic (`docs/examples/java-client.md`)
+- **Python**: Requests/aiohttp with exponential backoff (`docs/examples/python-client.md`)
+- **Node.js**: Express middleware pattern (`docs/examples/nodejs-client.md`)
+- **Go**: Native HTTP client with circuit breaker (`docs/examples/go-client.md`)
+- **cURL**: Comprehensive command-line examples (`docs/examples/curl-examples.md`)
+
+## Testing Strategy
+
+### Test Categories (76+ test classes)
+- **Unit Tests**: `TokenBucketTest`, `SlidingWindowTest`, `ConfigurationResolverTest`
+- **Integration Tests**: `DistributedRateLimiterServiceTest`, `RedisConnectionPoolTest` 
+- **Performance Tests**: `ConcurrentPerformanceTest`, `MemoryUsageTest`, `LoadTestSuite`
+- **Controller Tests**: Each of 6 controllers has dedicated test class
+- **Documentation Tests**: `ApiDocumentationTest`, `DocumentationCompletenessTest`
+
+### Key Test Patterns
+- **Testcontainers**: All Redis integration tests use `@Testcontainers` with automatic container lifecycle
+- **Concurrent Testing**: Use `CompletableFuture` and `CountDownLatch` for race condition validation
+- **Timing Tests**: `Awaitility.await()` for time-based assertions (token refill, cleanup)
+- **Property-Based**: Multiple configuration scenarios tested via `@ParameterizedTest`
+
+### Performance Validation
+- **Load Testing**: `./mvnw test -Dtest=*LoadTest*` (requires 16GB+ RAM)
+- **Memory Testing**: `./mvnw test -Dtest=MemoryUsageTest` (validates <200MB baseline)
+- **Regression Detection**: Built-in performance regression detection with configurable thresholds
+
+## Production Concerns
+
+### Deployment Artifacts
+- **JAR**: `./build-release.sh` creates production JAR with embedded Tomcat
+- **Docker**: Multi-stage build, Alpine base, non-root user, health checks included
+- **K8s Manifests**: Complete Kubernetes deployment in `k8s/` with Redis, monitoring
+
+### Monitoring & Observability  
+- **Metrics**: Micrometer + Prometheus (custom rate limit metrics in `MetricsService`)
+- **Health Checks**: Custom health indicators for Redis connectivity and rate limiter status
+- **Structured Logging**: JSON logs via Logstash encoder, correlation IDs for tracing
+- **Security**: IP-based rate limiting, API key validation, CORS configuration
+
+### Configuration Management
+- **Environment Profiles**: `application-docker.properties` for containerized deployment
+- **Dynamic Config**: Runtime configuration changes via `/api/ratelimit/config/*` endpoints
+- **Hierarchy Resolution**: Per-key exact > Pattern wildcards > Global defaults
+- **Redis Data Structure**: Hash fields (`tokens`, `lastRefillTime`, `capacity`, `refillRate`) with TTL
+- **Lua Scripts**: Atomic refill-and-consume operations prevent race conditions
+- **Redis Failover**: Automatic fallback to in-memory backend if Redis unavailable
+
+### Operations & Monitoring
+- **Incident Response**: P0/P1/P2 severity levels with defined response times (`docs/runbook/`)
+- **Health Indicators**: Custom health checks for Redis connectivity and bucket operations
+- **Performance Metrics**: Built-in regression detection with configurable thresholds
+- **Load Testing**: Integrated benchmarking APIs with concurrent request simulation
+- **Deployment**: Complete Kubernetes manifests in `k8s/` with Redis, monitoring, RBAC
+
+### Common Operations
+- **Scale Testing**: Use `/api/benchmark/load-test` endpoints for load validation
+- **Config Validation**: Check current limits via `/api/ratelimit/config` 
+- **Performance Monitoring**: `/api/performance/metrics` for real-time statistics
+- **Admin Operations**: `/api/admin/shutdown`, `/api/admin/keys/{key}/reset`
+- **Dynamic Config**: Update limits via POST `/api/ratelimit/config/keys/{key}` or `/api/ratelimit/config/patterns/{pattern}`
+- **Troubleshooting**: Use runbook procedures in `docs/runbook/README.md` for incident response
+
+## Troubleshooting
+
+### Build Issues
+- **Java 21 Required**: Build fails with "release version 21 not supported" on older Java
+- **Docker Required**: Tests fail if Docker daemon not accessible for Testcontainers
+- **Memory Limits**: Full test suite requires 4GB+ heap (set `MAVEN_OPTS=-Xmx4g`)
+
+### Runtime Issues  
+- **Redis Connection**: Health endpoint shows DOWN if Redis unreachable (check `spring.data.redis.*`)
+- **Port Conflicts**: Default port 8080, override with `--server.port=8081`
+- **Performance**: Use connection pooling (`spring.data.redis.lettuce.pool.*`) for production loads
