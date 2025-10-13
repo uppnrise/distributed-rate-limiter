@@ -183,6 +183,82 @@ spring.webflux.client.connect-timeout=5000
 spring.webflux.client.read-timeout=10000
 ```
 
+## Algorithm Configuration
+
+Configure different algorithms for different use cases:
+
+```java
+@Service
+public class RateLimiterConfigurationService {
+    
+    private final WebClient webClient;
+    
+    public RateLimiterConfigurationService(@Value("${ratelimiter.url:http://localhost:8080}") String url) {
+        this.webClient = WebClient.builder().baseUrl(url).build();
+    }
+    
+    @PostConstruct
+    public void configureAlgorithms() {
+        // Token Bucket for user APIs - allows bursts
+        configurePattern("user:*", new AlgorithmConfig(50, 10, "TOKEN_BUCKET"));
+        
+        // Sliding Window for critical APIs - precise control
+        configurePattern("api:critical:*", new AlgorithmConfig(100, 20, "SLIDING_WINDOW"));
+        
+        // Fixed Window for bulk APIs - memory efficient
+        configurePattern("bulk:*", new AlgorithmConfig(1000, 100, "FIXED_WINDOW"));
+    }
+    
+    private void configurePattern(String pattern, AlgorithmConfig config) {
+        webClient.post()
+            .uri("/api/ratelimit/config/patterns/{pattern}", pattern)
+            .bodyValue(config)
+            .retrieve()
+            .bodyToMono(String.class)
+            .doOnError(e -> System.err.println("Failed to configure pattern " + pattern + ": " + e.getMessage()))
+            .subscribe();
+    }
+    
+    public static class AlgorithmConfig {
+        private int capacity;
+        private int refillRate;
+        private String algorithm;
+        
+        public AlgorithmConfig(int capacity, int refillRate, String algorithm) {
+            this.capacity = capacity;
+            this.refillRate = refillRate;
+            this.algorithm = algorithm;
+        }
+        
+        // Getters and setters
+        public int getCapacity() { return capacity; }
+        public void setCapacity(int capacity) { this.capacity = capacity; }
+        public int getRefillRate() { return refillRate; }
+        public void setRefillRate(int refillRate) { this.refillRate = refillRate; }
+        public String getAlgorithm() { return algorithm; }
+        public void setAlgorithm(String algorithm) { this.algorithm = algorithm; }
+    }
+}
+```
+
+### Algorithm Selection Guidelines
+
+```java
+// Choose algorithm based on use case
+public String selectAlgorithm(ApiEndpoint endpoint) {
+    switch (endpoint.getType()) {
+        case USER_FACING:
+            return "TOKEN_BUCKET";    // Allows bursts, better UX
+        case CRITICAL_API:
+            return "SLIDING_WINDOW";  // Precise rate control
+        case BULK_OPERATION:
+            return "FIXED_WINDOW";    // Memory efficient
+        default:
+            return "TOKEN_BUCKET";    // Safe default
+    }
+}
+```
+
 ## Usage with Resilience
 
 For production use, consider adding circuit breakers and retries:
