@@ -21,16 +21,26 @@ Configure default limits in `application.properties`:
 ratelimiter.capacity=10
 ratelimiter.refillRate=2
 ratelimiter.cleanupIntervalMs=60000
+ratelimiter.algorithm=TOKEN_BUCKET
 
 # Per-key overrides (exact key matching)
 ratelimiter.keys.premium_user.capacity=50
 ratelimiter.keys.premium_user.refillRate=10
+ratelimiter.keys.premium_user.algorithm=TOKEN_BUCKET
 
 # Pattern-based configurations (supports * wildcard)
 ratelimiter.patterns.user:*.capacity=20
 ratelimiter.patterns.user:*.refillRate=5
+ratelimiter.patterns.user:*.algorithm=TOKEN_BUCKET
+
 ratelimiter.patterns.api:*.capacity=100
 ratelimiter.patterns.api:*.refillRate=50
+ratelimiter.patterns.api:*.algorithm=SLIDING_WINDOW
+
+ratelimiter.patterns.batch:*.capacity=1000
+ratelimiter.patterns.batch:*.refillRate=100
+ratelimiter.patterns.batch:*.algorithm=FIXED_WINDOW
+
 ratelimiter.patterns.*:admin.capacity=1000
 ratelimiter.patterns.*:admin.refillRate=500
 ```
@@ -150,9 +160,47 @@ curl -X POST http://localhost:8080/api/ratelimit/check \
   -d '{"key": "user:vip", "tokens": 50}'
 ```
 
+## Algorithm Configuration
+
+### Available Algorithms
+
+The rate limiter supports three algorithms, each optimized for different scenarios:
+
+#### TOKEN_BUCKET (Default)
+- **Best for**: General API rate limiting with burst handling
+- **Memory**: ~8KB per active key
+- **Behavior**: Allows bursts up to capacity, smooth refill over time
+
+#### SLIDING_WINDOW  
+- **Best for**: Strict rate enforcement with precise timing
+- **Memory**: ~8KB per active key
+- **Behavior**: Tracks requests within sliding time window
+
+#### FIXED_WINDOW
+- **Best for**: Memory-efficient rate limiting with predictable resets
+- **Memory**: ~4KB per active key (50% less than other algorithms)
+- **Behavior**: Counter resets at fixed intervals, clear boundaries
+
+### Algorithm Selection Examples
+
+```properties
+# High-throughput APIs - use Fixed Window for memory efficiency
+ratelimiter.patterns.api:high-volume:*.algorithm=FIXED_WINDOW
+ratelimiter.patterns.api:high-volume:*.capacity=1000
+
+# Critical APIs - use Sliding Window for precise control
+ratelimiter.patterns.api:critical:*.algorithm=SLIDING_WINDOW
+ratelimiter.patterns.api:critical:*.capacity=100
+
+# User-facing APIs - use Token Bucket for good UX
+ratelimiter.patterns.user:*.algorithm=TOKEN_BUCKET
+ratelimiter.patterns.user:*.capacity=50
+```
+
 ## Notes
 
 - Configuration changes are applied immediately but only affect new buckets
 - Use the reload endpoint to clear existing buckets and apply changes to all keys
 - Partial configuration is supported (e.g., only setting capacity will use defaults for other values)
 - Configuration is stored in memory and will be lost on application restart unless persisted in application.properties
+- Algorithm changes require a configuration reload to take effect on existing keys
