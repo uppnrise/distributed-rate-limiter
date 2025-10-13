@@ -26,7 +26,18 @@ public class RedisRateLimiterBackend implements RateLimiterBackend {
     @Override
     public RateLimiter getRateLimiter(String key, RateLimitConfig config) {
         String redisKey = keyPrefix + key;
-        return new RedisTokenBucket(redisKey, config.getCapacity(), config.getRefillRate(), redisTemplate);
+        
+        switch (config.getAlgorithm()) {
+            case TOKEN_BUCKET:
+                return new RedisTokenBucket(redisKey, config.getCapacity(), config.getRefillRate(), redisTemplate);
+            case SLIDING_WINDOW:
+                // For now, fallback to TokenBucket for SlidingWindow in Redis (could be implemented later)
+                return new RedisTokenBucket(redisKey, config.getCapacity(), config.getRefillRate(), redisTemplate);
+            case FIXED_WINDOW:
+                return new RedisFixedWindow(redisKey, config.getCapacity(), config.getRefillRate(), redisTemplate);
+            default:
+                throw new IllegalArgumentException("Unknown algorithm: " + config.getAlgorithm());
+        }
     }
     
     @Override
