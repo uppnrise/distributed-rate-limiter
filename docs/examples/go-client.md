@@ -260,9 +260,10 @@ import (
 
 // ConfigRequest represents configuration update request
 type ConfigRequest struct {
-    Capacity         *int `json:"capacity,omitempty"`
-    RefillRate       *int `json:"refillRate,omitempty"`
-    CleanupIntervalMs *int64 `json:"cleanupIntervalMs,omitempty"`
+    Capacity         *int    `json:"capacity,omitempty"`
+    RefillRate       *int    `json:"refillRate,omitempty"`
+    CleanupIntervalMs *int64  `json:"cleanupIntervalMs,omitempty"`
+    Algorithm        *string `json:"algorithm,omitempty"`
 }
 
 // ConfigResponse represents current configuration
@@ -270,9 +271,17 @@ type ConfigResponse struct {
     Capacity          int                    `json:"capacity"`
     RefillRate        int                    `json:"refillRate"`
     CleanupIntervalMs int64                  `json:"cleanupIntervalMs"`
+    Algorithm         string                 `json:"algorithm"`
     Keys              map[string]interface{} `json:"keys"`
     Patterns          map[string]interface{} `json:"patterns"`
 }
+
+// Algorithm constants
+const (
+    AlgorithmTokenBucket    = "TOKEN_BUCKET"
+    AlgorithmSlidingWindow  = "SLIDING_WINDOW" 
+    AlgorithmFixedWindow    = "FIXED_WINDOW"
+)
 
 // ConfigurationClient manages rate limiter configuration
 type ConfigurationClient struct {
@@ -383,10 +392,11 @@ func main() {
 
     fmt.Printf("Current configuration: %+v\n", config)
 
-    // Update default configuration
+    // Update default configuration with algorithm
     newConfig := ConfigRequest{
         Capacity:   &[]int{20}[0],
         RefillRate: &[]int{5}[0],
+        Algorithm:  &[]string{AlgorithmTokenBucket}[0],
     }
 
     if err := configClient.UpdateDefaultConfiguration(newConfig); err != nil {
@@ -396,10 +406,11 @@ func main() {
 
     fmt.Println("Configuration updated successfully")
 
-    // Set configuration for premium users
+    // Set configuration for premium users with Sliding Window
     premiumConfig := ConfigRequest{
         Capacity:   &[]int{100}[0],
         RefillRate: &[]int{25}[0],
+        Algorithm:  &[]string{AlgorithmSlidingWindow}[0],
     }
 
     if err := configClient.UpdateKeyConfiguration("premium_user", premiumConfig); err != nil {
@@ -408,6 +419,20 @@ func main() {
     }
 
     fmt.Println("Premium user configuration updated successfully")
+    
+    // Configure Fixed Window for bulk operations
+    bulkConfig := ConfigRequest{
+        Capacity:   &[]int{1000}[0],
+        RefillRate: &[]int{100}[0],
+        Algorithm:  &[]string{AlgorithmFixedWindow}[0],
+    }
+    
+    if err := configClient.UpdateKeyConfiguration("bulk_operations", bulkConfig); err != nil {
+        fmt.Printf("Error updating bulk configuration: %v\n", err)
+        return
+    }
+    
+    fmt.Println("Bulk operations configuration updated successfully")
 }
 ```
 

@@ -4,7 +4,7 @@
 
 # 🚀 Distributed Rate Limiter
 
-**High-performance, Redis-backed token bucket rate limiter service with REST API**
+**High-performance, Redis-backed rate limiter service with multiple algorithms and REST API**
 
 [![Java](https://img.shields.io/badge/Java-21-orange.svg)](https://openjdk.java.net/projects/jdk/21/)
 [![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.5.4-brightgreen.svg)](https://spring.io/projects/spring-boot)
@@ -20,11 +20,12 @@
 
 ## 🎯 Overview
 
-A production-ready distributed rate limiter implementing the **token bucket algorithm** with Redis backing for high-performance API protection. Perfect for microservices, SaaS platforms, and any application requiring sophisticated rate limiting.
+A production-ready distributed rate limiter supporting **multiple algorithms** (Token Bucket, Sliding Window, and Fixed Window) with Redis backing for high-performance API protection. Perfect for microservices, SaaS platforms, and any application requiring sophisticated rate limiting with algorithm flexibility.
 
 ### ✨ Key Features
 
 - 🏃‍♂️ **High Performance**: 50,000+ requests/second with <2ms P95 latency
+- 🎯 **Multiple Algorithms**: Token Bucket, Sliding Window, and Fixed Window rate limiting
 - 🌐 **Distributed**: Redis-backed for multi-instance deployments
 - ⚡ **Production Ready**: Comprehensive monitoring, health checks, and observability
 - 🛡️ **Thread Safe**: Concurrent request handling with atomic operations
@@ -63,7 +64,8 @@ A production-ready distributed rate limiter implementing the **token bucket algo
 
 ### Architecture & Design
 - **[Architecture Decision Records](docs/adr/README.md)** - Design decisions and rationale
-- **[Token Bucket Algorithm](docs/adr/001-token-bucket-algorithm.md)** - Algorithm choice explanation
+- **[Rate Limiting Algorithms](docs/adr/001-token-bucket-algorithm.md)** - Algorithm comparison and selection
+- **[Fixed Window Algorithm](docs/adr/003-fixed-window-algorithm.md)** - Fixed Window implementation details
 - **[Redis Integration](docs/adr/002-redis-distributed-state.md)** - Distributed state design
 
 ### Deployment & Operations
@@ -309,15 +311,26 @@ public class ProtectedController {
                        └─────────────────┘
 ```
 
-### Token Bucket Algorithm
+### Rate Limiting Algorithms
 
-The rate limiter implements a distributed token bucket algorithm:
+The rate limiter supports three different algorithms optimized for different use cases:
 
-1. **Bucket Initialization**: Each unique key gets a bucket with configurable capacity
-2. **Token Refill**: Tokens are added at a configurable rate over time
-3. **Request Processing**: Each request consumes tokens from the bucket
-4. **Distributed State**: Redis maintains bucket state across multiple instances
-5. **Atomic Operations**: Thread-safe updates using Redis atomic operations
+#### 🪣 Token Bucket (Default)
+- **Best for**: APIs requiring burst handling with smooth long-term rates
+- **Characteristics**: Allows bursts up to capacity, gradual token refill
+- **Use cases**: General API rate limiting, user-facing applications
+
+#### 🌊 Sliding Window
+- **Best for**: Consistent rate enforcement with precise timing
+- **Characteristics**: Tracks requests within a sliding time window
+- **Use cases**: Critical APIs requiring strict rate adherence
+
+#### 🕐 Fixed Window  
+- **Best for**: Memory-efficient rate limiting with predictable resets
+- **Characteristics**: Counter resets at fixed intervals, low memory usage
+- **Use cases**: High-scale scenarios, simple rate limiting needs
+
+**Algorithm Selection**: Configure per key pattern or use runtime configuration to select the optimal algorithm for each use case.
 
 ---
 

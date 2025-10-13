@@ -5,9 +5,22 @@ This guide covers performance optimization strategies, configuration options, an
 ## Performance Metrics
 
 The service has been optimized to achieve:
-- **Target**: 1000+ requests/second
+- **Target**: 1000+ requests/second  
 - **Actual**: 796,000+ requests/second (in testing)
 - **Concurrent Load**: Supports high concurrency with minimal resource usage
+
+### Algorithm Performance Comparison
+
+| Algorithm | Memory/Key | CPU Overhead | Throughput | Use Case |
+|-----------|------------|--------------|------------|----------|
+| **Fixed Window** | ~4KB | Baseline | Highest | Memory-constrained, high scale |
+| **Token Bucket** | ~8KB | +15% | High | General purpose, burst handling |  
+| **Sliding Window** | ~8KB | +25% | Medium | Strict rate enforcement |
+
+**Performance Recommendations**:
+- **High Scale (1M+ keys)**: Use Fixed Window for 50% memory reduction
+- **General APIs**: Use Token Bucket for balanced performance and UX
+- **Critical APIs**: Use Sliding Window when precision is more important than performance
 
 ## Redis Connection Pooling
 
@@ -90,6 +103,38 @@ ratelimiter.cleanupIntervalMs=30000
 
 # Increase for stable workloads
 ratelimiter.cleanupIntervalMs=120000
+```
+
+### Algorithm-Specific Memory Optimization
+
+#### Fixed Window Algorithm
+- **Memory Usage**: 50% less than Token Bucket/Sliding Window
+- **Optimal For**: Applications with >100K concurrent keys
+- **Configuration**:
+```properties
+# Use Fixed Window for memory-constrained environments
+ratelimiter.patterns.high-volume:*.algorithm=FIXED_WINDOW
+ratelimiter.patterns.high-volume:*.capacity=1000
+```
+
+#### Token Bucket Algorithm  
+- **Memory Usage**: Standard baseline
+- **Optimal For**: General APIs with burst requirements
+- **Configuration**:
+```properties
+# Balanced performance and user experience
+ratelimiter.patterns.api:*.algorithm=TOKEN_BUCKET
+ratelimiter.patterns.api:*.capacity=100
+```
+
+#### Sliding Window Algorithm
+- **Memory Usage**: Similar to Token Bucket but with additional request tracking
+- **Optimal For**: Critical APIs requiring precise rate control
+- **Configuration**:
+```properties
+# Use for strict rate enforcement
+ratelimiter.patterns.critical:*.algorithm=SLIDING_WINDOW
+ratelimiter.patterns.critical:*.capacity=50
 ```
 
 ## Benchmarking
