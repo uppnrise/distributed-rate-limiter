@@ -155,20 +155,30 @@ public class BurstHandlingComparisonTest {
         apiConfig.setAlgorithm(RateLimitAlgorithm.SLIDING_WINDOW);
         config.putPattern("api:*", apiConfig);
         
+        // Configure fixed window for batch operations
+        RateLimiterConfiguration.KeyConfig batchConfig = new RateLimiterConfiguration.KeyConfig();
+        batchConfig.setCapacity(5);
+        batchConfig.setRefillRate(2);
+        batchConfig.setAlgorithm(RateLimitAlgorithm.FIXED_WINDOW);
+        config.putPattern("batch:*", batchConfig);
+        
         ConfigurationResolver resolver = new ConfigurationResolver(config);
         RateLimiterService service = new RateLimiterService(resolver, config);
         
         // Test that different keys use different algorithms
         String tokenBucketKey = "user:123";
         String slidingWindowKey = "api:endpoint";
+        String fixedWindowKey = "batch:job";
         
-        // Both should initially allow full capacity
+        // All should initially allow full capacity
         assertTrue(service.isAllowed(tokenBucketKey, 5));
         assertTrue(service.isAllowed(slidingWindowKey, 5));
+        assertTrue(service.isAllowed(fixedWindowKey, 5));
         
-        // Both should reject additional requests when at capacity
+        // All should reject additional requests when at capacity
         assertFalse(service.isAllowed(tokenBucketKey, 1));
         assertFalse(service.isAllowed(slidingWindowKey, 1));
+        assertFalse(service.isAllowed(fixedWindowKey, 1));
         
         // This verifies the service correctly instantiates different algorithms
         // The specific behavioral differences would be tested in longer integration tests
