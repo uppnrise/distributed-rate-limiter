@@ -4,12 +4,13 @@ This directory contains Architecture Decision Records documenting key design dec
 
 ## Index
 
-- [ADR-001: Token Bucket Algorithm](./001-token-bucket-algorithm.md)
+- [ADR-001: Rate Limiting Algorithms](./001-token-bucket-algorithm.md)
 - [ADR-002: Redis for Distributed State](./002-redis-distributed-state.md)
-- [ADR-003: Spring Boot Framework](./003-spring-boot-framework.md)
-- [ADR-004: RESTful API Design](./004-restful-api-design.md)
-- [ADR-005: Configuration Management](./005-configuration-management.md)
-- [ADR-006: Error Handling Strategy](./006-error-handling-strategy.md)
+- [ADR-003: Fixed Window Counter Algorithm](./003-fixed-window-algorithm.md)
+- [ADR-004: Spring Boot Framework](./004-spring-boot-framework.md)
+- [ADR-005: RESTful API Design](./005-restful-api-design.md)
+- [ADR-006: Configuration Management](./006-configuration-management.md)
+- [ADR-007: Error Handling Strategy](./007-error-handling-strategy.md)
 
 ## ADR Template
 
