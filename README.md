@@ -20,12 +20,12 @@
 
 ## 🎯 Overview
 
-A production-ready distributed rate limiter supporting **multiple algorithms** (Token Bucket, Sliding Window, and Fixed Window) with Redis backing for high-performance API protection. Perfect for microservices, SaaS platforms, and any application requiring sophisticated rate limiting with algorithm flexibility.
+A production-ready distributed rate limiter supporting **four algorithms** (Token Bucket, Sliding Window, Fixed Window, and Leaky Bucket) with Redis backing for high-performance API protection. Perfect for microservices, SaaS platforms, and any application requiring sophisticated rate limiting with algorithm flexibility and traffic shaping capabilities.
 
 ### ✨ Key Features
 
 - 🏃‍♂️ **High Performance**: 50,000+ requests/second with <2ms P95 latency
-- 🎯 **Multiple Algorithms**: Token Bucket, Sliding Window, and Fixed Window rate limiting
+- 🎯 **Four Algorithms**: Token Bucket, Sliding Window, Fixed Window, and Leaky Bucket for traffic shaping
 - 🌐 **Distributed**: Redis-backed for multi-instance deployments
 - ⚡ **Production Ready**: Comprehensive monitoring, health checks, and observability
 - 🛡️ **Thread Safe**: Concurrent request handling with atomic operations
@@ -260,6 +260,36 @@ curl -X POST http://localhost:8080/admin/config \
   }'
 ```
 
+### Traffic Shaping with Leaky Bucket (**NEW**)
+
+```bash
+# Configure leaky bucket for downstream service protection
+curl -X POST http://localhost:8080/api/ratelimit/config/patterns/gateway:* \
+  -H "Content-Type: application/json" \
+  -d '{
+    "capacity": 50,
+    "refillRate": 10,
+    "algorithm": "LEAKY_BUCKET"
+  }'
+
+# Process exactly 10 requests per second, queue up to 50 requests
+curl -X POST http://localhost:8080/api/ratelimit/check \
+  -H "Content-Type: application/json" \
+  -d '{
+    "key": "gateway:payment_service",
+    "tokens": 1
+  }'
+
+# Database connection pool protection
+curl -X POST http://localhost:8080/api/ratelimit/config/keys/db:connection_pool \
+  -H "Content-Type: application/json" \
+  -d '{
+    "capacity": 20,
+    "refillRate": 5,
+    "algorithm": "LEAKY_BUCKET"
+  }'
+```
+
 ### Spring Boot Integration
 
 ```java
@@ -313,7 +343,7 @@ public class ProtectedController {
 
 ### Rate Limiting Algorithms
 
-The rate limiter supports three different algorithms optimized for different use cases:
+The rate limiter supports four different algorithms optimized for different use cases:
 
 #### 🪣 Token Bucket (Default)
 - **Best for**: APIs requiring burst handling with smooth long-term rates
@@ -329,6 +359,11 @@ The rate limiter supports three different algorithms optimized for different use
 - **Best for**: Memory-efficient rate limiting with predictable resets
 - **Characteristics**: Counter resets at fixed intervals, low memory usage
 - **Use cases**: High-scale scenarios, simple rate limiting needs
+
+#### 🚰 Leaky Bucket (**NEW**)
+- **Best for**: Traffic shaping and consistent output rates
+- **Characteristics**: Queue-based processing at constant rate, no bursts allowed
+- **Use cases**: Downstream service protection, SLA compliance, network-like behavior
 
 **Algorithm Selection**: Configure per key pattern or use runtime configuration to select the optimal algorithm for each use case.
 
