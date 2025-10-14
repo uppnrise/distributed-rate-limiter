@@ -41,6 +41,11 @@ ratelimiter.patterns.batch:*.capacity=1000
 ratelimiter.patterns.batch:*.refillRate=100
 ratelimiter.patterns.batch:*.algorithm=FIXED_WINDOW
 
+# Traffic shaping with Leaky Bucket
+ratelimiter.patterns.traffic:*.capacity=50
+ratelimiter.patterns.traffic:*.refillRate=10
+ratelimiter.patterns.traffic:*.algorithm=LEAKY_BUCKET
+
 ratelimiter.patterns.*:admin.capacity=1000
 ratelimiter.patterns.*:admin.refillRate=500
 ```
@@ -164,7 +169,7 @@ curl -X POST http://localhost:8080/api/ratelimit/check \
 
 ### Available Algorithms
 
-The rate limiter supports three algorithms, each optimized for different scenarios:
+The rate limiter supports four algorithms, each optimized for different scenarios:
 
 #### TOKEN_BUCKET (Default)
 - **Best for**: General API rate limiting with burst handling
@@ -181,6 +186,11 @@ The rate limiter supports three algorithms, each optimized for different scenari
 - **Memory**: ~4KB per active key (50% less than other algorithms)
 - **Behavior**: Counter resets at fixed intervals, clear boundaries
 
+#### LEAKY_BUCKET
+- **Best for**: Traffic shaping and consistent output rates
+- **Memory**: ~16KB per active key (due to queue storage)
+- **Behavior**: Queue-based processing at constant rate, regardless of input bursts
+
 ### Algorithm Selection Examples
 
 ```properties
@@ -195,6 +205,11 @@ ratelimiter.patterns.api:critical:*.capacity=100
 # User-facing APIs - use Token Bucket for good UX
 ratelimiter.patterns.user:*.algorithm=TOKEN_BUCKET
 ratelimiter.patterns.user:*.capacity=50
+
+# Traffic shaping - use Leaky Bucket for consistent output
+ratelimiter.patterns.gateway:*.algorithm=LEAKY_BUCKET
+ratelimiter.patterns.gateway:*.capacity=100
+ratelimiter.patterns.gateway:*.refillRate=20
 ```
 
 ## Notes
