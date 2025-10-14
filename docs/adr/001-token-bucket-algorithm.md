@@ -94,13 +94,14 @@ public class TokenBucket {
 | Token Bucket | ~8KB | Baseline | Excellent | Poor | General APIs |
 | Sliding Window | ~8KB | +25% | Good | Good | Critical APIs |
 | Fixed Window | ~4KB | -20% | Boundary Risk | Excellent | High Scale |
+| Leaky Bucket | ~16KB | +40% | None (Traffic Shaping) | Excellent | Traffic Shaping |
 
 ## Alternatives Considered
 
-### Leaky Bucket
-- **Pros**: Enforces constant output rate
-- **Cons**: No burst allowance, more complex queue management
-- **Decision**: Too restrictive for typical API usage patterns
+### Leaky Bucket (Now Implemented)
+- **Pros**: Enforces constant output rate, excellent for traffic shaping
+- **Cons**: No burst allowance, more complex queue management, higher memory usage
+- **Decision**: Implemented for specialized traffic shaping use cases
 
 ### Hierarchical Token Bucket
 - **Pros**: Multi-level rate limiting
@@ -133,6 +134,13 @@ public class TokenBucket {
 - Simple quotas are sufficient
 - Predictable reset times are valued
 - Budget/resource constraints exist
+
+### Choose Leaky Bucket When:
+- Traffic shaping is required
+- Constant output rate is critical
+- Downstream system protection is priority
+- SLA compliance with consistent processing rates
+- Network-like behavior is desired
 
 ## Future Considerations
 
