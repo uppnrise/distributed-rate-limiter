@@ -16,5 +16,12 @@ public enum RateLimitAlgorithm {
      * providing more predictable rate limiting. Better for consistent
      * rate enforcement and handling sustained burst traffic.
      */
-    SLIDING_WINDOW
+    SLIDING_WINDOW,
+    
+    /**
+     * Fixed window algorithm - uses fixed time windows with counter reset
+     * at window boundaries. Memory efficient and simple, ideal for basic
+     * rate limiting with predictable reset times.
+     */
+    FIXED_WINDOW
 }
