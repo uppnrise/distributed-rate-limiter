@@ -1,25 +1,22 @@
 # ADR-001: Rate Limiting Algorithms
 
 ## Status
-Accepted (Updated with multiple algorithm support)
+Accepted
 
 ## Context
 
 We need to implement rate limiting algorithms that provide:
 - Fair distribution of requests over time
-- Support for different use cases and performance requirements
-- Burst handling capabilities
+- Burst handling capabilities  
 - Predictable behavior under load
 - Efficient implementation for high-throughput scenarios
+- General-purpose API protection with intuitive configuration
 
-Several rate limiting algorithms were considered, each with different characteristics and trade-offs.
+After evaluating multiple rate limiting algorithms, we need a primary algorithm that balances performance, usability, and burst tolerance for typical API rate limiting scenarios.
 
 ## Decision
 
-We will implement **multiple rate limiting algorithms** to support different use cases:
-
-### 1. Token Bucket Algorithm (Primary)
-**Best for**: General-purpose API rate limiting with burst tolerance
+We will implement **Token Bucket Algorithm** as the primary rate limiting algorithm with the following characteristics:
 
 - **Capacity**: Maximum number of tokens the bucket can hold
 - **Refill Rate**: Number of tokens added per unit of time
@@ -71,21 +68,25 @@ public class TokenBucket {
 
 ## Alternatives Considered
 
-### 2. Sliding Window Algorithm
-**Best for**: Strict rate enforcement with precise timing
+### Sliding Window Algorithm
+- **Pros**: More precise timing than Token Bucket, prevents window boundary issues
+- **Cons**: Higher memory usage, more complex calculations
+- **Decision**: Implemented as alternative for scenarios requiring strict rate enforcement
 
-- **Implementation**: Tracks request timestamps within a rolling window
-- **Memory**: ~8KB per active key  
-- **Behavior**: More precise than Token Bucket, prevents window boundary issues
-- **Use Cases**: Critical APIs requiring strict adherence to rate limits
+### Fixed Window Counter Algorithm  
+- **Pros**: Memory efficient (~4KB per key), predictable reset times
+- **Cons**: Potential for boundary traffic spikes, less smooth traffic distribution
+- **Decision**: Implemented for high-scale scenarios with memory constraints
 
-### 3. Fixed Window Counter Algorithm  
-**Best for**: Memory-efficient rate limiting with predictable resets
+### Leaky Bucket
+- **Pros**: Enforces constant output rate, excellent for traffic shaping
+- **Cons**: No burst allowance, more complex queue management, higher memory usage
+- **Decision**: Implemented as specialized algorithm - see [ADR-004](./004-leaky-bucket-algorithm.md)
 
-- **Implementation**: Simple counter that resets at fixed time intervals
-- **Memory**: ~4KB per active key (50% reduction)
-- **Behavior**: Clear reset boundaries, potential for boundary traffic spikes
-- **Use Cases**: High-scale scenarios, simple quotas, memory-constrained environments
+### Hierarchical Token Bucket
+- **Pros**: Multi-level rate limiting
+- **Cons**: Implementation complexity
+- **Decision**: Deferred - can be built on top of existing algorithms
 
 ## Algorithm Comparison
 
@@ -94,53 +95,6 @@ public class TokenBucket {
 | Token Bucket | ~8KB | Baseline | Excellent | Poor | General APIs |
 | Sliding Window | ~8KB | +25% | Good | Good | Critical APIs |
 | Fixed Window | ~4KB | -20% | Boundary Risk | Excellent | High Scale |
-| Leaky Bucket | ~16KB | +40% | None (Traffic Shaping) | Excellent | Traffic Shaping |
-
-## Alternatives Considered
-
-### Leaky Bucket (Now Implemented)
-- **Pros**: Enforces constant output rate, excellent for traffic shaping
-- **Cons**: No burst allowance, more complex queue management, higher memory usage
-- **Decision**: Implemented for specialized traffic shaping use cases
-
-### Hierarchical Token Bucket
-- **Pros**: Multi-level rate limiting
-- **Cons**: Implementation complexity
-- **Decision**: Deferred - can be built on top of existing algorithms
-
-## Configuration Parameters
-
-- `capacity`: Maximum bucket size (default: 10 tokens)
-- `refillRate`: Tokens per second (default: 2 tokens/second)
-- `cleanupIntervalMs`: Cleanup frequency for unused buckets (default: 60000ms)
-
-## Algorithm Selection Guidelines
-
-### Choose Token Bucket When:
-- General-purpose API rate limiting
-- Burst tolerance is desired
-- User experience is priority
-- Memory usage is not a constraint
-
-### Choose Sliding Window When:
-- Strict rate enforcement is critical
-- Preventing abuse is top priority
-- Precise timing control is needed
-- Moderate scale (thousands of keys)
-
-### Choose Fixed Window When:
-- Memory efficiency is critical
-- High scale (millions of keys)
-- Simple quotas are sufficient
-- Predictable reset times are valued
-- Budget/resource constraints exist
-
-### Choose Leaky Bucket When:
-- Traffic shaping is required
-- Constant output rate is critical
-- Downstream system protection is priority
-- SLA compliance with consistent processing rates
-- Network-like behavior is desired
 
 ## Future Considerations
 
