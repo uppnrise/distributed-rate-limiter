@@ -74,6 +74,98 @@ done
 }
 ```
 
+## Algorithm-Specific Examples
+
+### Token Bucket Algorithm (Default)
+
+```bash
+# Configure Token Bucket for user API - allows bursts
+curl -X POST http://localhost:8080/api/ratelimit/config/patterns/user:* \
+  -H "Content-Type: application/json" \
+  -d '{
+    "capacity": 50,
+    "refillRate": 10,
+    "algorithm": "TOKEN_BUCKET"
+  }'
+
+# Test burst handling
+curl -X POST http://localhost:8080/api/ratelimit/check \
+  -H "Content-Type: application/json" \
+  -d '{"key": "user:alice", "tokens": 25}'
+```
+
+### Sliding Window Algorithm  
+
+```bash
+# Configure Sliding Window for critical API - precise control
+curl -X POST http://localhost:8080/api/ratelimit/config/patterns/api:critical:* \
+  -H "Content-Type: application/json" \
+  -d '{
+    "capacity": 100,
+    "refillRate": 20,
+    "algorithm": "SLIDING_WINDOW"
+  }'
+
+# Test precise rate limiting
+curl -X POST http://localhost:8080/api/ratelimit/check \
+  -H "Content-Type: application/json" \
+  -d '{"key": "api:critical:payments", "tokens": 1}'
+```
+
+### Fixed Window Algorithm
+
+```bash
+# Configure Fixed Window for bulk API - memory efficient
+curl -X POST http://localhost:8080/api/ratelimit/config/patterns/bulk:* \
+  -H "Content-Type: application/json" \
+  -d '{
+    "capacity": 1000,
+    "refillRate": 1,
+    "algorithm": "FIXED_WINDOW"
+  }'
+
+# Test fixed window behavior
+curl -X POST http://localhost:8080/api/ratelimit/check \
+  -H "Content-Type: application/json" \
+  -d '{"key": "bulk:batch-job", "tokens": 50}'
+```
+
+## Algorithm Comparison Test
+
+```bash
+# Set up different algorithms for comparison
+echo "Setting up algorithms..."
+
+# Token Bucket - burst friendly
+curl -s -X POST http://localhost:8080/api/ratelimit/config/patterns/tb:* \
+  -H "Content-Type: application/json" \
+  -d '{"capacity": 10, "refillRate": 2, "algorithm": "TOKEN_BUCKET"}' 
+
+# Sliding Window - precise control  
+curl -s -X POST http://localhost:8080/api/ratelimit/config/patterns/sw:* \
+  -H "Content-Type: application/json" \
+  -d '{"capacity": 10, "refillRate": 2, "algorithm": "SLIDING_WINDOW"}'
+
+# Fixed Window - memory efficient
+curl -s -X POST http://localhost:8080/api/ratelimit/config/patterns/fw:* \
+  -H "Content-Type: application/json" \
+  -d '{"capacity": 10, "refillRate": 2, "algorithm": "FIXED_WINDOW"}'
+
+echo "Testing burst behavior..."
+
+# Test 15 requests on each algorithm
+for algo in tb sw fw; do
+  echo "Testing ${algo} algorithm:"
+  for i in {1..15}; do
+    result=$(curl -s -X POST http://localhost:8080/api/ratelimit/check \
+      -H "Content-Type: application/json" \
+      -d "{\"key\": \"${algo}:test\", \"tokens\": 1}" | jq -r .allowed)
+    printf "%s " $result
+  done
+  echo ""
+done
+```
+
 ## Configuration Management
 
 ### Get Current Configuration

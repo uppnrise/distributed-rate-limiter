@@ -311,6 +311,79 @@ class TypedRateLimiterClient {
 export { TypedRateLimiterClient, RateLimitRequest, RateLimitResponse, RateLimitResult };
 ```
 
+## Algorithm Configuration
+
+Configure different algorithms for optimal performance:
+
+```javascript
+const axios = require('axios');
+
+class RateLimiterConfigService {
+    constructor(baseUrl = 'http://localhost:8080') {
+        this.baseUrl = baseUrl;
+    }
+    
+    async configureAlgorithms() {
+        // Token Bucket for user endpoints - allows bursts
+        await this.configurePattern('user:*', {
+            capacity: 50,
+            refillRate: 10,
+            algorithm: 'TOKEN_BUCKET'
+        });
+        
+        // Sliding Window for API endpoints - precise control
+        await this.configurePattern('api:*', {
+            capacity: 100,
+            refillRate: 20,
+            algorithm: 'SLIDING_WINDOW'
+        });
+        
+        // Fixed Window for bulk operations - memory efficient  
+        await this.configurePattern('bulk:*', {
+            capacity: 1000,
+            refillRate: 100,
+            algorithm: 'FIXED_WINDOW'
+        });
+    }
+    
+    async configurePattern(pattern, config) {
+        try {
+            const response = await axios.post(
+                `${this.baseUrl}/api/ratelimit/config/patterns/${encodeURIComponent(pattern)}`,
+                config,
+                { timeout: 10000 }
+            );
+            
+            if (response.status === 200) {
+                console.log(`Configured pattern ${pattern} with ${config.algorithm}`);
+            }
+        } catch (error) {
+            console.error(`Failed to configure pattern ${pattern}:`, error.message);
+        }
+    }
+}
+
+// Algorithm selection helper
+function selectAlgorithm(endpointType) {
+    const algorithmMap = {
+        'user_facing': 'TOKEN_BUCKET',    // Better UX with burst handling
+        'critical_api': 'SLIDING_WINDOW', // Precise rate control
+        'bulk_operation': 'FIXED_WINDOW', // Memory efficient
+        'default': 'TOKEN_BUCKET'         // Safe default
+    };
+    
+    return algorithmMap[endpointType] || algorithmMap.default;
+}
+
+// Usage
+const configService = new RateLimiterConfigService();
+configService.configureAlgorithms()
+    .then(() => console.log('Algorithm configuration complete'))
+    .catch(err => console.error('Configuration failed:', err));
+
+module.exports = { RateLimiterConfigService, selectAlgorithm };
+```
+
 ## Configuration
 
 Environment variables:

@@ -107,6 +107,8 @@ public class InMemoryRateLimiterBackend implements RateLimiterBackend {
                 return new TokenBucket(config.getCapacity(), config.getRefillRate());
             case SLIDING_WINDOW:
                 return new SlidingWindow(config.getCapacity(), config.getRefillRate());
+            case FIXED_WINDOW:
+                return new FixedWindow(config.getCapacity(), config.getRefillRate());
             default:
                 throw new IllegalArgumentException("Unknown algorithm: " + config.getAlgorithm());
         }

@@ -90,16 +90,24 @@ curl -u admin:changeme http://localhost:8080/admin/keys
   "capacity": 10,
   "refillRate": 2,
   "cleanupIntervalMs": 60000,
+  "algorithm": "TOKEN_BUCKET",
   "keys": {
     "premium_user": {
       "capacity": 100,
-      "refillRate": 20
+      "refillRate": 20,
+      "algorithm": "TOKEN_BUCKET"
     }
   },
   "patterns": {
     "api:*": {
       "capacity": 50,
-      "refillRate": 10
+      "refillRate": 10,
+      "algorithm": "SLIDING_WINDOW"
+    },
+    "batch:*": {
+      "capacity": 1000,
+      "refillRate": 100,
+      "algorithm": "FIXED_WINDOW"
     }
   }
 }
@@ -116,7 +124,8 @@ curl -u admin:changeme http://localhost:8080/admin/keys
 {
   "capacity": 20,
   "refillRate": 5,
-  "cleanupIntervalMs": 30000
+  "cleanupIntervalMs": 30000,
+  "algorithm": "TOKEN_BUCKET"
 }
 ```
 
@@ -134,7 +143,8 @@ curl -u admin:changeme http://localhost:8080/admin/keys
 {
   "capacity": 100,
   "refillRate": 25,
-  "cleanupIntervalMs": 30000
+  "cleanupIntervalMs": 30000,
+  "algorithm": "SLIDING_WINDOW"
 }
 ```
 
@@ -262,6 +272,11 @@ curl -u admin:changeme http://localhost:8080/admin/keys
   "algorithm": "TOKEN_BUCKET"
 }
 ```
+
+**Available Algorithms**:
+- `TOKEN_BUCKET` - Allows bursts, gradual refill (default)
+- `SLIDING_WINDOW` - Precise rate control within rolling window
+- `FIXED_WINDOW` - Memory-efficient with predictable resets
 
 ### Remove Key Limits
 

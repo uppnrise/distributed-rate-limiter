@@ -224,6 +224,74 @@ if __name__ == "__main__":
     app.run(debug=True)
 ```
 
+## Algorithm Configuration
+
+Configure different algorithms for optimal performance:
+
+```python
+import requests
+
+class RateLimiterConfigService:
+    """Service to configure rate limiting algorithms."""
+    
+    def __init__(self, base_url="http://localhost:8080"):
+        self.base_url = base_url
+        
+    def configure_algorithms(self):
+        """Set up algorithm configurations for different use cases."""
+        
+        # Token Bucket for user endpoints - allows bursts
+        self.configure_pattern("user:*", {
+            "capacity": 50,
+            "refillRate": 10,
+            "algorithm": "TOKEN_BUCKET"
+        })
+        
+        # Sliding Window for API endpoints - precise control  
+        self.configure_pattern("api:*", {
+            "capacity": 100,
+            "refillRate": 20,
+            "algorithm": "SLIDING_WINDOW"
+        })
+        
+        # Fixed Window for bulk operations - memory efficient
+        self.configure_pattern("bulk:*", {
+            "capacity": 1000,
+            "refillRate": 100,
+            "algorithm": "FIXED_WINDOW"
+        })
+        
+    def configure_pattern(self, pattern, config):
+        """Configure rate limiting for a key pattern."""
+        try:
+            response = requests.post(
+                f"{self.base_url}/api/ratelimit/config/patterns/{pattern}",
+                json=config,
+                timeout=10
+            )
+            if response.status_code == 200:
+                print(f"Configured pattern {pattern} with {config['algorithm']}")
+            else:
+                print(f"Failed to configure pattern {pattern}: {response.status_code}")
+        except Exception as e:
+            print(f"Error configuring pattern {pattern}: {e}")
+
+# Algorithm selection helper
+def select_algorithm(endpoint_type):
+    """Select appropriate algorithm based on endpoint type."""
+    algorithm_map = {
+        "user_facing": "TOKEN_BUCKET",    # Better UX with burst handling
+        "critical_api": "SLIDING_WINDOW", # Precise rate control
+        "bulk_operation": "FIXED_WINDOW", # Memory efficient
+        "default": "TOKEN_BUCKET"         # Safe default
+    }
+    return algorithm_map.get(endpoint_type, "TOKEN_BUCKET")
+
+# Usage example
+config_service = RateLimiterConfigService()
+config_service.configure_algorithms()
+```
+
 ## Configuration
 
 Environment variables:
