@@ -1,13 +1,24 @@
 # Distributed Rate Limiter
 
-Production-ready distributed rate limiting service with REST API, multi-algorithm support (Token Bucket, Sliding Window), Redis backend, comprehensive monitoring, and 265+ tests.
+Production-ready distributed rate limiting service with REST API, **four-algorithm support** (Token Bucket, Sliding Window, Fixed Window, Leaky Bucket), Redis backend, comprehensive monitoring, and 265+ tests.
 
 Always reference these instructions first and fallback to search or bash commands only when you encounter unexpected information that does not match the info here.
+
+**📚 For comprehensive documentation, see:**
+- `README.md` - Complete project overview and quick start
+- `docs/API.md` - Full API documentation
+- `docs/adr/` - Architecture Decision Records (ADRs)
+- `docs/examples/` - Client integration examples
+- `docs/runbook/` - Operations and troubleshooting
 
 ## Architecture Overview
 
 ### Core Components
-- **Rate Limiting Algorithms**: `TokenBucket.java` (primary), `SlidingWindow.java` (alternative) 
+- **Rate Limiting Algorithms**: 
+  - `TokenBucket.java` (primary - burst tolerance)
+  - `SlidingWindow.java` (strict enforcement)
+  - `FixedWindow.java` (memory efficient)
+  - `LeakyBucket.java` (traffic shaping)
 - **Distributed Backend**: `RedisRateLimiterBackend.java` for production, `InMemoryRateLimiterBackend.java` for testing
 - **Service Layer**: `RateLimiterService.java` coordinates rate limit checks with `DistributedRateLimiterService.java`
 - **Configuration**: `ConfigurationResolver.java` handles dynamic per-key and pattern-based limits
@@ -20,8 +31,10 @@ Always reference these instructions first and fallback to search or bash command
 4. Response includes `{allowed: boolean, tokensRequested: int, key: string}`
 
 ### Key Architecture Decisions (ADRs)
-- **Token Bucket Algorithm** (ADR-001): Chosen for burst handling and predictable behavior
+- **Token Bucket Algorithm** (ADR-001): Primary algorithm for burst handling and predictable behavior
 - **Redis Distributed State** (ADR-002): Atomic Lua scripts for consistency, TTL for cleanup
+- **Fixed Window Algorithm** (ADR-003): Memory-efficient alternative for high-scale scenarios
+- **Leaky Bucket Algorithm** (ADR-004): Traffic shaping specialization for constant output rates
 - **Configuration Hierarchy**: Per-key (exact) > Pattern-based (wildcards) > Global defaults
 - **Fail-Open Strategy**: Service continues with in-memory backend when Redis unavailable
 
@@ -32,6 +45,14 @@ Always reference these instructions first and fallback to search or bash command
 - **Performance**: `/api/performance/*` (real-time metrics)
 - **Benchmarking**: `/api/benchmark/*` (load testing)
 - **Health/Metrics**: `/actuator/*` (Spring Boot actuator endpoints)
+
+### Algorithm Selection Guide
+- **Token Bucket** (default): Best for general APIs with burst tolerance
+- **Sliding Window**: Use for strict rate enforcement and critical APIs  
+- **Fixed Window**: Choose for memory efficiency and high-scale scenarios
+- **Leaky Bucket**: Select for traffic shaping and constant output rates
+
+**📋 See `docs/adr/` for detailed algorithm comparison and decision rationale**
 
 ### Configuration Hierarchy (application.properties)
 ```properties
@@ -69,7 +90,7 @@ java -version  # Must show 21.x.x
 ### Application Startup
 - **Development**: `./mvnw spring-boot:run` (port 8080, 2.2s startup)
 - **With Redis**: `docker-compose up -d redis && ./mvnw spring-boot:run`
-- **Production JAR**: `java -jar target/distributed-rate-limiter-1.0.0.jar`
+- **Production JAR**: `java -jar target/distributed-rate-limiter-1.1.0.jar`
 
 ### API Testing
 - **Swagger UI**: http://localhost:8080/swagger-ui/index.html (18 documented endpoints)
@@ -89,7 +110,7 @@ java -version  # Must show 21.x.x
 ## Testing Strategy
 
 ### Test Categories (76+ test classes)
-- **Unit Tests**: `TokenBucketTest`, `SlidingWindowTest`, `ConfigurationResolverTest`
+- **Unit Tests**: `TokenBucketTest`, `SlidingWindowTest`, `FixedWindowTest`, `LeakyBucketTest`, `ConfigurationResolverTest`
 - **Integration Tests**: `DistributedRateLimiterServiceTest`, `RedisConnectionPoolTest` 
 - **Performance Tests**: `ConcurrentPerformanceTest`, `MemoryUsageTest`, `LoadTestSuite`
 - **Controller Tests**: Each of 6 controllers has dedicated test class
@@ -153,3 +174,5 @@ java -version  # Must show 21.x.x
 - **Redis Connection**: Health endpoint shows DOWN if Redis unreachable (check `spring.data.redis.*`)
 - **Port Conflicts**: Default port 8080, override with `--server.port=8081`
 - **Performance**: Use connection pooling (`spring.data.redis.lettuce.pool.*`) for production loads
+
+**📚 For comprehensive troubleshooting procedures, see `docs/runbook/README.md`**
