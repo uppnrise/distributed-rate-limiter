@@ -26,6 +26,7 @@ A production-ready distributed rate limiter supporting **five algorithms** (Toke
 
 - 🏃‍♂️ **High Performance**: 50,000+ requests/second with <2ms P95 latency
 - 🎯 **Five Algorithms**: Token Bucket, Sliding Window, Fixed Window, Leaky Bucket, and Composite for multi-algorithm traffic shaping
+- 🌍 **Geographic Rate Limiting**: Location-aware rate limits with CDN header support and compliance zone management
 - 🌐 **Distributed**: Redis-backed for multi-instance deployments
 - ⚡ **Production Ready**: Comprehensive monitoring, health checks, and observability
 - 🛡️ **Thread Safe**: Concurrent request handling with atomic operations
@@ -355,6 +356,65 @@ curl -X POST http://localhost:8080/api/ratelimit/check \
     }
   }'
 ```
+
+### Geographic Rate Limiting (**NEW**)
+
+Location-aware rate limiting with support for CDN headers and compliance zones:
+
+```bash
+# CloudFlare CDN headers - automatic GDPR compliance
+curl -X POST http://localhost:8080/api/ratelimit/check \
+  -H "CF-IPCountry: DE" \
+  -H "CF-IPContinent: EU" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "key": "api:user:123",
+    "tokens": 1
+  }'
+
+# Response includes geographic info
+{
+  "allowed": true,
+  "geoInfo": {
+    "detectedCountry": "Germany",
+    "complianceZone": "GDPR",
+    "appliedRule": "geo:DE:GDPR",
+    "appliedLimits": {"capacity": 500, "refillRate": 50}
+  }
+}
+
+# AWS CloudFront headers - US premium tier
+curl -X POST http://localhost:8080/api/ratelimit/check \
+  -H "CloudFront-Viewer-Country: US" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "key": "api:user:456", 
+    "tokens": 1
+  }'
+
+# Add geographic rules via REST API
+curl -X POST http://localhost:8080/api/ratelimit/geographic/rules \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "eu-gdpr-compliance",
+    "complianceZone": "GDPR",
+    "keyPattern": "api:*",
+    "limits": {"capacity": 500, "refillRate": 50},
+    "priority": 100
+  }'
+
+# Manage geographic rules
+curl http://localhost:8080/api/ratelimit/geographic/rules
+curl http://localhost:8080/api/ratelimit/geographic/detect
+curl http://localhost:8080/api/ratelimit/geographic/stats
+```
+
+**Geographic Features:**
+- **Multi-CDN Support**: CloudFlare, AWS CloudFront, Azure CDN headers
+- **Compliance Zones**: Automatic GDPR, CCPA, PIPEDA zone detection  
+- **Country/Region Rules**: Flexible geographic rule configuration
+- **Fallback Logic**: Graceful degradation when location cannot be determined
+- **Performance**: <2ms additional latency for geolocation
 
 ### Spring Boot Integration
 
