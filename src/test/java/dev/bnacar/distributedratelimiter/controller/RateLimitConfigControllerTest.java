@@ -10,10 +10,13 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.boot.test.context.TestConfiguration;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -22,6 +25,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  * Integration tests for dynamic configuration management.
  */
 @WebMvcTest(RateLimitConfigController.class)
+@Import(RateLimitConfigControllerTest.TestConfig.class)
 public class RateLimitConfigControllerTest {
 
     @Autowired
@@ -30,17 +34,40 @@ public class RateLimitConfigControllerTest {
     @Autowired
     private ObjectMapper objectMapper;
 
-    @MockBean
+    @Autowired
     private RateLimiterConfiguration configuration;
 
-    @MockBean
+    @Autowired
     private ConfigurationResolver configurationResolver;
 
-    @MockBean
+    @Autowired
     private RateLimiterService rateLimiterService;
 
-    @MockBean
+    @Autowired
     private SecurityConfiguration securityConfiguration;
+
+    @TestConfiguration
+    static class TestConfig {
+        @Bean
+        public RateLimiterConfiguration configuration() {
+            return mock(RateLimiterConfiguration.class);
+        }
+
+        @Bean
+        public ConfigurationResolver configurationResolver() {
+            return mock(ConfigurationResolver.class);
+        }
+
+        @Bean
+        public RateLimiterService rateLimiterService() {
+            return mock(RateLimiterService.class);
+        }
+
+        @Bean
+        public SecurityConfiguration securityConfiguration() {
+            return mock(SecurityConfiguration.class);
+        }
+    }
 
     @BeforeEach
     void setUp() {

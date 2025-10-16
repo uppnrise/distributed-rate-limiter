@@ -137,10 +137,11 @@ class PerformanceMetricsCollectionTest {
         String result = baseline.toString();
         assertNotNull(result);
         assertTrue(result.contains("ToStringTest"));
-        assertTrue(result.contains("175.50ms"));
-        assertTrue(result.contains("350.00ms"));
-        assertTrue(result.contains("1100.00 req/sec"));
-        assertTrue(result.contains("97.50%"));
+        // Support both dot and comma decimal separators (locale-dependent)
+        assertTrue(result.contains("175.50ms") || result.contains("175,50ms"));
+        assertTrue(result.contains("350.00ms") || result.contains("350,00ms"));
+        assertTrue(result.contains("1100.00 req/sec") || result.contains("1100,00 req/sec"));
+        assertTrue(result.contains("97.50%") || result.contains("97,50%"));
         assertTrue(result.contains("xyz789"));
     }
 
