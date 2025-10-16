@@ -13,6 +13,7 @@ import java.util.Map;
  * Supports CloudFlare, AWS CloudFront, Azure CDN, and other popular CDN providers.
  */
 @Component
+@org.springframework.boot.autoconfigure.condition.ConditionalOnProperty(name = "ratelimiter.geographic.enabled", havingValue = "true", matchIfMissing = false)
 public class CDNHeaderParser {
     private static final Logger logger = LoggerFactory.getLogger(CDNHeaderParser.class);
 
