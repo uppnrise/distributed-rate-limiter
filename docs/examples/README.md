@@ -17,6 +17,8 @@ All examples demonstrate the basic rate limiting flow:
 - [Node.js](./nodejs-client.md) - Express.js middleware example
 - [cURL](./curl-examples.md) - Command-line testing examples
 - [Go](./go-client.md) - Native HTTP client implementation
+- [Leaky Bucket](./leaky-bucket-examples.md) - Traffic shaping examples
+- [Composite Rate Limiting](../../examples/composite-rate-limiting.md) - Multi-algorithm examples (**NEW**)
 
 ## Authentication
 
@@ -51,3 +53,42 @@ Example response:
   "allowed": true
 }
 ```
+
+## Composite Rate Limiting (**NEW**)
+
+For advanced scenarios requiring multiple algorithm combinations:
+
+```bash
+# Enterprise SaaS with API calls + bandwidth limits
+curl -X POST http://localhost:8080/api/ratelimit/check \
+  -H "Content-Type: application/json" \
+  -d '{
+    "key": "enterprise:customer:123",
+    "algorithm": "COMPOSITE",
+    "tokens": 1,
+    "compositeConfig": {
+      "limits": [
+        {"name": "api_calls", "algorithm": "TOKEN_BUCKET", "capacity": 1000, "refillRate": 100},
+        {"name": "bandwidth", "algorithm": "LEAKY_BUCKET", "capacity": 50, "refillRate": 5}
+      ],
+      "combinationLogic": "ALL_MUST_PASS"
+    }
+  }'
+```
+
+Enhanced response with component details:
+```json
+{
+  "allowed": true,
+  "componentResults": {
+    "api_calls": {"allowed": true, "currentTokens": 999, "capacity": 1000},
+    "bandwidth": {"allowed": true, "currentTokens": 49, "capacity": 50}
+  },
+  "combinationResult": {
+    "logic": "ALL_MUST_PASS",
+    "overallScore": 1.0
+  }
+}
+```
+
+See [Composite Rate Limiting Examples](../../examples/composite-rate-limiting.md) for comprehensive usage scenarios.
