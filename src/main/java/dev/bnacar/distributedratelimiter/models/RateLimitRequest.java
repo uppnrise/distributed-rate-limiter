@@ -1,5 +1,7 @@
 package dev.bnacar.distributedratelimiter.models;
 
+import dev.bnacar.distributedratelimiter.ratelimit.RateLimitAlgorithm;
+import dev.bnacar.distributedratelimiter.ratelimit.CompositeRateLimitConfig;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -13,6 +15,10 @@ public class RateLimitRequest {
     private Integer tokens = 1;
     
     private String apiKey;
+    
+    private RateLimitAlgorithm algorithm;
+    
+    private CompositeRateLimitConfig compositeConfig;
 
     public RateLimitRequest() {}
 
@@ -25,6 +31,13 @@ public class RateLimitRequest {
         this.key = key;
         this.tokens = tokens;
         this.apiKey = apiKey;
+    }
+    
+    public RateLimitRequest(String key, Integer tokens, RateLimitAlgorithm algorithm, CompositeRateLimitConfig compositeConfig) {
+        this.key = key;
+        this.tokens = tokens;
+        this.algorithm = algorithm;
+        this.compositeConfig = compositeConfig;
     }
 
     public String getKey() {
@@ -49,5 +62,21 @@ public class RateLimitRequest {
 
     public void setApiKey(String apiKey) {
         this.apiKey = apiKey;
+    }
+    
+    public RateLimitAlgorithm getAlgorithm() {
+        return algorithm;
+    }
+    
+    public void setAlgorithm(RateLimitAlgorithm algorithm) {
+        this.algorithm = algorithm;
+    }
+    
+    public CompositeRateLimitConfig getCompositeConfig() {
+        return compositeConfig;
+    }
+    
+    public void setCompositeConfig(CompositeRateLimitConfig compositeConfig) {
+        this.compositeConfig = compositeConfig;
     }
 }

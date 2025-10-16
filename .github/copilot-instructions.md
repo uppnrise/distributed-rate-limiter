@@ -1,6 +1,6 @@
 # Distributed Rate Limiter
 
-Production-ready distributed rate limiting service with REST API, **four-algorithm support** (Token Bucket, Sliding Window, Fixed Window, Leaky Bucket), Redis backend, comprehensive monitoring, and 265+ tests.
+Production-ready distributed rate limiting service with REST API, **five-algorithm support** (Token Bucket, Sliding Window, Fixed Window, Leaky Bucket, Composite), Redis backend, comprehensive monitoring, and 265+ tests.
 
 Always reference these instructions first and fallback to search or bash commands only when you encounter unexpected information that does not match the info here.
 
@@ -19,8 +19,9 @@ Always reference these instructions first and fallback to search or bash command
   - `SlidingWindow.java` (strict enforcement)
   - `FixedWindow.java` (memory efficient)
   - `LeakyBucket.java` (traffic shaping)
+  - `CompositeRateLimiter.java` (multi-algorithm composition)
 - **Distributed Backend**: `RedisRateLimiterBackend.java` for production, `InMemoryRateLimiterBackend.java` for testing
-- **Service Layer**: `RateLimiterService.java` coordinates rate limit checks with `DistributedRateLimiterService.java`
+- **Service Layer**: `RateLimiterService.java` coordinates rate limit checks with `DistributedRateLimiterService.java` and `CompositeRateLimiterService.java`
 - **Configuration**: `ConfigurationResolver.java` handles dynamic per-key and pattern-based limits
 - **Controllers**: 6 REST endpoints - RateLimit, Admin, Config, Metrics, Performance, Benchmark
 
@@ -28,13 +29,14 @@ Always reference these instructions first and fallback to search or bash command
 1. `RateLimitController.checkRateLimit()` receives POST `/api/ratelimit/check`
 2. `RateLimiterService` resolves configuration via `ConfigurationResolver`
 3. Backend (`RedisRateLimiterBackend` or `InMemoryRateLimiterBackend`) performs algorithm check
-4. Response includes `{allowed: boolean, tokensRequested: int, key: string}`
+4. Response includes `{allowed: boolean, tokensRequested: int, key: string}` or enhanced `CompositeRateLimitResponse` with component details
 
 ### Key Architecture Decisions (ADRs)
 - **Token Bucket Algorithm** (ADR-001): Primary algorithm for burst handling and predictable behavior
 - **Redis Distributed State** (ADR-002): Atomic Lua scripts for consistency, TTL for cleanup
 - **Fixed Window Algorithm** (ADR-003): Memory-efficient alternative for high-scale scenarios
 - **Leaky Bucket Algorithm** (ADR-004): Traffic shaping specialization for constant output rates
+- **Composite Rate Limiting** (ADR-005): Multi-algorithm composition with configurable combination logic
 - **Configuration Hierarchy**: Per-key (exact) > Pattern-based (wildcards) > Global defaults
 - **Fail-Open Strategy**: Service continues with in-memory backend when Redis unavailable
 
@@ -51,8 +53,51 @@ Always reference these instructions first and fallback to search or bash command
 - **Sliding Window**: Use for strict rate enforcement and critical APIs  
 - **Fixed Window**: Choose for memory efficiency and high-scale scenarios
 - **Leaky Bucket**: Select for traffic shaping and constant output rates
+- **Composite**: Use for enterprise scenarios requiring multiple algorithms (API calls + bandwidth + compliance limits)
 
 **📋 See `docs/adr/` for detailed algorithm comparison and decision rationale**
+
+### Composite Rate Limiting (New Feature)
+
+**Multi-Algorithm Composition**: Combine multiple algorithms with configurable logic
+```json
+{
+  "key": "enterprise:customer:123",
+  "algorithm": "COMPOSITE",
+  "compositeConfig": {
+    "limits": [
+      {"name": "api_calls", "algorithm": "TOKEN_BUCKET", "capacity": 1000, "refillRate": 100},
+      {"name": "bandwidth", "algorithm": "LEAKY_BUCKET", "capacity": 50, "refillRate": 5}
+    ],
+    "combinationLogic": "ALL_MUST_PASS"
+  }
+}
+```
+
+**Combination Logic Types**:
+- `ALL_MUST_PASS`: AND operation (all components must allow)
+- `ANY_CAN_PASS`: OR operation (any component allows)
+- `WEIGHTED_AVERAGE`: Score-based with weights (>50% threshold)
+- `HIERARCHICAL_AND`: Scope-ordered (USER → TENANT → GLOBAL)
+- `PRIORITY_BASED`: High-priority first, fail-fast evaluation
+
+**Enhanced Response**:
+```json
+{
+  "allowed": false,
+  "componentResults": {
+    "api_calls": {"allowed": false, "currentTokens": 0, "capacity": 1000},
+    "bandwidth": {"allowed": true, "currentTokens": 45, "capacity": 50}
+  },
+  "limitingComponent": "api_calls",
+  "combinationResult": {
+    "logic": "ALL_MUST_PASS", "overallScore": 0.0,
+    "componentScores": {"api_calls": 0.0, "bandwidth": 1.0}
+  }
+}
+```
+
+**Use Cases**: SaaS platforms (API + bandwidth + compliance), Financial systems (rate + volume + velocity), Gaming (actions + chat + resources), IoT (commands + transfer + connections)
 
 ### Configuration Hierarchy (application.properties)
 ```properties
@@ -106,11 +151,12 @@ java -version  # Must show 21.x.x
 - **Node.js**: Express middleware pattern (`docs/examples/nodejs-client.md`)
 - **Go**: Native HTTP client with circuit breaker (`docs/examples/go-client.md`)
 - **cURL**: Comprehensive command-line examples (`docs/examples/curl-examples.md`)
+- **Composite Rate Limiting**: Multi-algorithm examples (`examples/composite-rate-limiting.md`)
 
 ## Testing Strategy
 
 ### Test Categories (76+ test classes)
-- **Unit Tests**: `TokenBucketTest`, `SlidingWindowTest`, `FixedWindowTest`, `LeakyBucketTest`, `ConfigurationResolverTest`
+- **Unit Tests**: `TokenBucketTest`, `SlidingWindowTest`, `FixedWindowTest`, `LeakyBucketTest`, `CompositeRateLimiterTest`, `ConfigurationResolverTest`
 - **Integration Tests**: `DistributedRateLimiterServiceTest`, `RedisConnectionPoolTest` 
 - **Performance Tests**: `ConcurrentPerformanceTest`, `MemoryUsageTest`, `LoadTestSuite`
 - **Controller Tests**: Each of 6 controllers has dedicated test class

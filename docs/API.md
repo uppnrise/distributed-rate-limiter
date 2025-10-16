@@ -76,6 +76,126 @@ curl -u admin:changeme http://localhost:8080/admin/keys
 - `401 Unauthorized` - Invalid API key
 - `403 Forbidden` - IP address blocked
 
+### Composite Rate Limiting (**NEW**)
+
+**Endpoint**: `POST /api/ratelimit/check` (with composite configuration)
+
+**Description**: Check rate limits using multiple algorithms with configurable combination logic for sophisticated rate limiting scenarios.
+
+**Request Body**:
+```json
+{
+  "key": "enterprise:customer:123",
+  "tokens": 1,
+  "algorithm": "COMPOSITE",
+  "compositeConfig": {
+    "limits": [
+      {
+        "name": "api_calls",
+        "algorithm": "TOKEN_BUCKET",
+        "capacity": 10000,
+        "refillRate": 1000,
+        "scope": "API",
+        "weight": 1.0,
+        "priority": 1
+      },
+      {
+        "name": "bandwidth",
+        "algorithm": "LEAKY_BUCKET",
+        "capacity": 100,
+        "refillRate": 50,
+        "scope": "BANDWIDTH",
+        "weight": 1.0,
+        "priority": 2
+      }
+    ],
+    "combinationLogic": "ALL_MUST_PASS",
+    "weights": {
+      "api_calls": 1.0,
+      "bandwidth": 1.0
+    },
+    "hierarchical": false
+  }
+}
+```
+
+**Response (Allowed)**:
+```json
+{
+  "key": "enterprise:customer:123",
+  "tokensRequested": 1,
+  "allowed": true,
+  "componentResults": {
+    "api_calls": {
+      "allowed": true,
+      "currentTokens": 9999,
+      "capacity": 10000,
+      "scope": "API"
+    },
+    "bandwidth": {
+      "allowed": true,
+      "currentTokens": 99,
+      "capacity": 100,
+      "scope": "BANDWIDTH"
+    }
+  },
+  "limitingComponent": null,
+  "combinationResult": {
+    "logic": "ALL_MUST_PASS",
+    "overallScore": 1.0,
+    "componentScores": {
+      "api_calls": 1.0,
+      "bandwidth": 1.0
+    }
+  }
+}
+```
+
+**Response (Rate Limited)**:
+```json
+{
+  "key": "enterprise:customer:123",
+  "tokensRequested": 1,
+  "allowed": false,
+  "componentResults": {
+    "api_calls": {
+      "allowed": false,
+      "currentTokens": 0,
+      "capacity": 10000,
+      "scope": "API"
+    },
+    "bandwidth": {
+      "allowed": true,
+      "currentTokens": 50,
+      "capacity": 100,
+      "scope": "BANDWIDTH"
+    }
+  },
+  "limitingComponent": "api_calls",
+  "combinationResult": {
+    "logic": "ALL_MUST_PASS",
+    "overallScore": 0.0,
+    "componentScores": {
+      "api_calls": 0.0,
+      "bandwidth": 1.0
+    }
+  }
+}
+```
+
+**Combination Logic Types**:
+- `ALL_MUST_PASS`: AND operation - all components must allow the request
+- `ANY_CAN_PASS`: OR operation - at least one component allows the request
+- `WEIGHTED_AVERAGE`: Score-based evaluation using component weights (>50% threshold)
+- `HIERARCHICAL_AND`: Scope-ordered evaluation (USER → TENANT → GLOBAL)
+- `PRIORITY_BASED`: High-priority components checked first with fail-fast logic
+
+**Use Cases**:
+- **SaaS Platforms**: API calls + bandwidth + compliance limits
+- **Financial Systems**: Transaction rate + volume + velocity checks
+- **Gaming Platforms**: Actions per second + chat messages + resource usage
+- **IoT Platforms**: Device commands + data transfer + connection limits
+
 ## Configuration Management
 
 ### Get Current Configuration
