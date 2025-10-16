@@ -6,7 +6,6 @@ import dev.bnacar.distributedratelimiter.monitoring.PerformanceRegressionService
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -79,11 +78,11 @@ public class PerformanceController {
             @Parameter(description = "Current performance baseline to analyze", required = true)
             @Valid @RequestBody PerformanceBaseline currentBaseline,
             @Parameter(description = "Custom response time regression threshold (percentage)", example = "20.0")
-            @RequestParam(required = false) Double responseTimeThreshold,
+            @RequestParam(value = "responseTimeThreshold", required = false) Double responseTimeThreshold,
             @Parameter(description = "Custom throughput regression threshold (percentage)", example = "15.0")
-            @RequestParam(required = false) Double throughputThreshold,
+            @RequestParam(value = "throughputThreshold", required = false) Double throughputThreshold,
             @Parameter(description = "Custom success rate regression threshold (percentage)", example = "5.0")
-            @RequestParam(required = false) Double successRateThreshold) {
+            @RequestParam(value = "successRateThreshold", required = false) Double successRateThreshold) {
         
         try {
             PerformanceRegressionResult.RegressionThresholds customThresholds = null;
@@ -150,7 +149,7 @@ public class PerformanceController {
             @Parameter(description = "Name of the test", required = true, example = "rate-limiter-load-test")
             @PathVariable("testName") String testName,
             @Parameter(description = "Maximum number of baselines to return", example = "10")
-            @RequestParam(defaultValue = "10") int limit) {
+            @RequestParam(value = "limit", defaultValue = "10") int limit) {
         try {
             List<PerformanceBaseline> baselines = regressionService.getPerformanceTrend(testName, limit);
             return ResponseEntity.ok(baselines);
@@ -177,7 +176,7 @@ public class PerformanceController {
             @Parameter(description = "Name of the test", required = true, example = "rate-limiter-load-test")
             @PathVariable("testName") String testName,
             @Parameter(description = "Maximum number of data points to return", example = "20")
-            @RequestParam(defaultValue = "20") int limit) {
+            @RequestParam(value = "limit", defaultValue = "20") int limit) {
         try {
             List<PerformanceBaseline> trend = regressionService.getPerformanceTrend(testName, limit);
             return ResponseEntity.ok(trend);
