@@ -34,6 +34,9 @@ public class RateLimitControllerTest {
     private RateLimiterService rateLimiterService;
 
     @MockBean
+    private dev.bnacar.distributedratelimiter.ratelimit.CompositeRateLimiterService compositeRateLimiterService;
+
+    @MockBean
     private ApiKeyService apiKeyService;
 
     @MockBean
