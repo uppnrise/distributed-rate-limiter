@@ -9,11 +9,14 @@ import dev.bnacar.distributedratelimiter.config.SecurityConfiguration;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.boot.test.context.TestConfiguration;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import dev.bnacar.distributedratelimiter.ratelimit.RateLimiterService;
 
+import static org.mockito.Mockito.mock;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
@@ -22,6 +25,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import org.junit.jupiter.api.BeforeEach;
 
 @WebMvcTest(controllers = RateLimitController.class)
+@Import(RateLimitControllerTest.TestConfig.class)
 public class RateLimitControllerTest {
 
     @Autowired
@@ -30,23 +34,56 @@ public class RateLimitControllerTest {
     @Autowired
     private ObjectMapper objectMapper;
 
-    @MockBean
+    @Autowired
     private RateLimiterService rateLimiterService;
 
-    @MockBean
+    @Autowired
     private dev.bnacar.distributedratelimiter.ratelimit.CompositeRateLimiterService compositeRateLimiterService;
 
-    @MockBean
+    @Autowired
     private ApiKeyService apiKeyService;
 
-    @MockBean
+    @Autowired
     private IpSecurityService ipSecurityService;
 
-    @MockBean
+    @Autowired
     private IpAddressExtractor ipAddressExtractor;
 
-    @MockBean
+    @Autowired
     private SecurityConfiguration securityConfiguration;
+
+    @TestConfiguration
+    static class TestConfig {
+        @Bean
+        public RateLimiterService rateLimiterService() {
+            return mock(RateLimiterService.class);
+        }
+
+        @Bean
+        public dev.bnacar.distributedratelimiter.ratelimit.CompositeRateLimiterService compositeRateLimiterService() {
+            return mock(dev.bnacar.distributedratelimiter.ratelimit.CompositeRateLimiterService.class);
+        }
+
+        @Bean
+        public ApiKeyService apiKeyService() {
+            return mock(ApiKeyService.class);
+        }
+
+        @Bean
+        public IpSecurityService ipSecurityService() {
+            return mock(IpSecurityService.class);
+        }
+
+        @Bean
+        public IpAddressExtractor ipAddressExtractor() {
+            return mock(IpAddressExtractor.class);
+        }
+
+        @Bean
+        public SecurityConfiguration securityConfiguration() {
+            return mock(SecurityConfiguration.class);
+        }
+    }
 
     @BeforeEach
     public void setUp() {
