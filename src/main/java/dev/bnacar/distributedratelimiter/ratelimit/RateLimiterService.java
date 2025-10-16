@@ -173,9 +173,37 @@ public class RateLimiterService {
             case LEAKY_BUCKET:
                 // For leaky bucket, capacity is queue capacity and refillRate is leak rate
                 return new LeakyBucket(config.getCapacity(), config.getRefillRate());
+            case COMPOSITE:
+                return createCompositeRateLimiter(config);
             default:
                 throw new IllegalArgumentException("Unknown algorithm: " + config.getAlgorithm());
         }
+    }
+    
+    /**
+     * Create a composite rate limiter from configuration.
+     * For now, creates a simple composite with default components.
+     */
+    private RateLimiter createCompositeRateLimiter(RateLimitConfig config) {
+        // For basic composite support, create a simple multi-algorithm composite
+        // This will be enhanced when we add full composite configuration support
+        java.util.List<LimitComponent> components = new java.util.ArrayList<>();
+        
+        // Add a token bucket component
+        components.add(new LimitComponent(
+            "token_bucket", 
+            new TokenBucket(config.getCapacity(), config.getRefillRate()),
+            1.0, 1, "PRIMARY"
+        ));
+        
+        // Add a sliding window component for stricter enforcement
+        components.add(new LimitComponent(
+            "sliding_window",
+            new SlidingWindow(config.getCapacity() / 2, config.getRefillRate()),
+            1.0, 2, "SECONDARY"
+        ));
+        
+        return new CompositeRateLimiter(components, CombinationLogic.ALL_MUST_PASS);
     }
 
     /**
