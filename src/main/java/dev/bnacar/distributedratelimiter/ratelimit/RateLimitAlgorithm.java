@@ -23,5 +23,12 @@ public enum RateLimitAlgorithm {
      * at window boundaries. Memory efficient and simple, ideal for basic
      * rate limiting with predictable reset times.
      */
-    FIXED_WINDOW
+    FIXED_WINDOW,
+    
+    /**
+     * Leaky bucket algorithm - enforces constant output rate through request queuing.
+     * Provides traffic shaping with predictable processing rates regardless of
+     * input bursts. Ideal for downstream system protection and SLA compliance.
+     */
+    LEAKY_BUCKET
 }
