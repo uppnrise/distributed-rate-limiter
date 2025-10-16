@@ -46,6 +46,11 @@ ratelimiter.patterns.traffic:*.capacity=50
 ratelimiter.patterns.traffic:*.refillRate=10
 ratelimiter.patterns.traffic:*.algorithm=LEAKY_BUCKET
 
+# Composite rate limiting (set algorithm to COMPOSITE and use API for detailed config)
+ratelimiter.patterns.enterprise:*.algorithm=COMPOSITE
+ratelimiter.patterns.enterprise:*.capacity=10000
+ratelimiter.patterns.enterprise:*.refillRate=1000
+
 ratelimiter.patterns.*:admin.capacity=1000
 ratelimiter.patterns.*:admin.refillRate=500
 ```

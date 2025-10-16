@@ -20,12 +20,12 @@
 
 ## 🎯 Overview
 
-A production-ready distributed rate limiter supporting **four algorithms** (Token Bucket, Sliding Window, Fixed Window, and Leaky Bucket) with Redis backing for high-performance API protection. Perfect for microservices, SaaS platforms, and any application requiring sophisticated rate limiting with algorithm flexibility and traffic shaping capabilities.
+A production-ready distributed rate limiter supporting **five algorithms** (Token Bucket, Sliding Window, Fixed Window, Leaky Bucket, and Composite) with Redis backing for high-performance API protection. Perfect for microservices, SaaS platforms, and any application requiring sophisticated rate limiting with algorithm flexibility, multi-dimensional limits, and traffic shaping capabilities.
 
 ### ✨ Key Features
 
 - 🏃‍♂️ **High Performance**: 50,000+ requests/second with <2ms P95 latency
-- 🎯 **Four Algorithms**: Token Bucket, Sliding Window, Fixed Window, and Leaky Bucket for traffic shaping
+- 🎯 **Five Algorithms**: Token Bucket, Sliding Window, Fixed Window, Leaky Bucket, and Composite for multi-algorithm traffic shaping
 - 🌐 **Distributed**: Redis-backed for multi-instance deployments
 - ⚡ **Production Ready**: Comprehensive monitoring, health checks, and observability
 - 🛡️ **Thread Safe**: Concurrent request handling with atomic operations
@@ -260,7 +260,7 @@ curl -X POST http://localhost:8080/admin/config \
   }'
 ```
 
-### Traffic Shaping with Leaky Bucket (**NEW**)
+### Traffic Shaping with Leaky Bucket
 
 ```bash
 # Configure leaky bucket for downstream service protection
@@ -287,6 +287,72 @@ curl -X POST http://localhost:8080/api/ratelimit/config/keys/db:connection_pool 
     "capacity": 20,
     "refillRate": 5,
     "algorithm": "LEAKY_BUCKET"
+  }'
+```
+
+### Composite Rate Limiting (**NEW**)
+
+```bash
+# Enterprise SaaS with multiple limit types
+curl -X POST http://localhost:8080/api/ratelimit/check \
+  -H "Content-Type: application/json" \
+  -d '{
+    "key": "enterprise:customer:123",
+    "tokens": 1,
+    "algorithm": "COMPOSITE",
+    "compositeConfig": {
+      "limits": [
+        {
+          "name": "api_calls",
+          "algorithm": "TOKEN_BUCKET",
+          "capacity": 10000,
+          "refillRate": 1000,
+          "scope": "API",
+          "weight": 1.0,
+          "priority": 1
+        },
+        {
+          "name": "bandwidth",
+          "algorithm": "LEAKY_BUCKET",
+          "capacity": 100,
+          "refillRate": 50,
+          "scope": "BANDWIDTH",
+          "weight": 1.0,
+          "priority": 2
+        }
+      ],
+      "combinationLogic": "ALL_MUST_PASS"
+    }
+  }'
+
+# Hierarchical user/tenant limits
+curl -X POST http://localhost:8080/api/ratelimit/check \
+  -H "Content-Type: application/json" \
+  -d '{
+    "key": "user:john_doe",
+    "tokens": 5,
+    "algorithm": "COMPOSITE",
+    "compositeConfig": {
+      "limits": [
+        {
+          "name": "user_limit",
+          "algorithm": "TOKEN_BUCKET",
+          "scope": "USER",
+          "capacity": 100,
+          "refillRate": 10,
+          "priority": 1
+        },
+        {
+          "name": "tenant_limit", 
+          "algorithm": "SLIDING_WINDOW",
+          "scope": "TENANT",
+          "capacity": 5000,
+          "refillRate": 500,
+          "priority": 2
+        }
+      ],
+      "combinationLogic": "HIERARCHICAL_AND"
+    }
   }'
 ```
 
@@ -343,7 +409,7 @@ public class ProtectedController {
 
 ### Rate Limiting Algorithms
 
-The rate limiter supports four different algorithms optimized for different use cases:
+The rate limiter supports five different algorithms optimized for different use cases:
 
 #### 🪣 Token Bucket (Default)
 - **Best for**: APIs requiring burst handling with smooth long-term rates
@@ -360,10 +426,16 @@ The rate limiter supports four different algorithms optimized for different use 
 - **Characteristics**: Counter resets at fixed intervals, low memory usage
 - **Use cases**: High-scale scenarios, simple rate limiting needs
 
-#### 🚰 Leaky Bucket (**NEW**)
+#### 🚰 Leaky Bucket
 - **Best for**: Traffic shaping and consistent output rates
 - **Characteristics**: Queue-based processing at constant rate, no bursts allowed
 - **Use cases**: Downstream service protection, SLA compliance, network-like behavior
+
+#### 🔄 Composite (**NEW**)
+- **Best for**: Enterprise scenarios requiring multiple simultaneous limits
+- **Characteristics**: Combines multiple algorithms with configurable combination logic
+- **Use cases**: SaaS platforms (API + bandwidth + compliance), Financial systems (rate + volume + velocity), Multi-tenant hierarchical limits
+- **Combination Logic**: ALL_MUST_PASS, ANY_CAN_PASS, WEIGHTED_AVERAGE, HIERARCHICAL_AND, PRIORITY_BASED
 
 **Algorithm Selection**: Configure per key pattern or use runtime configuration to select the optimal algorithm for each use case.
 
