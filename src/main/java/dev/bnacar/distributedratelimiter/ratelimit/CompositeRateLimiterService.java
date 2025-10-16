@@ -3,11 +3,12 @@ package dev.bnacar.distributedratelimiter.ratelimit;
 import dev.bnacar.distributedratelimiter.models.CompositeRateLimitResponse;
 import dev.bnacar.distributedratelimiter.models.CompositeRateLimitResponse.ComponentResult;
 import dev.bnacar.distributedratelimiter.models.CompositeRateLimitResponse.CombinationResult;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Service for handling composite rate limiting operations.
@@ -18,7 +19,6 @@ public class CompositeRateLimiterService {
     
     private final RateLimiterService rateLimiterService;
     
-    @Autowired
     public CompositeRateLimiterService(RateLimiterService rateLimiterService) {
         this.rateLimiterService = rateLimiterService;
     }
@@ -73,7 +73,6 @@ public class CompositeRateLimiterService {
         List<LimitComponent> components = new ArrayList<>();
         
         for (CompositeRateLimitConfig.LimitDefinition limitDef : config.getLimits()) {
-            String componentKey = createComponentKey(baseKey, limitDef);
             RateLimiter rateLimiter = createRateLimiterFromDefinition(limitDef);
             
             LimitComponent component = new LimitComponent(
@@ -88,16 +87,6 @@ public class CompositeRateLimiterService {
         }
         
         return components;
-    }
-    
-    /**
-     * Create component-specific key for rate limiting.
-     */
-    private String createComponentKey(String baseKey, CompositeRateLimitConfig.LimitDefinition limitDef) {
-        if (limitDef.getKeyPattern() != null) {
-            return limitDef.getKeyPattern().replace("{key}", baseKey);
-        }
-        return baseKey + ":" + limitDef.getName();
     }
     
     /**
