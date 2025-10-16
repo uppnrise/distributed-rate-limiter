@@ -54,7 +54,7 @@ public class RateLimitController {
 
     public RateLimitController(RateLimiterService rateLimiterService,
                               CompositeRateLimiterService compositeRateLimiterService,
-                              GeographicRateLimitService geographicRateLimitService,
+                              @org.springframework.beans.factory.annotation.Autowired(required = false) GeographicRateLimitService geographicRateLimitService,
                               ApiKeyService apiKeyService,
                               IpSecurityService ipSecurityService,
                               IpAddressExtractor ipAddressExtractor) {
@@ -117,8 +117,8 @@ public class RateLimitController {
         // Extract headers for geographic detection
         Map<String, String> headers = extractGeographicHeaders(httpRequest);
         
-        // Try geographic rate limiting first if enabled
-        if (geographicRateLimitingEnabled) {
+        // Try geographic rate limiting first if enabled and service is available
+        if (geographicRateLimitingEnabled && geographicRateLimitService != null) {
             try {
                 GeographicRateLimitResponse geoResponse = geographicRateLimitService.checkGeographicRateLimit(
                     request, clientIp, headers

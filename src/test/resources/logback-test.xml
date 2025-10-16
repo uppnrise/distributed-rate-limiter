@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <!-- Console appender for test output -->
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level [%X{correlationId}] %logger{36} - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <!-- Reduce log levels for performance tests -->
+    <logger name="dev.bnacar.distributedratelimiter.ratelimit.RateLimiterService" level="ERROR" />
+    <logger name="dev.bnacar.distributedratelimiter.monitoring.MetricsService" level="ERROR" />
+    <logger name="dev.bnacar.distributedratelimiter.geo" level="INFO" />
+    
+    <!-- Quiet down Spring Boot during tests -->
+    <logger name="org.springframework" level="WARN" />
+    <logger name="org.apache.tomcat" level="WARN" />
+    <logger name="org.hibernate" level="WARN" />
+    
+    <!-- Testcontainers -->
+    <logger name="org.testcontainers" level="WARN" />
+    <logger name="tc.redis" level="WARN" />
+    
+    <!-- Root logger -->
+    <root level="INFO">
+        <appender-ref ref="CONSOLE" />
+    </root>
+</configuration>
