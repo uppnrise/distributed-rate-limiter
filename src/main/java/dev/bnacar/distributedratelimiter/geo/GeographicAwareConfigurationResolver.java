@@ -16,6 +16,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * Handles geographic rate limit configurations with fallback to standard configurations.
  */
 @Service
+@org.springframework.boot.autoconfigure.condition.ConditionalOnProperty(name = "ratelimiter.geographic.enabled", havingValue = "true", matchIfMissing = false)
 public class GeographicAwareConfigurationResolver extends ConfigurationResolver {
     private static final Logger logger = LoggerFactory.getLogger(GeographicAwareConfigurationResolver.class);
 

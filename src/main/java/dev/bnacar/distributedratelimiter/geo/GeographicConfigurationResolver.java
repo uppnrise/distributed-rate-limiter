@@ -18,6 +18,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * Handles priority-based rule resolution and caching for performance.
  */
 @Service
+@org.springframework.boot.autoconfigure.condition.ConditionalOnProperty(name = "ratelimiter.geographic.enabled", havingValue = "true", matchIfMissing = false)
 public class GeographicConfigurationResolver {
     private static final Logger logger = LoggerFactory.getLogger(GeographicConfigurationResolver.class);
 

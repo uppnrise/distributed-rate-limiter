@@ -15,6 +15,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * Supports multiple detection methods with fallback strategy.
  */
 @Service
+@org.springframework.boot.autoconfigure.condition.ConditionalOnProperty(name = "ratelimiter.geographic.enabled", havingValue = "true", matchIfMissing = false)
 public class GeoLocationService {
     private static final Logger logger = LoggerFactory.getLogger(GeoLocationService.class);
 

@@ -18,6 +18,7 @@ import java.util.Map;
  * Orchestrates geographic location detection, rule resolution, and rate limit enforcement.
  */
 @Service
+@org.springframework.boot.autoconfigure.condition.ConditionalOnProperty(name = "ratelimiter.geographic.enabled", havingValue = "true", matchIfMissing = false)
 public class GeographicRateLimitService {
     private static final Logger logger = LoggerFactory.getLogger(GeographicRateLimitService.class);
 

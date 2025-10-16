@@ -27,6 +27,7 @@ import java.util.HashMap;
 @RequestMapping("/api/ratelimit/geographic")
 @Tag(name = "Geographic Rate Limiting", description = "Operations for geographic rate limiting configuration and debugging")
 @CrossOrigin(origins = {"http://localhost:5173", "http://localhost:3000", "http://127.0.0.1:5173", "http://127.0.0.1:3000", "http://[::1]:5173", "http://[::1]:3000"})
+@org.springframework.boot.autoconfigure.condition.ConditionalOnProperty(name = "ratelimiter.geographic.enabled", havingValue = "true", matchIfMissing = false)
 public class GeographicRateLimitController {
     private static final Logger logger = LoggerFactory.getLogger(GeographicRateLimitController.class);
 
