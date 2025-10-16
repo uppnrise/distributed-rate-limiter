@@ -170,6 +170,9 @@ public class RateLimiterService {
                 return new SlidingWindow(config.getCapacity(), config.getRefillRate());
             case FIXED_WINDOW:
                 return new FixedWindow(config.getCapacity(), config.getRefillRate());
+            case LEAKY_BUCKET:
+                // For leaky bucket, capacity is queue capacity and refillRate is leak rate
+                return new LeakyBucket(config.getCapacity(), config.getRefillRate());
             default:
                 throw new IllegalArgumentException("Unknown algorithm: " + config.getAlgorithm());
         }
@@ -183,6 +186,8 @@ public class RateLimiterService {
             return ((TokenBucket) holder.rateLimiter).getCurrentTokens();
         } else if (holder.rateLimiter instanceof FixedWindow) {
             return ((FixedWindow) holder.rateLimiter).getCurrentTokens();
+        } else if (holder.rateLimiter instanceof LeakyBucket) {
+            return ((LeakyBucket) holder.rateLimiter).getCurrentTokens();
         }
         // For other algorithms, return -1 to indicate unavailable
         return -1;

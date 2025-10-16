@@ -42,17 +42,25 @@ public class AlgorithmDemonstrationTest {
         fixedWindowConfig.setAlgorithm(RateLimitAlgorithm.FIXED_WINDOW);
         config.putPattern("fixed:*", fixedWindowConfig);
         
+        // Configure Leaky Bucket for traffic shaping
+        RateLimiterConfiguration.KeyConfig leakyBucketConfig = new RateLimiterConfiguration.KeyConfig();
+        leakyBucketConfig.setCapacity(4);
+        leakyBucketConfig.setRefillRate(2);
+        leakyBucketConfig.setAlgorithm(RateLimitAlgorithm.LEAKY_BUCKET);
+        config.putPattern("leaky:*", leakyBucketConfig);
+        
         ConfigurationResolver resolver = new ConfigurationResolver(config);
         service = new RateLimiterService(resolver, config);
     }
     
     @Test
-    void testAllThreeAlgorithmsWorking() {
+    void testAllFourAlgorithmsWorking() {
         String tokenKey = "token:user1";
         String slidingKey = "sliding:api";
         String fixedKey = "fixed:batch";
+        String leakyKey = "leaky:traffic";
         
-        System.out.println("\n=== Demonstrating All Three Rate Limiting Algorithms ===\n");
+        System.out.println("\n=== Demonstrating All Four Rate Limiting Algorithms ===\n");
         
         // Test Token Bucket Algorithm
         System.out.println("1. TOKEN BUCKET Algorithm (token:user1):");
@@ -75,6 +83,14 @@ public class AlgorithmDemonstrationTest {
         System.out.printf("   Capacity: 3, Should allow 3 requests then deny\n");
         for (int i = 1; i <= 4; i++) {
             boolean allowed = service.isAllowed(fixedKey, 1);
+            System.out.printf("   Request %d: %s\n", i, allowed ? "ALLOWED" : "DENIED");
+        }
+        
+        // Test Leaky Bucket Algorithm
+        System.out.println("\n4. LEAKY BUCKET Algorithm (leaky:traffic):");
+        System.out.printf("   Queue Capacity: 4, Should handle requests with traffic shaping\n");
+        for (int i = 1; i <= 5; i++) {
+            boolean allowed = service.isAllowed(leakyKey, 1);
             System.out.printf("   Request %d: %s\n", i, allowed ? "ALLOWED" : "DENIED");
         }
         
@@ -138,5 +154,11 @@ public class AlgorithmDemonstrationTest {
         RateLimiter fixedRL = service.getBucketHolder("fixed:test").rateLimiter;
         assertTrue(fixedRL instanceof FixedWindow);
         assertEquals(RateLimitAlgorithm.FIXED_WINDOW, service.getBucketHolder("fixed:test").config.getAlgorithm());
+        
+        // Check Leaky Bucket
+        service.isAllowed("leaky:test", 1);
+        RateLimiter leakyRL = service.getBucketHolder("leaky:test").rateLimiter;
+        assertTrue(leakyRL instanceof LeakyBucket);
+        assertEquals(RateLimitAlgorithm.LEAKY_BUCKET, service.getBucketHolder("leaky:test").config.getAlgorithm());
     }
 }
