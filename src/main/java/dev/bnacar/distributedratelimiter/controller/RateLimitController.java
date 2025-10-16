@@ -2,7 +2,10 @@ package dev.bnacar.distributedratelimiter.controller;
 
 import dev.bnacar.distributedratelimiter.models.RateLimitRequest;
 import dev.bnacar.distributedratelimiter.models.RateLimitResponse;
+import dev.bnacar.distributedratelimiter.models.CompositeRateLimitResponse;
 import dev.bnacar.distributedratelimiter.ratelimit.RateLimiterService;
+import dev.bnacar.distributedratelimiter.ratelimit.CompositeRateLimiterService;
+import dev.bnacar.distributedratelimiter.ratelimit.RateLimitAlgorithm;
 import dev.bnacar.distributedratelimiter.security.ApiKeyService;
 import dev.bnacar.distributedratelimiter.security.IpAddressExtractor;
 import dev.bnacar.distributedratelimiter.security.IpSecurityService;
@@ -29,16 +32,19 @@ import jakarta.validation.Valid;
 public class RateLimitController {
 
     private final RateLimiterService rateLimiterService;
+    private final CompositeRateLimiterService compositeRateLimiterService;
     private final ApiKeyService apiKeyService;
     private final IpSecurityService ipSecurityService;
     private final IpAddressExtractor ipAddressExtractor;
 
     @Autowired
     public RateLimitController(RateLimiterService rateLimiterService,
+                              CompositeRateLimiterService compositeRateLimiterService,
                               ApiKeyService apiKeyService,
                               IpSecurityService ipSecurityService,
                               IpAddressExtractor ipAddressExtractor) {
         this.rateLimiterService = rateLimiterService;
+        this.compositeRateLimiterService = compositeRateLimiterService;
         this.apiKeyService = apiKeyService;
         this.ipSecurityService = ipSecurityService;
         this.ipAddressExtractor = ipAddressExtractor;
@@ -92,15 +98,29 @@ public class RateLimitController {
         // Create IP-based rate limiting key
         String effectiveKey = ipSecurityService.createIpBasedKey(request.getKey(), clientIp);
         
-        // Check rate limit
-        boolean allowed = rateLimiterService.isAllowed(effectiveKey, request.getTokens());
-        
-        RateLimitResponse response = new RateLimitResponse(request.getKey(), request.getTokens(), allowed);
-        
-        if (allowed) {
-            return ResponseEntity.ok(response);
+        // Check if this is a composite rate limiting request
+        if (request.getAlgorithm() == RateLimitAlgorithm.COMPOSITE || request.getCompositeConfig() != null) {
+            // Handle composite rate limiting
+            CompositeRateLimitResponse compositeResponse = compositeRateLimiterService.checkCompositeRateLimit(
+                effectiveKey, request.getTokens(), request.getCompositeConfig()
+            );
+            
+            if (compositeResponse.isAllowed()) {
+                return ResponseEntity.ok(compositeResponse);
+            } else {
+                return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).body(compositeResponse);
+            }
         } else {
-            return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).body(response);
+            // Standard single-algorithm rate limiting
+            boolean allowed = rateLimiterService.isAllowed(effectiveKey, request.getTokens());
+            
+            RateLimitResponse response = new RateLimitResponse(request.getKey(), request.getTokens(), allowed);
+            
+            if (allowed) {
+                return ResponseEntity.ok(response);
+            } else {
+                return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).body(response);
+            }
         }
     }
 }
