@@ -76,7 +76,7 @@ public class SecurityIntegrationTest {
         mockMvc.perform(post("/api/ratelimit/check")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isRequestEntityTooLarge())
+                .andExpect(status().is(413))
                 .andExpect(content().contentType("application/json"));
     }
 }

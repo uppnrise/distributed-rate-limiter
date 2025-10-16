@@ -89,8 +89,8 @@ class RedisConnectionPoolTest {
                 connection.ping();
                 
                 // Basic Redis operation to ensure connection is working
-                connection.set("test:pool:key".getBytes(), ("value" + i).getBytes());
-                byte[] retrieved = connection.get("test:pool:key".getBytes());
+                connection.stringCommands().set("test:pool:key".getBytes(), ("value" + i).getBytes());
+                byte[] retrieved = connection.stringCommands().get("test:pool:key".getBytes());
                 assertNotNull(retrieved);
                 assertEquals("value" + i, new String(retrieved));
             }
