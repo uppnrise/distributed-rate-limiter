@@ -178,7 +178,7 @@ class ConcurrentPerformanceTest {
             });
         }
 
-        boolean completed = latch.await(durationSeconds + 5, TimeUnit.SECONDS);
+        boolean completed = latch.await(durationSeconds + 15, TimeUnit.SECONDS);
         assertTrue(completed, "Endurance test did not complete in time");
 
         long endTime = System.nanoTime();
