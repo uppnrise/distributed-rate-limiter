@@ -83,6 +83,11 @@ public class RateLimitControllerTest {
         public SecurityConfiguration securityConfiguration() {
             return mock(SecurityConfiguration.class);
         }
+        
+        @Bean
+        public dev.bnacar.distributedratelimiter.geo.GeographicRateLimitService geographicRateLimitService() {
+            return mock(dev.bnacar.distributedratelimiter.geo.GeographicRateLimitService.class);
+        }
     }
 
     @BeforeEach
