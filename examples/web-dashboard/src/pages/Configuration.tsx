@@ -48,16 +48,16 @@ const Configuration = () => {
       try {
         const config = await rateLimiterApi.getConfig();
         
-        // Set global config
+        // Set global config (algorithm defaults to token-bucket as backend doesn't expose it)
         setGlobalConfig({
           defaultCapacity: config.capacity,
           defaultRefillRate: config.refillRate,
           cleanupInterval: config.cleanupIntervalMs / 1000,
-          algorithm: normalizeAlgorithm(config.algorithm),
+          algorithm: 'token-bucket', // Backend doesn't expose global algorithm yet
         });
 
-        // Convert keys to KeyConfig array
-        const keys: KeyConfig[] = Object.entries(config.keys).map(([keyName, keyConfig], index) => ({
+        // Convert keyConfigs to KeyConfig array
+        const keys: KeyConfig[] = Object.entries(config.keyConfigs || {}).map(([keyName, keyConfig], index) => ({
           id: `key-${index}`,
           keyName,
           capacity: keyConfig.capacity,
@@ -68,14 +68,14 @@ const Configuration = () => {
         }));
         setKeyConfigs(keys);
 
-        // Convert patterns to PatternConfig array
-        const patterns: PatternConfig[] = Object.entries(config.patterns).map(([pattern, patternConfig], index) => ({
+        // Convert patternConfigs to PatternConfig array
+        const patterns: PatternConfig[] = Object.entries(config.patternConfigs || {}).map(([pattern, patternConfig], index) => ({
           id: `pattern-${index}`,
           pattern,
           description: `Rate limit configuration for ${pattern}`,
           capacity: patternConfig.capacity,
           refillRate: patternConfig.refillRate,
-          algorithm: 'token-bucket' as ConfigAlgorithm,
+          algorithm: normalizeAlgorithm(patternConfig.algorithm || 'TOKEN_BUCKET'),
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
         }));
