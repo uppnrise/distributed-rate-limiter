@@ -23,6 +23,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.CrossOrigin;
 
 import jakarta.validation.Valid;
 import java.util.List;
@@ -35,6 +36,7 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping("/admin")
 @Tag(name = "admin-controller", description = "Administrative operations for rate limiter management")
+@CrossOrigin(origins = {"http://localhost:5173", "http://localhost:3000", "http://127.0.0.1:5173", "http://127.0.0.1:3000", "http://[::1]:5173", "http://[::1]:3000"})
 public class AdminController {
 
     private final RateLimiterService rateLimiterService;
