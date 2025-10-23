@@ -21,9 +21,8 @@ interface RateLimiterConfig {
   capacity: number;
   refillRate: number;
   cleanupIntervalMs: number;
-  algorithm: string;
-  keys: Record<string, { capacity: number; refillRate: number; algorithm?: string }>;
-  patterns: Record<string, { capacity: number; refillRate: number }>;
+  keyConfigs: Record<string, { capacity: number; refillRate: number; algorithm?: string }>;
+  patternConfigs: Record<string, { capacity: number; refillRate: number; algorithm?: string }>;
 }
 
 interface KeyConfig {
@@ -48,29 +47,35 @@ interface ActiveKey {
 interface AdminKeysResponse {
   keys: ActiveKey[];
   totalKeys: number;
+  activeKeys: number;
 }
 
 interface LoadTestRequest {
-  requests: number;
-  concurrency: number;
-  key: string;
+  concurrentThreads: number;
+  requestsPerThread: number;
   durationSeconds: number;
+  tokensPerRequest: number;
+  delayBetweenRequestsMs?: number;
+  keyPrefix?: string;
 }
 
 interface LoadTestResponse {
+  success: boolean;
+  errorMessage?: string;
   totalRequests: number;
-  successCount: number;
-  errorCount: number;
+  successfulRequests: number;
+  errorRequests: number;
   throughputPerSecond: number;
   successRate: number;
   durationSeconds: number;
+  concurrentThreads: number;
+  requestsPerThread: number;
 }
 
 interface KeyMetric {
-  requestCount: number;
-  allowedCount: number;
-  deniedCount: number;
-  lastAccess: string;
+  allowedRequests: number;
+  deniedRequests: number;
+  lastAccessTime: number;
 }
 
 interface SystemMetrics {
@@ -198,7 +203,7 @@ class RateLimiterApiService {
   // ============ LOAD TESTING ============
   
   async runLoadTest(request: LoadTestRequest): Promise<LoadTestResponse> {
-    return this.request<LoadTestResponse>('/api/benchmark/load-test', {
+    return this.request<LoadTestResponse>('/api/benchmark/run', {
       method: 'POST',
       body: JSON.stringify(request),
     });
