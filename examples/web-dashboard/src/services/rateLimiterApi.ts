@@ -59,6 +59,7 @@ interface LoadTestRequest {
   keyPrefix?: string;
 }
 
+// BenchmarkResponse from backend (aligned with BenchmarkResponse.java)
 interface LoadTestResponse {
   success: boolean;
   errorMessage?: string;

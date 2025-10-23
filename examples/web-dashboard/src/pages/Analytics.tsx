@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Info } from "lucide-react";
 import { TimeRangeSelector } from "@/components/analytics/TimeRangeSelector";
 import { PerformanceOverview } from "@/components/analytics/PerformanceOverview";
 import { UsageTrendsCharts } from "@/components/analytics/UsageTrendsCharts";
@@ -86,6 +88,25 @@ const Analytics = () => {
           Historical performance data and trends analysis
         </p>
       </div>
+
+      {/* Demo Data Notice */}
+      <Alert className="border-blue-500/50 bg-blue-500/10">
+        <Info className="h-4 w-4 text-blue-600" />
+        <AlertDescription className="text-blue-900 dark:text-blue-100">
+          <strong>Demo Data:</strong> This page displays simulated analytics data for preview purposes. 
+          Historical analytics features require a time-series database backend (InfluxDB, Prometheus, or TimescaleDB) 
+          with data aggregation endpoints. See the{" "}
+          <a 
+            href="https://github.com/uppnrise/distributed-rate-limiter/blob/main/examples/web-dashboard/README.md#analytics-feature-roadmap" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="underline font-semibold hover:text-blue-700 dark:hover:text-blue-300"
+          >
+            Analytics Roadmap
+          </a>
+          {" "}for implementation details.
+        </AlertDescription>
+      </Alert>
 
       <TimeRangeSelector
         selectedRange={selectedRange}
