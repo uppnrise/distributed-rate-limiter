@@ -1,7 +1,9 @@
 // Real API Service for Distributed Rate Limiter Backend
 
-const API_BASE_URL = 'http://localhost:8080';
-const ADMIN_CREDENTIALS = btoa('admin:changeme');
+// Use relative URLs in development (Vite proxy) and production (same origin)
+// In development, Vite proxy forwards /api/* and /actuator/* to http://localhost:8080
+const API_BASE_URL = import.meta.env.PROD ? '' : '';
+const ADMIN_CREDENTIALS = btoa('admin:admin123');
 
 interface RateLimitCheckRequest {
   key: string;
