@@ -2,6 +2,8 @@
 
 A comprehensive, real-time dashboard for monitoring and managing distributed rate limiting systems. Built with modern web technologies to provide deep insights into rate limiting performance, algorithm comparison, and traffic analytics.
 
+![Dashboard Preview](public/screenshots/dashboard-preview.png)
+
 ## 🚀 Features
 
 ### 📊 Real-time Monitoring Dashboard
@@ -472,6 +474,32 @@ The dashboard integrates with a distributed rate limiter backend. See [API_INTEG
 - Authentication requirements
 - Error handling guidelines
 - Backend setup instructions
+
+## 📸 Dashboard Screenshots
+
+### 📊 Live Monitoring Dashboard
+![Dashboard](public/screenshots/dashboard-preview.png)
+Real-time metrics with live charts, algorithm distribution, and activity feed.
+
+### 🧪 Load Testing Interface
+![Load Testing](public/screenshots/load-testing-preview.png)
+Execute production-grade load tests with real-time progress and comprehensive results.
+
+### ⚙️ Configuration Management
+![Configuration](public/screenshots/configuration-preview.png)
+Manage global, per-key, and pattern-based rate limiting configurations.
+
+### 🔑 API Keys Management
+![API Keys](public/screenshots/api-keys-preview.png)
+Track active keys with statistics, admin controls, and bulk operations.
+
+### 📈 Analytics & Trends
+![Analytics](public/screenshots/analytics-preview.png)
+Historical performance analysis with time-series data *(demo preview - requires time-series database backend)*.
+
+### 🧮 Algorithm Comparison
+![Algorithms](public/screenshots/algorithms-preview.png)
+Interactive educational tool for understanding and comparing rate limiting algorithms.
 
 ## 🤝 Contributing
 
