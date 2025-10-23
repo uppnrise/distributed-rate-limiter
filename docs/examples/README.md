@@ -2,6 +2,32 @@
 
 This directory contains code examples demonstrating how to integrate with the Distributed Rate Limiter API in various programming languages.
 
+## 🎨 Interactive Web Dashboard
+
+**NEW!** Try our comprehensive web dashboard for real-time monitoring and management:
+
+📁 **Location**: [`/examples/web-dashboard`](../../examples/web-dashboard/)
+
+### Features
+- 📊 **Real-time Monitoring** - Live metrics, charts, and activity feeds
+- 🔧 **Algorithm Comparison** - Interactive testing of all 5 algorithms
+- 📈 **Advanced Analytics** - Historical trends and performance insights
+- 🔑 **API Key Management** - Complete lifecycle management with usage tracking
+- ⚙️ **Configuration UI** - Visual configuration management
+- 🧪 **Load Testing** - Integrated performance testing suite
+
+### Quick Start
+```bash
+cd examples/web-dashboard
+npm install
+npm run dev
+# Dashboard available at http://localhost:5173
+```
+
+See the [Dashboard README](../../examples/web-dashboard/README.md) for complete documentation.
+
+---
+
 ## Quick Start
 
 All examples demonstrate the basic rate limiting flow:
@@ -12,11 +38,17 @@ All examples demonstrate the basic rate limiting flow:
 
 ## Available Examples
 
+### 🎨 Interactive Dashboard
+- [Web Dashboard](../../examples/web-dashboard/README.md) - **NEW!** Full-featured monitoring and management UI
+
+### 💻 Client Libraries
 - [Java/Spring Boot](./java-client.md) - Complete integration example
 - [Python](./python-client.md) - Simple requests-based client
 - [Node.js](./nodejs-client.md) - Express.js middleware example
-- [cURL](./curl-examples.md) - Command-line testing examples
 - [Go](./go-client.md) - Native HTTP client implementation
+
+### 📝 Testing & Examples
+- [cURL](./curl-examples.md) - Command-line testing examples
 - [Leaky Bucket](./leaky-bucket-examples.md) - Traffic shaping examples
 - [Composite Rate Limiting](../../examples/composite-rate-limiting.md) - Multi-algorithm examples (**NEW**)
 
