@@ -56,6 +56,15 @@ A production-ready distributed rate limiter supporting **five algorithms** (Toke
 
 > **Note**: The API provides 18 endpoints covering rate limiting, configuration management, administrative operations, performance monitoring, benchmarking, and system metrics.
 
+### 🎨 Interactive Dashboard
+- **[Web Dashboard](examples/web-dashboard/README.md)** - 🆕 Real-time monitoring and management UI
+  - Live metrics and performance visualization
+  - Algorithm comparison and simulation
+  - Configuration management interface
+  - API key management and usage tracking
+  - Load testing suite with analytics
+  - **[Quick Start Guide](examples/web-dashboard/README.md#-quick-start)** - Get started in 5 minutes
+
 ### Usage Examples
 - **[Java/Spring Boot Integration](docs/examples/java-client.md)** - Complete integration example
 - **[Python Client](docs/examples/python-client.md)** - Flask/FastAPI integration
@@ -152,6 +161,26 @@ curl http://localhost:8080/actuator/health
 
 ### 3. Test Rate Limiting
 
+#### Option A: Using the Web Dashboard (Recommended)
+
+```bash
+# Start the backend (if not already running)
+java -jar distributed-rate-limiter-1.0.0.jar
+
+# In a new terminal, start the dashboard
+cd examples/web-dashboard
+npm install && npm run dev
+# Dashboard available at http://localhost:5173
+```
+
+The dashboard provides:
+- 📊 Real-time monitoring and metrics
+- 🔧 Interactive algorithm testing
+- ⚙️ Visual configuration management
+- 🧪 Built-in load testing suite
+
+#### Option B: Using cURL
+
 ```bash
 # Check rate limit for a key
 curl -X POST http://localhost:8080/api/ratelimit/check \
@@ -173,8 +202,10 @@ curl -X POST http://localhost:8080/api/ratelimit/check \
 
 The application will be available at:
 - **API**: http://localhost:8080
+- **Web Dashboard**: http://localhost:5173 (when running `npm run dev` in `examples/web-dashboard/`)
 - **Swagger UI**: http://localhost:8080/swagger-ui/index.html
 - **Health Check**: http://localhost:8080/actuator/health
+- **Metrics**: http://localhost:8080/actuator/prometheus
 
 ---
 
