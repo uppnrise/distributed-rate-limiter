@@ -18,12 +18,6 @@ import { DashboardLoadingSkeleton } from "@/components/LoadingState";
 import { ApiHealthCheck } from "@/components/ApiHealthCheck";
 import { useApp } from "@/contexts/AppContext";
 import { rateLimiterApi } from "@/services/rateLimiterApi";
-import {
-  generateRealtimeData,
-  generateMockMetrics,
-  generateActivityEvent,
-  generateAlgorithmMetrics,
-} from "@/utils/mockData";
 import { useKeyboardShortcuts, dashboardShortcuts } from "@/hooks/useKeyboardShortcuts";
 
 interface TimeSeriesData {
@@ -42,26 +36,23 @@ interface ActivityEvent {
   tokensUsed: number;
 }
 
+interface AlgorithmMetric {
+  name: string;
+  activeKeys: number;
+  avgResponseTime: number;
+  successRate: number;
+}
+
 const Dashboard = () => {
-  const { realtimeMetrics } = useApp();
+  const { realtimeMetrics, isConnected } = useApp();
   const [loading, setLoading] = useState(true);
-  const [metrics, setMetrics] = useState(() => generateMockMetrics());
-  const [algorithmMetrics, setAlgorithmMetrics] = useState(() => generateAlgorithmMetrics());
+  const [activeKeys, setActiveKeys] = useState(0);
+  const [requestsPerSecond, setRequestsPerSecond] = useState(0);
+  const [successRate, setSuccessRate] = useState(100);
+  const [algorithmMetrics, setAlgorithmMetrics] = useState<AlgorithmMetric[]>([]);
   const [activities, setActivities] = useState<ActivityEvent[]>([]);
-  const [timeSeriesData, setTimeSeriesData] = useState<TimeSeriesData[]>(() => {
-    const now = new Date();
-    return Array.from({ length: 10 }, (_, i) => {
-      const time = new Date(now.getTime() - (9 - i) * 60000);
-      const allowed = Math.floor(Math.random() * 800) + 400;
-      const rejected = Math.floor(Math.random() * 200) + 50;
-      return {
-        time: time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-        allowed,
-        rejected,
-        total: allowed + rejected,
-      };
-    });
-  });
+  const [timeSeriesData, setTimeSeriesData] = useState<TimeSeriesData[]>([]);
+  const [previousMetrics, setPreviousMetrics] = useState<{ allowed: number; denied: number; timestamp: number } | null>(null);
 
   // Enable keyboard shortcuts
   useKeyboardShortcuts(dashboardShortcuts);
@@ -70,7 +61,25 @@ const Dashboard = () => {
   useEffect(() => {
     const loadInitialData = async () => {
       try {
-        await rateLimiterApi.getMetrics();
+        // Fetch initial metrics and active keys
+        const [metricsData, keysData] = await Promise.all([
+          rateLimiterApi.getMetrics(),
+          rateLimiterApi.getActiveKeys()
+        ]);
+        
+        // Initialize time series with current data
+        const now = new Date();
+        const totalAllowed = metricsData.totalAllowedRequests;
+        const totalDenied = metricsData.totalDeniedRequests;
+        
+        setTimeSeriesData([{
+          time: now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+          allowed: totalAllowed,
+          rejected: totalDenied,
+          total: totalAllowed + totalDenied,
+        }]);
+        
+        setPreviousMetrics({ allowed: totalAllowed, denied: totalDenied, timestamp: Date.now() });
         setLoading(false);
       } catch (error) {
         console.error('Failed to load dashboard data:', error);
@@ -80,67 +89,115 @@ const Dashboard = () => {
     loadInitialData();
   }, []);
 
-  // Use realtime metrics from API polling
+  // Update metrics from real-time polling (AppContext polls /metrics every 5s)
   useEffect(() => {
-    if (realtimeMetrics) {
-      const totalRequests = realtimeMetrics.totalAllowedRequests + realtimeMetrics.totalDeniedRequests;
-      const successRate = totalRequests > 0 
-        ? Math.round((realtimeMetrics.totalAllowedRequests / totalRequests) * 100) 
-        : 100;
+    if (!realtimeMetrics) return;
+    
+    const totalRequests = realtimeMetrics.totalAllowedRequests + realtimeMetrics.totalDeniedRequests;
+    const currentSuccessRate = totalRequests > 0 
+      ? Math.round((realtimeMetrics.totalAllowedRequests / totalRequests) * 100) 
+      : 100;
+    
+    const currentActiveKeys = Object.keys(realtimeMetrics.keyMetrics).length;
+    
+    // Calculate requests per second
+    if (previousMetrics) {
+      const timeDiff = (Date.now() - previousMetrics.timestamp) / 1000; // seconds
+      const allowedDiff = realtimeMetrics.totalAllowedRequests - previousMetrics.allowed;
+      const deniedDiff = realtimeMetrics.totalDeniedRequests - previousMetrics.denied;
+      const totalDiff = allowedDiff + deniedDiff;
       
-      const activeKeys = Object.keys(realtimeMetrics.keyMetrics).length;
-      
-      setMetrics(prev => ({
-        ...prev,
-        activeKeys,
-        successRate,
-        totalRequests: realtimeMetrics.totalAllowedRequests + realtimeMetrics.totalDeniedRequests,
-      }));
+      if (timeDiff > 0) {
+        setRequestsPerSecond(Math.round(totalDiff / timeDiff));
+      }
     }
-  }, [realtimeMetrics]);
-
-  // Update real-time data every 5 seconds
-  useEffect(() => {
-    const interval = setInterval(() => {
-      // Update metrics
-      setMetrics(generateMockMetrics());
+    
+    setActiveKeys(currentActiveKeys);
+    setSuccessRate(currentSuccessRate);
+    
+    // Update time series data
+    const now = new Date();
+    setTimeSeriesData((prev) => {
+      const newPoint = {
+        time: now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        allowed: realtimeMetrics.totalAllowedRequests,
+        rejected: realtimeMetrics.totalDeniedRequests,
+        total: totalRequests,
+      };
       
-      // Update algorithm metrics
-      setAlgorithmMetrics(generateAlgorithmMetrics());
-      
-      // Add new activity
-      setActivities((prev) => {
-        const newActivity = generateActivityEvent();
-        return [newActivity, ...prev].slice(0, 20);
-      });
-      
-      // Update time series data
-      setTimeSeriesData((prev) => {
-        const newData = [...prev];
-        const lastData = newData[newData.length - 1];
-        const now = new Date();
+      const updated = [...prev, newPoint].slice(-10); // Keep last 10 data points
+      return updated;
+    });
+    
+    // Update previous metrics for rate calculation
+    setPreviousMetrics({
+      allowed: realtimeMetrics.totalAllowedRequests,
+      denied: realtimeMetrics.totalDeniedRequests,
+      timestamp: Date.now()
+    });
+    
+    // Generate activity events from key metrics changes
+    const newActivities: ActivityEvent[] = [];
+    Object.entries(realtimeMetrics.keyMetrics).forEach(([key, metric]) => {
+      if (metric.allowedRequests > 0 || metric.deniedRequests > 0) {
+        const totalKeyRequests = metric.allowedRequests + metric.deniedRequests;
+        const wasAllowed = metric.allowedRequests > metric.deniedRequests;
         
-        newData.push({
-          time: now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-          allowed: Math.floor(generateRealtimeData(lastData.allowed)),
-          rejected: Math.floor(generateRealtimeData(lastData.rejected)),
-          total: 0,
+        newActivities.push({
+          id: `${key}-${metric.lastAccessTime}`,
+          timestamp: new Date(metric.lastAccessTime).toISOString(),
+          key: key,
+          algorithm: "TOKEN_BUCKET", // Default, will be enriched from admin/keys
+          status: wasAllowed ? "allowed" : "rejected",
+          tokensUsed: 1,
+        });
+      }
+    });
+    
+    // Sort by timestamp and keep most recent 20
+    setActivities(newActivities.sort((a, b) => 
+      new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+    ).slice(0, 20));
+    
+  }, [realtimeMetrics, previousMetrics]);
+
+  // Fetch and update algorithm distribution from admin keys
+  useEffect(() => {
+    const fetchAlgorithmMetrics = async () => {
+      try {
+        const keysData = await rateLimiterApi.getActiveKeys();
+        
+        // Group by algorithm
+        const algorithmGroups: Record<string, { count: number; totalRequests: number; successCount: number }> = {};
+        
+        keysData.keys.forEach(key => {
+          const algo = key.algorithm || 'TOKEN_BUCKET';
+          if (!algorithmGroups[algo]) {
+            algorithmGroups[algo] = { count: 0, totalRequests: 0, successCount: 0 };
+          }
+          algorithmGroups[algo].count++;
         });
         
-        newData[newData.length - 1].total =
-          newData[newData.length - 1].allowed + newData[newData.length - 1].rejected;
+        // Convert to algorithm metrics format
+        const metrics: AlgorithmMetric[] = Object.entries(algorithmGroups).map(([name, data]) => ({
+          name,
+          activeKeys: data.count,
+          avgResponseTime: Math.random() * 10 + 2, // Backend doesn't track response time yet
+          successRate: 95 + Math.random() * 5, // Backend doesn't track per-algorithm success rate yet
+        }));
         
-        return newData.slice(-10);
-      });
-    }, 5000);
-
+        setAlgorithmMetrics(metrics);
+        
+      } catch (error) {
+        console.error('Failed to fetch algorithm metrics:', error);
+      }
+    };
+    
+    // Fetch immediately and then every 30 seconds
+    fetchAlgorithmMetrics();
+    const interval = setInterval(fetchAlgorithmMetrics, 30000);
+    
     return () => clearInterval(interval);
-  }, []);
-
-  // Initialize activities
-  useEffect(() => {
-    const initialActivities = Array.from({ length: 10 }, () => generateActivityEvent());
-    setActivities(initialActivities);
   }, []);
 
   if (loading) {
@@ -162,28 +219,28 @@ const Dashboard = () => {
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
         <StatCard
           title="Active Keys"
-          value={metrics.activeKeys}
+          value={activeKeys}
           icon={Key}
-          trend={{ value: "+12.5%", isPositive: true }}
+          trend={isConnected ? { value: "Live", isPositive: true } : undefined}
         />
         
         <StatCard
           title="Requests/Second"
-          value={metrics.requestsPerSecond}
+          value={requestsPerSecond}
           icon={Activity}
-          trend={{ value: "+8.3%", isPositive: true }}
+          trend={isConnected ? { value: "Live", isPositive: true } : undefined}
         />
         
         <StatCard
           title="Success Rate"
-          value={`${metrics.successRate}%`}
+          value={`${successRate}%`}
           icon={TrendingUp}
-          trend={{ value: "-0.5%", isPositive: false }}
+          trend={successRate >= 95 ? { value: "Healthy", isPositive: true } : { value: "Warning", isPositive: false }}
         />
         
         <StatCard
           title="Algorithms"
-          value={4}
+          value={algorithmMetrics.length}
           icon={PieChart}
         />
       </div>
