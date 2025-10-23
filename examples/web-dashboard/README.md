@@ -85,27 +85,240 @@ A comprehensive, real-time dashboard for monitoring and managing distributed rat
 - **Authentication** - Basic auth for admin endpoints
 - **CORS Support** - Cross-origin resource sharing configuration
 
+## 🔌 Backend Integration Architecture
+
+### Real Backend APIs (✅ Production Ready)
+
+The dashboard connects to a distributed rate limiter backend running on **http://localhost:8080** with the following features:
+
+#### **Dashboard Page** (`/`)
+- **Status**: ✅ **Fully Connected to Real Backend**
+- **Data Source**: `/metrics` endpoint (polled every 5 seconds via AppContext)
+- **Real-time Metrics**:
+  - `activeKeys` - Count of keys from `realtimeMetrics.keyMetrics`
+  - `requestsPerSecond` - Calculated from metric deltas between polls
+  - `successRate` - Computed from `totalAllowedRequests / totalRequests`
+  - `timeSeriesData` - Built from actual polling updates (last 10 data points)
+- **Algorithm Distribution**: Fetched from `/admin/keys` endpoint every 30 seconds
+- **Activity Feed**: Generated from real key access patterns (`lastAccessTime`)
+- **Health Check**: `/actuator/health` for backend/Redis status
+
+#### **Configuration Page** (`/configuration`)
+- **Status**: ✅ **Fully Connected to Real Backend**
+- **Endpoints**:
+  - `GET /api/ratelimit/config` - Fetch current configuration
+  - `POST /api/ratelimit/config/keys/{key}` - Update key-specific config
+  - `POST /api/ratelimit/config/patterns/{pattern}` - Update pattern config
+  - `DELETE /api/ratelimit/config/keys/{key}` - Remove key config
+- **Features**: CRUD operations for global, per-key, and pattern-based configurations
+
+#### **API Keys Page** (`/api-keys`)
+- **Status**: ✅ **Fully Connected to Real Backend**
+- **Endpoints**:
+  - `GET /admin/keys` (requires Basic Auth: admin/admin123)
+- **Real Data**:
+  - Active keys with capacity, algorithm, last access time
+  - Key statistics (total/active counts)
+- **Mock Data**:
+  - ⚠️ Access logs (backend endpoint not yet implemented)
+
+#### **Load Testing Page** (`/load-testing`)
+- **Status**: ✅ **Fully Connected to Real Backend**
+- **Endpoint**: `POST /api/benchmark/run`
+- **Backend Execution**:
+  - Real concurrent load testing via `BenchmarkController`
+  - Actual rate limiter checks against Redis/in-memory backend
+  - Production-grade performance metrics (throughput, success rate, duration)
+- **Parameters**:
+  - `concurrentThreads`, `requestsPerThread`, `durationSeconds`
+  - `tokensPerRequest`, `delayBetweenRequestsMs`, `keyPrefix`
+- **Returns**: Real performance data from distributed rate limiter
+
+### Demo/Educational Features (⚠️ Mock Data)
+
+#### **Analytics Page** (`/analytics`)
+- **Status**: ⚠️ **Demo Data Only**
+- **Reason**: Requires time-series database backend (InfluxDB, Prometheus, TimescaleDB)
+- **Missing Backend**: 
+  - Historical data storage and aggregation
+  - `/api/analytics/*` endpoints for trends, top keys, performance metrics
+- **Current Implementation**: Client-side simulated data for preview purposes
+- **Future**: See [Analytics Feature Roadmap](#analytics-feature-roadmap)
+
+#### **Algorithms Page** (`/algorithms`)
+- **Status**: 🎓 **Educational Client-Side Simulation**
+- **Purpose**: Interactive algorithm comparison and visualization
+- **Implementation**: `AlgorithmSimulator` class with accurate algorithm logic
+- **Use Case**: Learning tool for understanding rate limiting behavior
+- **Note**: Intentionally client-side (not a backend integration gap)
+
+### Proxy Configuration
+
+The frontend uses Vite's development proxy to route API calls:
+
+```typescript
+// vite.config.ts
+export default defineConfig({
+  server: {
+    proxy: {
+      '/api': 'http://localhost:8080',
+      '/actuator': 'http://localhost:8080',
+      '/admin': 'http://localhost:8080',
+      '/metrics': 'http://localhost:8080',
+    }
+  }
+})
+```
+
+**Benefits**:
+- Same-origin requests (no CORS in development)
+- Seamless backend switching via env variables
+- Hot-reload with backend updates
+
+### Data Flow Architecture
+
+```
+┌─────────────────┐         ┌──────────────────┐         ┌─────────────────┐
+│   Dashboard     │         │   Vite Proxy     │         │   Spring Boot   │
+│   (React App)   │────────▶│   localhost:5173 │────────▶│   Backend       │
+│   Port 5173     │  HTTP   │                  │  HTTP   │   Port 8080     │
+└─────────────────┘         └──────────────────┘         └─────────────────┘
+                                                                    │
+                                                                    ▼
+                                                           ┌─────────────────┐
+                                                           │   Redis         │
+                                                           │   Port 6379     │
+                                                           └─────────────────┘
+
+AppContext (React)
+  └─► Poll /metrics every 5s
+       └─► Update realtimeMetrics state
+            └─► Dashboard consumes via useApp() hook
+
+LoadTesting Page
+  └─► POST /api/benchmark/run (one-time request)
+       └─► Backend executes concurrent load test
+            └─► Returns real performance metrics
+
+Configuration Page
+  └─► GET/POST/DELETE /api/ratelimit/config/*
+       └─► Backend updates ConfigurationResolver
+            └─► Returns current config state
+```
+
+### Analytics Feature Roadmap
+
+To implement real analytics features, the backend needs:
+
+1. **Time-Series Database Integration**
+   - InfluxDB, Prometheus, or TimescaleDB
+   - Store historical metrics with timestamps
+   - Efficient aggregation queries
+
+2. **Backend Endpoints**
+   ```
+   GET /api/analytics/performance?timeRange=24h
+   GET /api/analytics/top-keys?limit=10&sortBy=requests
+   GET /api/analytics/algorithm-performance
+   GET /api/analytics/usage-trends?interval=1h
+   GET /api/analytics/alerts?severity=high
+   ```
+
+3. **Data Collection**
+   - Metrics streaming to time-series DB
+   - Scheduled aggregation jobs
+   - Alert threshold monitoring
+
+4. **Export Functionality**
+   - CSV/JSON generation on backend
+   - Date range filtering
+   - Compressed archive downloads
+
+See [GitHub Issue #XXX](https://github.com/uppnrise/distributed-rate-limiter/issues) for implementation tracking.
+
 ## 🚀 Quick Start
 
 ### Prerequisites
-- Node.js 18+ and npm
+- **Node.js 18+** and npm
+- **Java 21** for backend (required for real data)
+- **Docker** (optional, for Redis)
 - A distributed rate limiter backend running on `localhost:8080`
+
+### Development Workflow
+
+#### 1. Start the Backend (Required)
+
+```bash
+# From project root
+cd /Users/upp/Development/workspaces/open-source/distributed-rate-limiter
+
+# Start Redis (optional - backend has in-memory fallback)
+docker-compose up -d redis
+
+# Start Spring Boot backend
+./mvnw spring-boot:run
+
+# Backend will start on http://localhost:8080
+# Wait for "Started DistributedRateLimiterApplication" message
+```
+
+#### 2. Start the Frontend
+
+```bash
+# Navigate to dashboard directory
+cd examples/web-dashboard
+
+# Install dependencies (first time only)
+npm install
+
+# Start development server
+npm run dev
+
+# Frontend will start on http://localhost:5173
+# Vite proxy automatically routes /api, /actuator, /admin, /metrics to backend
+```
+
+#### 3. Verify Connection
+
+1. Open http://localhost:5173 in your browser
+2. Check the **Health Status** banner at the top of the Dashboard
+   - ✅ Green: "Connected to backend API" (Redis: UP)
+   - ❌ Red: "Backend API unavailable"
+3. Observe real metrics updating every 5 seconds
+
+### Quick Test
+
+Generate some traffic to see live data:
+
+```bash
+# In a new terminal, make some rate limit requests
+curl -X POST http://localhost:8080/api/ratelimit/check \
+  -H "Content-Type: application/json" \
+  -d '{"key":"test-user-1","tokensRequested":1}'
+
+# Repeat several times and watch Dashboard update
+# You should see:
+# - Active Keys increase
+# - Requests/Second change
+# - Time series chart update
+# - Activity feed show new events
+```
 
 ### Installation
 
 ```bash
 # Clone the repository
 git clone <repository-url>
-cd rate-limiter-dashboard
+cd distributed-rate-limiter/examples/web-dashboard
 
 # Install dependencies
 npm install
 
-# Start development server
+# Start development server (backend must be running first!)
 npm run dev
 ```
 
-The application will be available at `http://localhost:8081`
+The application will be available at `http://localhost:5173`
 
 ### Backend Requirements
 
@@ -116,15 +329,19 @@ The dashboard expects a rate limiter backend with the following endpoints:
 - `GET /api/ratelimit/config` - Get current configuration
 - `POST /api/ratelimit/config/keys/{key}` - Update key-specific config
 - `POST /api/ratelimit/config/patterns/{pattern}` - Update pattern config
+- `DELETE /api/ratelimit/config/keys/{key}` - Remove key config
 
-#### Admin API (Basic Auth: admin/changeme)
+#### Admin API (Basic Auth: admin/admin123)
 - `GET /admin/keys` - Get active keys and statistics
 
+#### Benchmarking API
+- `POST /api/benchmark/run` - Execute load test with real backend
+
 #### Monitoring API
-- `GET /metrics` - System metrics and performance data
+- `GET /metrics` - System metrics and performance data (polled every 5s)
 - `GET /actuator/health` - Health check endpoint
 
-See [API_INTEGRATION.md](./API_INTEGRATION.md) for complete API documentation.
+See backend documentation for complete API reference.
 
 ## 📁 Project Structure
 
