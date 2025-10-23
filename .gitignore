@@ -31,3 +31,10 @@ build/
 
 ### VS Code ###
 .vscode/
+
+### Frontend / Node.js ###
+examples/web-dashboard/node_modules/
+examples/web-dashboard/dist/
+examples/web-dashboard/dist-ssr/
+examples/web-dashboard/.DS_Store
+examples/web-dashboard/*.local
