@@ -56,14 +56,40 @@ A production-ready distributed rate limiter supporting **five algorithms** (Toke
 
 > **Note**: The API provides 18 endpoints covering rate limiting, configuration management, administrative operations, performance monitoring, benchmarking, and system metrics.
 
-### 🎨 Interactive Dashboard
-- **[Web Dashboard](examples/web-dashboard/README.md)** - 🆕 Real-time monitoring and management UI
-  - Live metrics and performance visualization
-  - Algorithm comparison and simulation
-  - Configuration management interface
-  - API key management and usage tracking
-  - Load testing suite with analytics
-  - **[Quick Start Guide](examples/web-dashboard/README.md#-quick-start)** - Get started in 5 minutes
+### 🎨 Interactive Web Dashboard
+
+A modern, real-time React-based dashboard for monitoring and managing your distributed rate limiter.
+
+<div align="center">
+
+**[📖 Full Dashboard Documentation](examples/web-dashboard/README.md)** • **[🚀 Quick Start](examples/web-dashboard/README.md#-quick-start)** • **[🎬 Live Demo](#-dashboard-screenshots)**
+
+![Dashboard Overview](examples/web-dashboard/public/screenshots/dashboard-preview.png)
+
+</div>
+
+**Features:**
+- **📊 Real-time Monitoring** - Live metrics with 5-second updates from backend
+- **🎯 Algorithm Comparison** - Interactive simulation of Token Bucket, Sliding Window, Fixed Window, and Leaky Bucket
+- **📈 Load Testing** - Production-grade benchmarking via backend API
+- **⚙️ Configuration Management** - CRUD operations for global, per-key, and pattern-based limits
+- **🔑 API Key Management** - Active keys tracking with statistics and admin controls
+- **📉 Analytics** - Historical performance trends (demo/preview feature)
+
+**Tech Stack:** React 18 + TypeScript + Vite + Tailwind CSS + shadcn/ui + Recharts
+
+**Quick Start:**
+```bash
+# Terminal 1: Start backend
+./mvnw spring-boot:run
+
+# Terminal 2: Start dashboard
+cd examples/web-dashboard
+npm install && npm run dev
+# Open http://localhost:5173
+```
+
+See **[Dashboard README](examples/web-dashboard/README.md)** for complete setup instructions and architecture details.
 
 ### Usage Examples
 - **[Java/Spring Boot Integration](docs/examples/java-client.md)** - Complete integration example
@@ -84,6 +110,68 @@ A production-ready distributed rate limiter supporting **five algorithms** (Toke
 - **[Docker Usage](DOCKER.md)** - Container deployment instructions
 - **[Performance Guide](PERFORMANCE.md)** - Optimization and tuning
 - **[Load Testing Guide](LOAD-TESTING.md)** - Benchmarking and performance testing
+
+---
+
+## 📸 Dashboard Screenshots
+
+The web dashboard provides a comprehensive interface for monitoring and managing the rate limiter. Below are the key pages:
+
+### 📊 Live Monitoring Dashboard
+![Dashboard Live Metrics](examples/web-dashboard/public/screenshots/dashboard-preview.png)
+
+Real-time visualization of rate limiting activity:
+- **System Metrics**: Current requests/second, token usage, active keys
+- **Algorithm Distribution**: Visual breakdown of Token Bucket, Sliding Window, Fixed Window, Leaky Bucket, Composite usage
+- **Recent Activity Feed**: Live stream of rate limit checks with allow/deny status
+- **Trend Charts**: Request rate and token consumption over time
+
+### 🧪 Load Testing Interface
+![Load Testing Execution](examples/web-dashboard/public/screenshots/load-testing-preview.png)
+
+Execute and analyze load tests against the backend:
+- **Test Configuration**: Concurrent requests, duration, key patterns
+- **Real-time Progress**: Requests per second, success/failure rates, latency percentiles
+- **Results Dashboard**: Comprehensive statistics from backend `/api/benchmark/run` endpoint
+- **Historical Comparison**: Compare test runs to detect performance regressions
+
+### ⚙️ Configuration Management
+![Configuration CRUD](examples/web-dashboard/public/screenshots/configuration-preview.png)
+
+Manage rate limiter configurations dynamically:
+- **Key-based Configs**: Per-key limits with exact matching
+- **Pattern-based Configs**: Wildcard patterns (e.g., `user:*`, `api:*`)
+- **Algorithm Selection**: Switch between Token Bucket, Sliding Window, Fixed Window, Leaky Bucket, Composite
+- **Live Updates**: Changes reflected immediately via `/api/ratelimit/config` endpoints
+
+### 🔑 API Keys Management
+![API Keys Table](examples/web-dashboard/public/screenshots/api-keys-preview.png)
+
+Centralized view of active rate limit keys:
+- **Key Discovery**: Automatically fetches active keys from `/admin/keys` endpoint
+- **Status Monitoring**: See token counts, capacity, refill rates
+- **Reset Operations**: Clear individual keys or bulk reset via admin API
+- **Algorithm Assignment**: View which algorithm each key uses
+
+### 📈 Analytics & Trends (Demo Preview)
+![Analytics Trends](examples/web-dashboard/public/screenshots/analytics-preview.png)
+
+Historical analytics and insights *(displays simulated data for preview purposes)*:
+- **Time-series Visualization**: Request volume, block rate, latency trends
+- **Top Keys Analysis**: Most active endpoints and users
+- **Geographic Distribution**: Request origins by region
+- **Compliance Reporting**: Rate limit violations and threshold breaches
+
+> **Note**: This page displays simulated analytics data for preview purposes. Historical analytics features require a time-series database backend (InfluxDB, Prometheus, or TimescaleDB) with data aggregation endpoints. See the [Analytics Roadmap](examples/web-dashboard/README.md#-analytics-roadmap-future-implementation) for implementation details.
+
+### 🧮 Algorithm Comparison
+![Algorithms Education](examples/web-dashboard/public/screenshots/algorithms-preview.png)
+
+Educational page for understanding rate limiting algorithms:
+- **Interactive Visualizations**: See how Token Bucket, Sliding Window, Fixed Window, Leaky Bucket, Composite work
+- **Real-time Simulation**: Adjust parameters and observe behavior changes
+- **Use Case Guidance**: When to use each algorithm (burst tolerance, strict enforcement, memory efficiency, traffic shaping, multi-algorithm composition)
+- **Performance Comparison**: Memory usage, accuracy, implementation complexity
 
 ---
 
