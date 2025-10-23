@@ -16,6 +16,14 @@ export default defineConfig(({ mode }) => ({
       '/actuator': {
         target: 'http://localhost:8080',
         changeOrigin: true,
+      },
+      '/admin': {
+        target: 'http://localhost:8080',
+        changeOrigin: true,
+      },
+      '/metrics': {
+        target: 'http://localhost:8080',
+        changeOrigin: true,
       }
     }
   },
