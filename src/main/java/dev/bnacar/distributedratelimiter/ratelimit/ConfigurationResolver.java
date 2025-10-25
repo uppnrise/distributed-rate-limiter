@@ -1,5 +1,6 @@
 package dev.bnacar.distributedratelimiter.ratelimit;
 
+import dev.bnacar.distributedratelimiter.schedule.ScheduleManagerService;
 import org.springframework.stereotype.Service;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -9,11 +10,13 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * Service responsible for resolving rate limit configuration for specific keys.
  * Supports exact key matches, pattern matching, and fallback to default configuration.
+ * Also checks for active scheduled overrides.
  */
 @Service
 public class ConfigurationResolver {
     
     private final RateLimiterConfiguration configuration;
+    private ScheduleManagerService scheduleManager;
     
     // Cache for resolved configurations to avoid repeated pattern matching
     private final ConcurrentHashMap<String, RateLimitConfig> configCache = new ConcurrentHashMap<>();
@@ -24,14 +27,32 @@ public class ConfigurationResolver {
     }
     
     /**
+     * Set the schedule manager for schedule-based configuration resolution.
+     * This is called after construction to avoid circular dependencies.
+     */
+    @Autowired(required = false)
+    public void setScheduleManager(ScheduleManagerService scheduleManager) {
+        this.scheduleManager = scheduleManager;
+    }
+    
+    /**
      * Resolve the appropriate rate limit configuration for the given key.
      * Order of precedence:
-     * 1. Exact key match in per-key overrides
-     * 2. Pattern match in pattern configurations (first match wins)
-     * 3. Default configuration
+     * 1. Active scheduled overrides (highest priority)
+     * 2. Exact key match in per-key overrides
+     * 3. Pattern match in pattern configurations (first match wins)
+     * 4. Default configuration
      */
     public RateLimitConfig resolveConfig(String key) {
-        // Check cache first
+        // 1. Check for active scheduled overrides first
+        if (scheduleManager != null) {
+            RateLimitConfig scheduledConfig = scheduleManager.getActiveConfig(key);
+            if (scheduledConfig != null) {
+                return scheduledConfig;
+            }
+        }
+        
+        // 2. Check cache
         RateLimitConfig cached = configCache.get(key);
         if (cached != null) {
             return cached;
