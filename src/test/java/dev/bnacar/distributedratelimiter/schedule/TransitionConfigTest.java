@@ -2,8 +2,6 @@ package dev.bnacar.distributedratelimiter.schedule;
 
 import org.junit.jupiter.api.Test;
 
-import java.time.ZoneId;
-
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
