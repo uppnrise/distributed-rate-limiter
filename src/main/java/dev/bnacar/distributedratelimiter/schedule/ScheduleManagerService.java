@@ -138,36 +138,22 @@ public class ScheduleManagerService {
             CronExpression cron = CronExpression.parse(cronExpr);
             ZonedDateTime zonedTime = time.atZone(schedule.getTimezone());
             
-            // Check if current time matches the cron expression
-            // We consider it active if the next execution is within the last minute
-            ZonedDateTime previousExecution = getPreviousExecution(cron, zonedTime);
-            if (previousExecution != null) {
-                long minutesSinceLast = java.time.Duration.between(previousExecution, zonedTime).toMinutes();
-                return minutesSinceLast < 1;
+            // Get the next scheduled execution time
+            ZonedDateTime nextExecution = cron.next(zonedTime);
+            
+            if (nextExecution == null) {
+                return false;
             }
             
-            return false;
+            // Check if the next execution is within the next minute
+            // This means we're currently in a scheduled window
+            long minutesUntilNext = java.time.Duration.between(zonedTime, nextExecution).toMinutes();
+            return minutesUntilNext == 0;
+            
         } catch (IllegalArgumentException e) {
             logger.error("Invalid cron expression '{}' for schedule '{}'", cronExpr, schedule.getName(), e);
             return false;
         }
-    }
-    
-    /**
-     * Get the previous execution time for a cron expression.
-     */
-    private ZonedDateTime getPreviousExecution(CronExpression cron, ZonedDateTime from) {
-        // Since CronExpression only supports next(), we'll check backward by looking ahead
-        // and comparing to find the most recent execution
-        ZonedDateTime candidate = from.minusMinutes(2);
-        ZonedDateTime next = cron.next(candidate);
-        
-        while (next != null && next.isBefore(from)) {
-            candidate = next;
-            next = cron.next(next.plusSeconds(1));
-        }
-        
-        return candidate;
     }
     
     /**
