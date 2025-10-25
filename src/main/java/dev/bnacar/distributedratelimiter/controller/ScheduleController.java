@@ -46,9 +46,9 @@ public class ScheduleController {
         try {
             RateLimitSchedule schedule = convertToSchedule(request);
             scheduleManager.createSchedule(schedule);
-            return ResponseEntity.ok("Schedule created: " + schedule.getName());
+            return ResponseEntity.ok("Schedule created successfully");
         } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body("Invalid schedule: " + e.getMessage());
+            return ResponseEntity.badRequest().body("Invalid schedule configuration");
         }
     }
     
@@ -106,12 +106,12 @@ public class ScheduleController {
         try {
             RateLimitSchedule schedule = convertToSchedule(request);
             scheduleManager.updateSchedule(name, schedule);
-            return ResponseEntity.ok("Schedule updated: " + name);
+            return ResponseEntity.ok("Schedule updated successfully");
         } catch (IllegalArgumentException e) {
             if (e.getMessage().contains("not found")) {
                 return ResponseEntity.notFound().build();
             }
-            return ResponseEntity.badRequest().body("Invalid schedule: " + e.getMessage());
+            return ResponseEntity.badRequest().body("Invalid schedule configuration");
         }
     }
     
@@ -124,7 +124,7 @@ public class ScheduleController {
     @ApiResponse(responseCode = "200", description = "Schedule deleted successfully")
     public ResponseEntity<String> deleteSchedule(@PathVariable("name") String name) {
         scheduleManager.deleteSchedule(name);
-        return ResponseEntity.ok("Schedule deleted: " + name);
+        return ResponseEntity.ok("Schedule deleted successfully");
     }
     
     /**
@@ -138,7 +138,7 @@ public class ScheduleController {
     public ResponseEntity<String> activateSchedule(@PathVariable("name") String name) {
         try {
             scheduleManager.activateSchedule(name);
-            return ResponseEntity.ok("Schedule activated: " + name);
+            return ResponseEntity.ok("Schedule activated successfully");
         } catch (IllegalArgumentException e) {
             return ResponseEntity.notFound().build();
         }
@@ -155,7 +155,7 @@ public class ScheduleController {
     public ResponseEntity<String> deactivateSchedule(@PathVariable("name") String name) {
         try {
             scheduleManager.deactivateSchedule(name);
-            return ResponseEntity.ok("Schedule deactivated: " + name);
+            return ResponseEntity.ok("Schedule deactivated successfully");
         } catch (IllegalArgumentException e) {
             return ResponseEntity.notFound().build();
         }
@@ -190,11 +190,9 @@ public class ScheduleController {
             
             scheduleManager.createSchedule(schedule);
             
-            String message = String.format("Emergency schedule created: %s (duration: %s, reason: %s)", 
-                schedule.getName(), request.getDuration(), request.getReason());
-            return ResponseEntity.ok(message);
+            return ResponseEntity.ok("Emergency schedule created successfully");
         } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body("Invalid emergency schedule: " + e.getMessage());
+            return ResponseEntity.badRequest().body("Invalid emergency schedule configuration");
         }
     }
     
