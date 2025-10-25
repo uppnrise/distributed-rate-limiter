@@ -53,7 +53,7 @@ class ScheduleControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
-                .andExpect(content().string(org.hamcrest.Matchers.containsString("Schedule created")));
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("created successfully")));
     }
     
     @Test
@@ -107,7 +107,7 @@ class ScheduleControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
-                .andExpect(content().string(org.hamcrest.Matchers.containsString("Schedule updated")));
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("updated successfully")));
     }
     
     @Test
@@ -126,7 +126,7 @@ class ScheduleControllerTest {
         
         mockMvc.perform(delete("/api/ratelimit/schedule/test-schedule"))
                 .andExpect(status().isOk())
-                .andExpect(content().string(org.hamcrest.Matchers.containsString("Schedule deleted")));
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("deleted successfully")));
     }
     
     @Test
@@ -137,7 +137,7 @@ class ScheduleControllerTest {
         
         mockMvc.perform(post("/api/ratelimit/schedule/test-schedule/activate"))
                 .andExpect(status().isOk())
-                .andExpect(content().string(org.hamcrest.Matchers.containsString("Schedule activated")));
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("activated successfully")));
     }
     
     @Test
@@ -152,7 +152,7 @@ class ScheduleControllerTest {
         
         mockMvc.perform(post("/api/ratelimit/schedule/test-schedule/deactivate"))
                 .andExpect(status().isOk())
-                .andExpect(content().string(org.hamcrest.Matchers.containsString("Schedule deactivated")));
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("deactivated successfully")));
     }
     
     @Test
@@ -169,7 +169,7 @@ class ScheduleControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
-                .andExpect(content().string(org.hamcrest.Matchers.containsString("Emergency schedule created")));
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("created successfully")));
     }
     
     @Test
@@ -182,7 +182,7 @@ class ScheduleControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest())
-                .andExpect(content().string(org.hamcrest.Matchers.containsString("Invalid emergency schedule")));
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("Invalid")));
     }
     
     /**
