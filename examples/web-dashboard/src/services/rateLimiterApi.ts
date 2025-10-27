@@ -221,7 +221,63 @@ class RateLimiterApiService {
   async healthCheck(): Promise<HealthResponse> {
     return this.request<HealthResponse>('/actuator/health');
   }
+
+  // ============ SCHEDULING ============
+  
+  async getSchedules(): Promise<ScheduleResponse[]> {
+    return this.request<ScheduleResponse[]>('/api/ratelimit/schedule');
+  }
+
+  async getSchedule(name: string): Promise<ScheduleResponse> {
+    return this.request<ScheduleResponse>(`/api/ratelimit/schedule/${encodeURIComponent(name)}`);
+  }
+
+  async createSchedule(request: ScheduleRequest): Promise<void> {
+    await this.request('/api/ratelimit/schedule', {
+      method: 'POST',
+      body: JSON.stringify(request),
+    });
+  }
+
+  async updateSchedule(name: string, request: ScheduleRequest): Promise<void> {
+    await this.request(`/api/ratelimit/schedule/${encodeURIComponent(name)}`, {
+      method: 'PUT',
+      body: JSON.stringify(request),
+    });
+  }
+
+  async deleteSchedule(name: string): Promise<void> {
+    await this.request(`/api/ratelimit/schedule/${encodeURIComponent(name)}`, {
+      method: 'DELETE',
+    });
+  }
+
+  async activateSchedule(name: string): Promise<void> {
+    await this.request(`/api/ratelimit/schedule/${encodeURIComponent(name)}/activate`, {
+      method: 'POST',
+    });
+  }
+
+  async deactivateSchedule(name: string): Promise<void> {
+    await this.request(`/api/ratelimit/schedule/${encodeURIComponent(name)}/deactivate`, {
+      method: 'POST',
+    });
+  }
+
+  async createEmergencySchedule(request: EmergencyScheduleRequest): Promise<void> {
+    await this.request('/api/ratelimit/schedule/emergency', {
+      method: 'POST',
+      body: JSON.stringify(request),
+    });
+  }
 }
+
+// Import schedule types
+import type { 
+  ScheduleRequest, 
+  ScheduleResponse, 
+  EmergencyScheduleRequest 
+} from '@/types/scheduling';
 
 export const rateLimiterApi = new RateLimiterApiService();
 
@@ -240,4 +296,7 @@ export type {
   SystemMetrics,
   HealthResponse,
   ErrorResponse,
+  ScheduleRequest,
+  ScheduleResponse,
+  EmergencyScheduleRequest,
 };
