@@ -6,6 +6,7 @@ import {
   Zap, 
   BarChart3, 
   Key,
+  Calendar,
   ChevronLeft 
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -19,6 +20,7 @@ const navItems = [
   { title: "Dashboard", url: "/", icon: Home },
   { title: "Algorithms", url: "/algorithms", icon: Settings },
   { title: "Configuration", url: "/configuration", icon: Sliders },
+  { title: "Scheduling", url: "/scheduling", icon: Calendar },
   { title: "Load Testing", url: "/load-testing", icon: Zap },
   { title: "Analytics", url: "/analytics", icon: BarChart3 },
   { title: "API Keys", url: "/api-keys", icon: Key },
