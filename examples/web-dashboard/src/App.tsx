@@ -10,6 +10,7 @@ import { DashboardLayout } from "./components/layout/DashboardLayout";
 import Dashboard from "./pages/Dashboard";
 import Algorithms from "./pages/Algorithms";
 import Configuration from "./pages/Configuration";
+import Scheduling from "./pages/Scheduling";
 import LoadTesting from "./pages/LoadTesting";
 import Analytics from "./pages/Analytics";
 import ApiKeys from "./pages/ApiKeys";
@@ -39,6 +40,7 @@ const App = () => (
                   <Route path="/" element={<Dashboard />} />
                   <Route path="/algorithms" element={<Algorithms />} />
                   <Route path="/configuration" element={<Configuration />} />
+                  <Route path="/scheduling" element={<Scheduling />} />
                   <Route path="/load-testing" element={<LoadTesting />} />
                   <Route path="/analytics" element={<Analytics />} />
                   <Route path="/api-keys" element={<ApiKeys />} />
