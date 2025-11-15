@@ -1,6 +1,6 @@
 # Multi-stage Docker build for Distributed Rate Limiter
 # Build stage
-FROM eclipse-temurin:21-jdk AS build
+FROM eclipse-temurin:21.0.9_10-jdk AS build
 
 # Set working directory
 WORKDIR /app
@@ -12,7 +12,7 @@ COPY . .
 RUN chmod +x mvnw && ./mvnw package -DskipTests -B
 
 # Runtime stage
-FROM eclipse-temurin:21-jre AS runtime
+FROM eclipse-temurin:21.0.9_10-jre AS runtime
 
 # Install curl for health checks
 RUN apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/*
