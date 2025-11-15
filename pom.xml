@@ -184,7 +184,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-pmd-plugin</artifactId>
-                <version>3.25.0</version>
+                <version>3.28.0</version>
                 <configuration>
                     <rulesets>
                         <ruleset>/rulesets/java/quickstart.xml</ruleset>
