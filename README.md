@@ -26,12 +26,13 @@ A production-ready distributed rate limiter supporting **five algorithms** (Toke
 
 - 🏃‍♂️ **High Performance**: 50,000+ requests/second with <2ms P95 latency
 - 🎯 **Five Algorithms**: Token Bucket, Sliding Window, Fixed Window, Leaky Bucket, and Composite for multi-algorithm traffic shaping
+- 🤖 **Adaptive Rate Limiting**: ML-driven automatic limit optimization based on traffic patterns and system health (NEW!)
 - 🌍 **Geographic Rate Limiting**: Location-aware rate limits with CDN header support and compliance zone management
 - 🌐 **Distributed**: Redis-backed for multi-instance deployments
 - ⚡ **Production Ready**: Comprehensive monitoring, health checks, and observability
 - 🛡️ **Thread Safe**: Concurrent request handling with atomic operations
 - 📊 **Rich Metrics**: Built-in Prometheus metrics and performance monitoring
-- 🧪 **Thoroughly Tested**: 265+ tests including integration and load testing
+- 🧪 **Thoroughly Tested**: 472+ tests including integration and load testing
 - 🐳 **Container Ready**: Docker support with multi-stage builds
 - 🔧 **Flexible Configuration**: Per-key limits, burst handling, and dynamic rules
 
@@ -103,6 +104,11 @@ See **[Dashboard README](examples/web-dashboard/README.md)** for complete setup 
 - **[Rate Limiting Algorithms](docs/adr/001-token-bucket-algorithm.md)** - Algorithm comparison and selection
 - **[Fixed Window Algorithm](docs/adr/003-fixed-window-algorithm.md)** - Fixed Window implementation details
 - **[Redis Integration](docs/adr/002-redis-distributed-state.md)** - Distributed state design
+- **[Adaptive Rate Limiting](docs/adr/006-adaptive-rate-limiting.md)** - ML-driven automatic optimization (NEW!)
+
+### Advanced Features
+- **[Adaptive Rate Limiting Guide](docs/ADAPTIVE_RATE_LIMITING.md)** - Automatic limit optimization with machine learning (NEW!)
+- **[Geographic Rate Limiting](docs/GEOGRAPHIC_RATE_LIMITING.md)** - Location-aware rate limits
 
 ### Deployment & Operations
 - **[Deployment Guide](docs/deployment/README.md)** - Docker, Kubernetes, and production deployment
