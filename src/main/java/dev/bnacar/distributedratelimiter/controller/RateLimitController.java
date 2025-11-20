@@ -1,5 +1,7 @@
 package dev.bnacar.distributedratelimiter.controller;
 
+import dev.bnacar.distributedratelimiter.adaptive.AdaptiveRateLimitEngine;
+import dev.bnacar.distributedratelimiter.models.AdaptiveInfo;
 import dev.bnacar.distributedratelimiter.models.RateLimitRequest;
 import dev.bnacar.distributedratelimiter.models.RateLimitResponse;
 import dev.bnacar.distributedratelimiter.models.CompositeRateLimitResponse;
@@ -32,6 +34,7 @@ import org.slf4j.LoggerFactory;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
+import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -48,22 +51,28 @@ public class RateLimitController {
     private final ApiKeyService apiKeyService;
     private final IpSecurityService ipSecurityService;
     private final IpAddressExtractor ipAddressExtractor;
+    private final AdaptiveRateLimitEngine adaptiveEngine;
     
     @Value("${ratelimiter.geographic.enabled:false}")
     private boolean geographicRateLimitingEnabled;
+    
+    @Value("${ratelimiter.adaptive.enabled:true}")
+    private boolean adaptiveRateLimitingEnabled;
 
     public RateLimitController(RateLimiterService rateLimiterService,
                               CompositeRateLimiterService compositeRateLimiterService,
                               @org.springframework.beans.factory.annotation.Autowired(required = false) GeographicRateLimitService geographicRateLimitService,
                               ApiKeyService apiKeyService,
                               IpSecurityService ipSecurityService,
-                              IpAddressExtractor ipAddressExtractor) {
+                              IpAddressExtractor ipAddressExtractor,
+                              AdaptiveRateLimitEngine adaptiveEngine) {
         this.rateLimiterService = rateLimiterService;
         this.compositeRateLimiterService = compositeRateLimiterService;
         this.geographicRateLimitService = geographicRateLimitService;
         this.apiKeyService = apiKeyService;
         this.ipSecurityService = ipSecurityService;
         this.ipAddressExtractor = ipAddressExtractor;
+        this.adaptiveEngine = adaptiveEngine;
     }
 
     @PostMapping("/check")
@@ -158,7 +167,18 @@ public class RateLimitController {
             // Standard single-algorithm rate limiting
             boolean allowed = rateLimiterService.isAllowed(effectiveKey, request.getTokens());
             
-            RateLimitResponse response = new RateLimitResponse(request.getKey(), request.getTokens(), allowed);
+            // Record traffic event for adaptive learning
+            if (adaptiveRateLimitingEnabled) {
+                adaptiveEngine.recordTrafficEvent(effectiveKey, request.getTokens(), allowed);
+            }
+            
+            // Build adaptive info if enabled
+            AdaptiveInfo adaptiveInfo = null;
+            if (adaptiveRateLimitingEnabled) {
+                adaptiveInfo = buildAdaptiveInfo(effectiveKey);
+            }
+            
+            RateLimitResponse response = new RateLimitResponse(request.getKey(), request.getTokens(), allowed, adaptiveInfo);
             
             if (allowed) {
                 return ResponseEntity.ok(response);
@@ -196,6 +216,41 @@ public class RateLimitController {
         addHeaderIfPresent(headers, request, "X-GeoIP-Country");
         
         return headers;
+    }
+    
+    /**
+     * Build adaptive info for the response if adaptive rate limiting is enabled
+     */
+    private AdaptiveInfo buildAdaptiveInfo(String key) {
+        try {
+            AdaptiveRateLimitEngine.AdaptedLimits adaptedLimits = adaptiveEngine.getAdaptedLimits(key);
+            
+            if (adaptedLimits != null) {
+                AdaptiveInfo.OriginalLimits originalLimits = new AdaptiveInfo.OriginalLimits(
+                    adaptedLimits.originalCapacity,
+                    adaptedLimits.originalRefillRate
+                );
+                
+                AdaptiveInfo.CurrentLimits currentLimits = new AdaptiveInfo.CurrentLimits(
+                    adaptedLimits.adaptedCapacity,
+                    adaptedLimits.adaptedRefillRate
+                );
+                
+                String reasoning = adaptedLimits.reasoning.getOrDefault("decision", "Adaptive adjustment applied");
+                String nextEvaluation = "PT5M"; // 5 minutes default
+                
+                return new AdaptiveInfo(
+                    originalLimits,
+                    currentLimits,
+                    reasoning,
+                    adaptedLimits.timestamp,
+                    nextEvaluation
+                );
+            }
+        } catch (Exception e) {
+            logger.debug("Could not build adaptive info for key: {}", key, e);
+        }
+        return null;
     }
     
     /**
