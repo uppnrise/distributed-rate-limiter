@@ -7,6 +7,7 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -25,6 +26,24 @@ public class AdaptiveRateLimitController {
     private static final Logger logger = LoggerFactory.getLogger(AdaptiveRateLimitController.class);
     
     private final AdaptiveRateLimitEngine adaptiveEngine;
+    
+    @Value("${ratelimiter.adaptive.enabled:false}")
+    private boolean adaptiveEnabled;
+    
+    @Value("${ratelimiter.adaptive.evaluation-interval-ms:300000}")
+    private long evaluationIntervalMs;
+    
+    @Value("${ratelimiter.adaptive.min-confidence-threshold:0.7}")
+    private double minConfidenceThreshold;
+    
+    @Value("${ratelimiter.adaptive.max-adjustment-factor:2.0}")
+    private double maxAdjustmentFactor;
+    
+    @Value("${ratelimiter.adaptive.min-capacity:10}")
+    private int minCapacity;
+    
+    @Value("${ratelimiter.adaptive.max-capacity:100000}")
+    private int maxCapacity;
     
     public AdaptiveRateLimitController(AdaptiveRateLimitEngine adaptiveEngine) {
         this.adaptiveEngine = adaptiveEngine;
@@ -127,14 +146,14 @@ public class AdaptiveRateLimitController {
     public ResponseEntity<AdaptiveConfigResponse> getAdaptiveConfig() {
         logger.debug("Getting adaptive configuration");
         
-        // Return static configuration (in real implementation, read from properties)
+        // Return actual configuration from injected properties
         AdaptiveConfigResponse config = new AdaptiveConfigResponse(
-            true,
-            300000L,
-            0.7,
-            2.0,
-            10,
-            100000
+            adaptiveEnabled,
+            evaluationIntervalMs,
+            minConfidenceThreshold,
+            maxAdjustmentFactor,
+            minCapacity,
+            maxCapacity
         );
         
         return ResponseEntity.ok(config);

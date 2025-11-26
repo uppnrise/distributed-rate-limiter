@@ -112,8 +112,13 @@ public class SystemMetricsCollector {
         try {
             // Look for common HTTP request timer metrics
             Timer timer = meterRegistry.find("http.server.requests").timer();
-            if (timer != null) {
-                return timer.percentile(0.95, TimeUnit.MILLISECONDS);
+            if (timer != null && timer.count() > 0) {
+                double p95 = timer.percentile(0.95, TimeUnit.MILLISECONDS);
+                if (!Double.isNaN(p95)) {
+                    return p95;
+                }
+                // Fallback to max if percentiles are not configured
+                return timer.max(TimeUnit.MILLISECONDS);
             }
         } catch (Exception e) {
             logger.debug("Could not retrieve response time metrics", e);
@@ -152,12 +157,16 @@ public class SystemMetricsCollector {
     
     private long getErrorRequests() {
         try {
-            return (long) meterRegistry.find("http.server.requests")
-                .tag("status", "5**")
-                .counters()
-                .stream()
-                .mapToDouble(counter -> counter.count())
-                .sum();
+            long errorRequests = 0;
+            for (int status = 500; status < 600; status++) {
+                errorRequests += (long) meterRegistry.find("http.server.requests")
+                    .tag("status", String.valueOf(status))
+                    .counters()
+                    .stream()
+                    .mapToDouble(counter -> counter.count())
+                    .sum();
+            }
+            return errorRequests;
         } catch (Exception e) {
             return 0;
         }
