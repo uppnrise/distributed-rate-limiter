@@ -79,13 +79,21 @@ export const AlgorithmSelector = ({ selected, onToggle }: AlgorithmSelectorProps
                       <div className="flex w-full items-center justify-between flex-shrink-0">
                         <Icon className={cn("h-6 w-6 flex-shrink-0", isSelected ? "text-primary-foreground" : algo.color)} />
                         <div className="flex items-center gap-2 flex-shrink-0">
-                          <button
+                          <div
+                            role="button"
+                            tabIndex={0}
                             onClick={(e) => handleInfoClick(algo.type, e)}
-                            className="rounded p-1 hover:bg-background/20 transition-colors flex-shrink-0"
+                            onKeyDown={(e) => {
+                              if (e.key === "Enter" || e.key === " ") {
+                                e.preventDefault();
+                                handleInfoClick(algo.type, e as any);
+                              }
+                            }}
+                            className="rounded p-1 hover:bg-background/20 transition-colors flex-shrink-0 cursor-pointer"
                             aria-label={`Learn more about ${algo.name}`}
                           >
                             <Info className="h-4 w-4" />
-                          </button>
+                          </div>
                           {isSelected && <Badge variant="secondary" className="text-xs whitespace-nowrap">Active</Badge>}
                         </div>
                       </div>
