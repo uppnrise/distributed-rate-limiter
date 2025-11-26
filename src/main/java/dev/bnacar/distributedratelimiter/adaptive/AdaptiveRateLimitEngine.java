@@ -33,6 +33,9 @@ public class AdaptiveRateLimitEngine {
     private final Map<String, AdaptedLimits> adaptedLimits = new ConcurrentHashMap<>();
     private final Map<String, AdaptationOverride> manualOverrides = new ConcurrentHashMap<>();
     
+    // Track active keys that need evaluation
+    private final Set<String> trackedKeys = ConcurrentHashMap.newKeySet();
+    
     // Configuration
     private final boolean enabled;
     private final long evaluationIntervalMs;
@@ -154,7 +157,8 @@ public class AdaptiveRateLimitEngine {
             newCapacity,
             newRefillRate,
             Instant.now(),
-            decision.getReasoning()
+            decision.getReasoning(),
+            decision.getConfidence()
         );
         
         adaptedLimits.put(key, adapted);
@@ -183,12 +187,16 @@ public class AdaptiveRateLimitEngine {
     }
     
     /**
-     * Get active keys for evaluation (placeholder - integrate with RateLimiterService)
+     * Get active keys for evaluation
+     * Returns all keys that have been tracked during traffic recording
      */
     private Set<String> getActiveKeys() {
-        // For now, return keys that have adapted limits or manual overrides
         Set<String> keys = new java.util.HashSet<>();
+        // Include keys that have traffic recorded
+        keys.addAll(trackedKeys);
+        // Include keys with adapted limits
         keys.addAll(adaptedLimits.keySet());
+        // Include keys with manual overrides
         keys.addAll(manualOverrides.keySet());
         return keys;
     }
@@ -214,7 +222,7 @@ public class AdaptiveRateLimitEngine {
         
         return new AdaptiveStatusInfo(
             "ADAPTIVE",
-            0.85,
+            adapted.confidence,
             adapted.originalCapacity,
             adapted.originalRefillRate,
             adapted.adaptedCapacity,
@@ -254,6 +262,9 @@ public class AdaptiveRateLimitEngine {
         if (!enabled) {
             return;
         }
+        
+        // Track this key for evaluation
+        trackedKeys.add(key);
         
         trafficAnalyzer.recordTrafficEvent(key, tokensRequested, allowed);
         behaviorModeler.recordRequest(key, tokensRequested, allowed);
@@ -298,16 +309,19 @@ public class AdaptiveRateLimitEngine {
         public final int adaptedRefillRate;
         public final Instant timestamp;
         public final Map<String, String> reasoning;
+        public final double confidence;
         
         public AdaptedLimits(int originalCapacity, int originalRefillRate,
                            int adaptedCapacity, int adaptedRefillRate,
-                           Instant timestamp, Map<String, String> reasoning) {
+                           Instant timestamp, Map<String, String> reasoning,
+                           double confidence) {
             this.originalCapacity = originalCapacity;
             this.originalRefillRate = originalRefillRate;
             this.adaptedCapacity = adaptedCapacity;
             this.adaptedRefillRate = adaptedRefillRate;
             this.timestamp = timestamp;
             this.reasoning = reasoning;
+            this.confidence = confidence;
         }
     }
     

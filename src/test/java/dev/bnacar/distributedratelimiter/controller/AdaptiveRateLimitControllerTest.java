@@ -8,6 +8,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.ResponseEntity;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -26,6 +27,13 @@ class AdaptiveRateLimitControllerTest {
     @BeforeEach
     void setUp() {
         controller = new AdaptiveRateLimitController(adaptiveEngine);
+        // Set default test configuration values
+        ReflectionTestUtils.setField(controller, "adaptiveEnabled", false);
+        ReflectionTestUtils.setField(controller, "evaluationIntervalMs", 300000L);
+        ReflectionTestUtils.setField(controller, "minConfidenceThreshold", 0.7);
+        ReflectionTestUtils.setField(controller, "maxAdjustmentFactor", 2.0);
+        ReflectionTestUtils.setField(controller, "minCapacity", 10);
+        ReflectionTestUtils.setField(controller, "maxCapacity", 100000);
     }
     
     @Test
@@ -106,7 +114,8 @@ class AdaptiveRateLimitControllerTest {
         assertNotNull(response);
         assertEquals(200, response.getStatusCodeValue());
         assertNotNull(response.getBody());
-        assertTrue(response.getBody().isEnabled());
+        // Note: enabled is false by default for safety - users must explicitly opt-in
+        assertFalse(response.getBody().isEnabled());
         assertEquals(300000L, response.getBody().getEvaluationIntervalMs());
         assertEquals(0.7, response.getBody().getMinConfidenceThreshold());
         assertEquals(2.0, response.getBody().getMaxAdjustmentFactor());

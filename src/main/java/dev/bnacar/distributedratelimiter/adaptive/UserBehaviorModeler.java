@@ -54,7 +54,7 @@ public class UserBehaviorModeler {
             .burstiness(calculateBurstiness(recentRequests))
             .sessionDuration(calculateSessionDuration(recentRequests))
             .timeOfDayPattern(analyzeTimePattern(recentRequests))
-            .anomalyScore(detectBehaviorAnomalies(recentRequests))
+            .anomalyScore(detectBehaviorAnomalies(key, recentRequests))
             .build();
     }
     
@@ -186,13 +186,13 @@ public class UserBehaviorModeler {
     /**
      * Detect behavior anomalies (simplified)
      */
-    private double detectBehaviorAnomalies(List<RequestEvent> requests) {
+    private double detectBehaviorAnomalies(String key, List<RequestEvent> requests) {
         if (requests.size() < 10) {
             return 0.0;
         }
         
         // Calculate recent vs historical average
-        List<RequestEvent> allHistory = requestHistory.get(requests.get(0).toString());
+        List<RequestEvent> allHistory = requestHistory.get(key);
         if (allHistory == null || allHistory.size() < 100) {
             return 0.0;
         }

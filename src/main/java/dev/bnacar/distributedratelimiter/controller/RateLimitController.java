@@ -137,6 +137,11 @@ public class RateLimitController {
                 if (geoResponse.getGeoLocation() != null && 
                     !"NO_GEOGRAPHIC_RULES_APPLY".equals(geoResponse.getFallbackReason())) {
                     
+                    // Record traffic event for adaptive learning
+                    if (adaptiveRateLimitingEnabled) {
+                        adaptiveEngine.recordTrafficEvent(effectiveKey, request.getTokens(), geoResponse.isAllowed());
+                    }
+                    
                     if (geoResponse.isAllowed()) {
                         return ResponseEntity.ok(geoResponse);
                     } else {
@@ -157,6 +162,11 @@ public class RateLimitController {
             CompositeRateLimitResponse compositeResponse = compositeRateLimiterService.checkCompositeRateLimit(
                 effectiveKey, request.getTokens(), request.getCompositeConfig()
             );
+            
+            // Record traffic event for adaptive learning
+            if (adaptiveRateLimitingEnabled) {
+                adaptiveEngine.recordTrafficEvent(effectiveKey, request.getTokens(), compositeResponse.isAllowed());
+            }
             
             if (compositeResponse.isAllowed()) {
                 return ResponseEntity.ok(compositeResponse);
