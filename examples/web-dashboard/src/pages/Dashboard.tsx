@@ -14,6 +14,7 @@ import {
 import { StatCard } from "@/components/dashboard/StatCard";
 import { ActivityFeed } from "@/components/dashboard/ActivityFeed";
 import { AlgorithmCard } from "@/components/dashboard/AlgorithmCard";
+import { AdaptiveStatusCard } from "@/components/dashboard/AdaptiveStatusCard";
 import { DashboardLoadingSkeleton } from "@/components/LoadingState";
 import { ApiHealthCheck } from "@/components/ApiHealthCheck";
 import { useApp } from "@/contexts/AppContext";
@@ -333,8 +334,15 @@ const Dashboard = () => {
         </div>
       </div>
 
-      {/* Recent Activity Feed */}
-      <ActivityFeed events={activities} />
+      {/* Bottom Section: Activity Feed and Adaptive Status */}
+      <div className="grid gap-6 lg:grid-cols-3">
+        <div className="lg:col-span-2">
+          <ActivityFeed events={activities} />
+        </div>
+        <div>
+          <AdaptiveStatusCard />
+        </div>
+      </div>
     </div>
   );
 };

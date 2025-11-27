@@ -270,6 +270,44 @@ class RateLimiterApiService {
       body: JSON.stringify(request),
     });
   }
+
+  // ============ ADAPTIVE RATE LIMITING ============
+  
+  async getAdaptiveStatus(key: string): Promise<AdaptiveStatus> {
+    return this.request<AdaptiveStatus>(`/api/ratelimit/adaptive/${encodeURIComponent(key)}/status`);
+  }
+
+  async getAdaptiveConfig(): Promise<AdaptiveConfig> {
+    return this.request<AdaptiveConfig>('/api/ratelimit/adaptive/config');
+  }
+
+  async setAdaptiveOverride(key: string, override: AdaptiveOverrideRequest): Promise<void> {
+    await this.request(`/api/ratelimit/adaptive/${encodeURIComponent(key)}/override`, {
+      method: 'POST',
+      body: JSON.stringify(override),
+    });
+  }
+
+  async removeAdaptiveOverride(key: string): Promise<void> {
+    await this.request(`/api/ratelimit/adaptive/${encodeURIComponent(key)}/override`, {
+      method: 'DELETE',
+    });
+  }
+
+  // Get adaptive status for all active keys
+  async getAdaptiveStatusForAllKeys(): Promise<AdaptiveStatus[]> {
+    try {
+      // First get active keys, then fetch adaptive status for each
+      const keysData = await this.getActiveKeys();
+      const statusPromises = keysData.keys.map(key => 
+        this.getAdaptiveStatus(key.key).catch(() => null)
+      );
+      const results = await Promise.all(statusPromises);
+      return results.filter((status): status is AdaptiveStatus => status !== null);
+    } catch {
+      return [];
+    }
+  }
 }
 
 // Import schedule types
@@ -278,6 +316,13 @@ import type {
   ScheduleResponse, 
   EmergencyScheduleRequest 
 } from '@/types/scheduling';
+
+// Import adaptive types
+import type {
+  AdaptiveStatus,
+  AdaptiveConfig,
+  AdaptiveOverrideRequest,
+} from '@/types/adaptive';
 
 export const rateLimiterApi = new RateLimiterApiService();
 
@@ -299,4 +344,7 @@ export type {
   ScheduleRequest,
   ScheduleResponse,
   EmergencyScheduleRequest,
+  AdaptiveStatus,
+  AdaptiveConfig,
+  AdaptiveOverrideRequest,
 };
