@@ -104,6 +104,23 @@ The dashboard connects to a distributed rate limiter backend running on **http:/
 - **Algorithm Distribution**: Fetched from `/admin/keys` endpoint every 30 seconds
 - **Activity Feed**: Generated from real key access patterns (`lastAccessTime`)
 - **Health Check**: `/actuator/health` for backend/Redis status
+- **Adaptive Status Card**: Shows ML-driven adaptive rate limiting status
+
+#### **Adaptive Rate Limiting Page** (`/adaptive`) 🆕
+- **Status**: ✅ **Fully Connected to Real Backend**
+- **Endpoints**:
+  - `GET /api/ratelimit/adaptive/{key}/status` - Get adaptive status with reasoning
+  - `GET /api/ratelimit/adaptive/config` - Get adaptive configuration
+  - `POST /api/ratelimit/adaptive/{key}/override` - Set manual override
+  - `DELETE /api/ratelimit/adaptive/{key}/override` - Remove override
+- **Features**:
+  - Real-time adaptive configuration display
+  - Key status table with mode (STATIC/ADAPTIVE/LEARNING/OVERRIDE)
+  - Confidence meters and progress bars
+  - Reasoning explanations from ML model
+  - Manual override controls for emergency intervention
+  - Auto-refresh every 30 seconds
+- **New in v1.2**: Integrated with backend adaptive rate limiting engine
 
 #### **Configuration Page** (`/configuration`)
 - **Status**: ✅ **Fully Connected to Real Backend**
@@ -333,6 +350,12 @@ The dashboard expects a rate limiter backend with the following endpoints:
 - `POST /api/ratelimit/config/patterns/{pattern}` - Update pattern config
 - `DELETE /api/ratelimit/config/keys/{key}` - Remove key config
 
+#### Adaptive Rate Limiting API 🆕
+- `GET /api/ratelimit/adaptive/{key}/status` - Get adaptive status with ML reasoning
+- `GET /api/ratelimit/adaptive/config` - Get adaptive configuration
+- `POST /api/ratelimit/adaptive/{key}/override` - Set manual override
+- `DELETE /api/ratelimit/adaptive/{key}/override` - Remove manual override
+
 #### Admin API (Basic Auth: admin/admin123)
 - `GET /admin/keys` - Get active keys and statistics
 
@@ -371,7 +394,14 @@ src/
 ## 🎯 Key Components
 
 ### Dashboard (`/`)
-Real-time monitoring with live metrics, charts, and activity feeds.
+Real-time monitoring with live metrics, charts, and activity feeds. Now includes an **Adaptive Status Card** showing ML-driven rate limiting insights.
+
+### Adaptive Rate Limiting (`/adaptive`) 🆕
+ML-driven adaptive rate limiting dashboard with:
+- Configuration overview (enabled status, evaluation interval, thresholds)
+- Key status table with mode, confidence, and reasoning
+- Manual override controls for emergency intervention
+- Real-time updates every 30 seconds
 
 ### Algorithms (`/algorithms`)
 Interactive algorithm comparison with traffic simulation and performance analysis.

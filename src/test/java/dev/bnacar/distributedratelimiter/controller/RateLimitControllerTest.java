@@ -88,6 +88,11 @@ public class RateLimitControllerTest {
         public dev.bnacar.distributedratelimiter.geo.GeographicRateLimitService geographicRateLimitService() {
             return mock(dev.bnacar.distributedratelimiter.geo.GeographicRateLimitService.class);
         }
+        
+        @Bean
+        public dev.bnacar.distributedratelimiter.adaptive.AdaptiveRateLimitEngine adaptiveRateLimitEngine() {
+            return mock(dev.bnacar.distributedratelimiter.adaptive.AdaptiveRateLimitEngine.class);
+        }
     }
 
     @BeforeEach
