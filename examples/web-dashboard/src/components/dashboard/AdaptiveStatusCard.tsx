@@ -8,6 +8,10 @@ import { Brain, Activity, Shield, Settings, ChevronRight, Loader2 } from "lucide
 import { rateLimiterApi } from "@/services/rateLimiterApi";
 import type { AdaptiveConfig, AdaptiveStatus } from "@/types/adaptive";
 
+// Constants for display configuration
+const KEY_DISPLAY_MAX_LENGTH = 15;
+const MAX_RECENT_KEYS_TO_SHOW = 5;
+
 export const AdaptiveStatusCard = () => {
   const [loading, setLoading] = useState(true);
   const [config, setConfig] = useState<AdaptiveConfig | null>(null);
@@ -131,14 +135,14 @@ export const AdaptiveStatusCard = () => {
           <div className="space-y-2">
             <p className="text-xs text-muted-foreground font-medium">Recent Keys</p>
             <div className="flex flex-wrap gap-1">
-              {statuses.slice(0, 5).map((status) => (
+              {statuses.slice(0, MAX_RECENT_KEYS_TO_SHOW).map((status) => (
                 <Badge 
                   key={status.key} 
                   variant="outline" 
                   className={`text-xs gap-1 ${getModeColor(status.adaptiveStatus.mode)} text-white`}
                 >
                   {getModeIcon(status.adaptiveStatus.mode)}
-                  {status.key.length > 15 ? status.key.substring(0, 15) + "..." : status.key}
+                  {status.key.length > KEY_DISPLAY_MAX_LENGTH ? status.key.substring(0, KEY_DISPLAY_MAX_LENGTH) + "..." : status.key}
                 </Badge>
               ))}
             </div>
