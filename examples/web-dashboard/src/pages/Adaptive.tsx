@@ -433,7 +433,7 @@ const Adaptive = () => {
                                     id="capacity"
                                     type="number"
                                     value={overrideForm.capacity}
-                                    onChange={(e) => setOverrideForm({ ...overrideForm, capacity: parseInt(e.target.value) || 0 })}
+                                    onChange={(e) => setOverrideForm({ ...overrideForm, capacity: parseInt(e.target.value, 10) || 0 })}
                                   />
                                 </div>
                                 <div className="grid gap-2">
@@ -442,7 +442,7 @@ const Adaptive = () => {
                                     id="refillRate"
                                     type="number"
                                     value={overrideForm.refillRate}
-                                    onChange={(e) => setOverrideForm({ ...overrideForm, refillRate: parseInt(e.target.value) || 0 })}
+                                    onChange={(e) => setOverrideForm({ ...overrideForm, refillRate: parseInt(e.target.value, 10) || 0 })}
                                   />
                                 </div>
                                 <div className="grid gap-2">
