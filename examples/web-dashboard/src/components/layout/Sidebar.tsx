@@ -7,7 +7,8 @@ import {
   BarChart3, 
   Key,
   Calendar,
-  ChevronLeft 
+  ChevronLeft,
+  Brain
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -18,6 +19,7 @@ interface SidebarProps {
 
 const navItems = [
   { title: "Dashboard", url: "/", icon: Home },
+  { title: "Adaptive", url: "/adaptive", icon: Brain },
   { title: "Algorithms", url: "/algorithms", icon: Settings },
   { title: "Configuration", url: "/configuration", icon: Sliders },
   { title: "Scheduling", url: "/scheduling", icon: Calendar },
