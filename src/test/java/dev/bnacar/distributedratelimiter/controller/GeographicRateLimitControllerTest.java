@@ -9,6 +9,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.BeforeEach;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.mock.web.MockHttpServletRequest;
 
@@ -47,7 +48,7 @@ class GeographicRateLimitControllerTest {
         ResponseEntity<List<GeographicRateLimitConfig>> response = controller.getAllRules();
 
         // Then
-        assertEquals(200, response.getStatusCodeValue());
+        assertEquals(HttpStatus.OK, response.getStatusCode());
         assertEquals(2, response.getBody().size());
         verify(geographicConfigResolver).getAllGeographicRules();
     }
@@ -62,7 +63,7 @@ class GeographicRateLimitControllerTest {
         ResponseEntity<String> response = controller.addRule(rule);
 
         // Then
-        assertEquals(200, response.getStatusCodeValue());
+        assertEquals(HttpStatus.OK, response.getStatusCode());
         assertTrue(response.getBody().contains("test-rule"));
         verify(geographicConfigResolver).addGeographicRule(rule);
     }
@@ -77,7 +78,7 @@ class GeographicRateLimitControllerTest {
         ResponseEntity<String> response = controller.addRule(rule);
 
         // Then
-        assertEquals(400, response.getStatusCodeValue());
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
         assertTrue(response.getBody().contains("Failed to add rule"));
     }
 
@@ -90,7 +91,7 @@ class GeographicRateLimitControllerTest {
         ResponseEntity<String> response = controller.removeRule("rule-1");
 
         // Then
-        assertEquals(200, response.getStatusCodeValue());
+        assertEquals(HttpStatus.OK, response.getStatusCode());
         assertTrue(response.getBody().contains("rule-1"));
         verify(geographicConfigResolver).removeGeographicRule("rule-1");
     }
@@ -104,7 +105,7 @@ class GeographicRateLimitControllerTest {
         ResponseEntity<String> response = controller.removeRule("nonexistent");
 
         // Then
-        assertEquals(404, response.getStatusCodeValue());
+        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
     }
 
     @Test
@@ -130,7 +131,7 @@ class GeographicRateLimitControllerTest {
         ResponseEntity<Map<String, Object>> response = controller.detectLocation(request, null);
 
         // Then
-        assertEquals(200, response.getStatusCodeValue());
+        assertEquals(HttpStatus.OK, response.getStatusCode());
         Map<String, Object> body = response.getBody();
         assertNotNull(body);
         assertEquals("192.168.1.1", body.get("sourceIP"));
@@ -161,7 +162,7 @@ class GeographicRateLimitControllerTest {
         ResponseEntity<Map<String, Object>> response = controller.detectLocation(request, overrideIP);
 
         // Then
-        assertEquals(200, response.getStatusCodeValue());
+        assertEquals(HttpStatus.OK, response.getStatusCode());
         Map<String, Object> body = response.getBody();
         assertNotNull(body);
         assertEquals(overrideIP, body.get("sourceIP"));
@@ -182,7 +183,7 @@ class GeographicRateLimitControllerTest {
         ResponseEntity<Map<String, Object>> response = controller.detectLocation(request, null);
 
         // Then
-        assertEquals(200, response.getStatusCodeValue());
+        assertEquals(HttpStatus.OK, response.getStatusCode());
         Map<String, Object> body = response.getBody();
         assertNotNull(body);
         assertEquals("127.0.0.1", body.get("sourceIP"));
@@ -202,7 +203,7 @@ class GeographicRateLimitControllerTest {
         ResponseEntity<Map<String, Object>> response = controller.detectLocation(request, null);
 
         // Then
-        assertEquals(400, response.getStatusCodeValue());
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
         Map<String, Object> body = response.getBody();
         assertNotNull(body);
         assertTrue(body.get("error").toString().contains("Detection failed"));
@@ -226,7 +227,7 @@ class GeographicRateLimitControllerTest {
         ResponseEntity<Map<String, Object>> response = controller.getStatistics();
 
         // Then
-        assertEquals(200, response.getStatusCodeValue());
+        assertEquals(HttpStatus.OK, response.getStatusCode());
         Map<String, Object> body = response.getBody();
         assertNotNull(body);
         assertEquals(geoLocationStats, body.get("geoLocationCache"));
@@ -244,7 +245,7 @@ class GeographicRateLimitControllerTest {
         ResponseEntity<String> response = controller.clearCaches();
 
         // Then
-        assertEquals(200, response.getStatusCodeValue());
+        assertEquals(HttpStatus.OK, response.getStatusCode());
         assertTrue(response.getBody().contains("cleared successfully"));
         verify(geoLocationService).clearCache();
         verify(geographicConfigResolver).clearCache();

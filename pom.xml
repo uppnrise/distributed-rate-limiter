@@ -18,6 +18,7 @@
         <java.version>21</java.version>
         <jacoco.min.instruction.coverage>0.50</jacoco.min.instruction.coverage>
         <jacoco.min.branch.coverage>0.50</jacoco.min.branch.coverage>
+        <maven.project.sourceRoots.warningsDisabled>true</maven.project.sourceRoots.warningsDisabled>
     </properties>
 
     <dependencies>
@@ -115,6 +116,13 @@
                 </configuration>
             </plugin>
             <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <argLine>${argLine} -javaagent:${settings.localRepository}/org/mockito/mockito-core/${mockito.version}/mockito-core-${mockito.version}.jar -Xshare:off</argLine>
+                </configuration>
+            </plugin>
+            <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
             </plugin>
@@ -125,6 +133,7 @@
                 <artifactId>jacoco-maven-plugin</artifactId>
                 <version>0.8.12</version>
                 <configuration>
+                    <append>false</append>
                     <rules>
                         <rule>
                             <element>BUNDLE</element>
