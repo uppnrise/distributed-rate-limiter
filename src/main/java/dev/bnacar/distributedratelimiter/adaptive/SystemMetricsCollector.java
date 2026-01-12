@@ -2,6 +2,8 @@ package dev.bnacar.distributedratelimiter.adaptive;
 
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Timer;
+import io.micrometer.core.instrument.distribution.HistogramSnapshot;
+import io.micrometer.core.instrument.distribution.ValueAtPercentile;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.actuate.health.Health;
@@ -113,12 +115,17 @@ public class SystemMetricsCollector {
             // Look for common HTTP request timer metrics
             Timer timer = meterRegistry.find("http.server.requests").timer();
             if (timer != null && timer.count() > 0) {
-                double p95 = timer.percentile(0.95, TimeUnit.MILLISECONDS);
-                if (!Double.isNaN(p95)) {
-                    return p95;
+                HistogramSnapshot snapshot = timer.takeSnapshot();
+                for (ValueAtPercentile percentile : snapshot.percentileValues()) {
+                    if (Double.compare(percentile.percentile(), 0.95) == 0) {
+                        double value = percentile.value(TimeUnit.MILLISECONDS);
+                        if (!Double.isNaN(value)) {
+                            return value;
+                        }
+                    }
                 }
                 // Fallback to max if percentiles are not configured
-                return timer.max(TimeUnit.MILLISECONDS);
+                return snapshot.max(TimeUnit.MILLISECONDS);
             }
         } catch (Exception e) {
             logger.debug("Could not retrieve response time metrics", e);
