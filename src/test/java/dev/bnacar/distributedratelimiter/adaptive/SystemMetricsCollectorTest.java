@@ -2,7 +2,6 @@ package dev.bnacar.distributedratelimiter.adaptive;
 
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Timer;
-import io.micrometer.core.instrument.search.MeterNotFoundException;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -103,5 +102,31 @@ class SystemMetricsCollectorTest {
         // With no metrics recorded, response time should be 0
         SystemHealth health = collector.getCurrentHealth();
         assertEquals(0.0, health.getResponseTimeP95());
+    }
+
+    @Test
+    void testResponseTimeP95_UsesSnapshotPercentileWhenAvailable() {
+        Timer timer = Timer.builder("http.server.requests")
+            .publishPercentiles(0.95)
+            .register(meterRegistry);
+
+        timer.record(200, java.util.concurrent.TimeUnit.MILLISECONDS);
+        timer.record(400, java.util.concurrent.TimeUnit.MILLISECONDS);
+        timer.record(600, java.util.concurrent.TimeUnit.MILLISECONDS);
+
+        SystemHealth health = collector.getCurrentHealth();
+        assertTrue(health.getResponseTimeP95() > 0.0);
+    }
+
+    @Test
+    void testResponseTimeP95_FallsBackToMaxWhenNoPercentiles() {
+        Timer timer = Timer.builder("http.server.requests")
+            .register(meterRegistry);
+
+        timer.record(150, java.util.concurrent.TimeUnit.MILLISECONDS);
+        timer.record(450, java.util.concurrent.TimeUnit.MILLISECONDS);
+
+        SystemHealth health = collector.getCurrentHealth();
+        assertEquals(450.0, health.getResponseTimeP95(), 0.001);
     }
 }
