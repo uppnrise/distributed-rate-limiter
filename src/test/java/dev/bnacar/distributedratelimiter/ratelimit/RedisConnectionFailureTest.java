@@ -148,6 +148,48 @@ class RedisConnectionFailureTest {
     }
 
     @Test
+    void testFallbackFailureReturnsFalse() {
+        RateLimiterBackend primaryBackend = mock(RateLimiterBackend.class);
+        RateLimiterBackend fallbackBackend = mock(RateLimiterBackend.class);
+        RateLimiter failingLimiter = mock(RateLimiter.class);
+        RateLimiter fallbackLimiter = mock(RateLimiter.class);
+
+        when(primaryBackend.isAvailable()).thenReturn(true);
+        when(primaryBackend.getRateLimiter(anyString(), any(RateLimitConfig.class))).thenReturn(failingLimiter);
+        when(failingLimiter.tryConsume(anyInt())).thenThrow(new RuntimeException("Primary backend failure"));
+
+        when(fallbackBackend.getRateLimiter(anyString(), any(RateLimitConfig.class))).thenReturn(fallbackLimiter);
+        when(fallbackLimiter.tryConsume(anyInt())).thenThrow(new RuntimeException("Fallback backend failure"));
+
+        ConfigurationResolver resolver = new ConfigurationResolver(new RateLimiterConfiguration());
+        DistributedRateLimiterService service = new DistributedRateLimiterService(
+            resolver, primaryBackend, fallbackBackend);
+
+        assertFalse(service.isAllowed("test:fallback-failure", 1));
+        verify(primaryBackend).getRateLimiter(anyString(), any(RateLimitConfig.class));
+        verify(fallbackBackend).getRateLimiter(anyString(), any(RateLimitConfig.class));
+    }
+
+    @Test
+    void testFallbackBackendExceptionReturnsFalse() {
+        RateLimiterBackend primaryBackend = mock(RateLimiterBackend.class);
+        RateLimiterBackend fallbackBackend = mock(RateLimiterBackend.class);
+        RateLimiter failingLimiter = mock(RateLimiter.class);
+
+        when(primaryBackend.isAvailable()).thenReturn(false);
+        when(fallbackBackend.getRateLimiter(anyString(), any(RateLimitConfig.class))).thenReturn(failingLimiter);
+        when(failingLimiter.tryConsume(anyInt())).thenThrow(new RuntimeException("Fallback failure"));
+
+        ConfigurationResolver resolver = new ConfigurationResolver(new RateLimiterConfiguration());
+        DistributedRateLimiterService service = new DistributedRateLimiterService(
+            resolver, primaryBackend, fallbackBackend);
+
+        assertFalse(service.isAllowed("test:fallback-backend-failure", 1));
+        verify(fallbackBackend).getRateLimiter(anyString(), any(RateLimitConfig.class));
+        verify(primaryBackend).isAvailable();
+    }
+
+    @Test
     void testRedisBackendClearOperation() {
         // Mock Redis operations
         when(redisTemplate.keys(anyString())).thenReturn(java.util.Set.of("key1", "key2"));
