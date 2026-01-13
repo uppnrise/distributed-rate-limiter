@@ -48,9 +48,21 @@ public class DistributedRateLimiterService {
         
         RateLimitConfig config = configurationResolver.resolveConfig(key);
         RateLimiterBackend backend = getAvailableBackend();
-        RateLimiter rateLimiter = backend.getRateLimiter(key, config);
-        
-        return rateLimiter.tryConsume(tokens);
+        try {
+            RateLimiter rateLimiter = backend.getRateLimiter(key, config);
+            return rateLimiter.tryConsume(tokens);
+        } catch (RuntimeException ex) {
+            if (backend != fallbackBackend) {
+                usingFallback = true;
+                try {
+                    RateLimiter fallbackLimiter = fallbackBackend.getRateLimiter(key, config);
+                    return fallbackLimiter.tryConsume(tokens);
+                } catch (RuntimeException fallbackEx) {
+                    return false;
+                }
+            }
+            return false;
+        }
     }
     
     /**

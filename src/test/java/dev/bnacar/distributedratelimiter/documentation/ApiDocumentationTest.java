@@ -6,10 +6,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.boot.test.web.server.LocalServerPort;
+import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.TestPropertySource;
 
+import java.util.HashMap;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -74,52 +77,65 @@ class ApiDocumentationTest {
     @Test
     void testRateLimitEndpointsAreDocumented() {
         // Test that main rate limit endpoints are documented
-        ResponseEntity<Map> response = restTemplate.getForEntity(
-            "http://localhost:" + port + "/v3/api-docs", 
-            Map.class
+        ResponseEntity<Map<String, Object>> response = restTemplate.exchange(
+            "http://localhost:" + port + "/v3/api-docs",
+            HttpMethod.GET,
+            null,
+            new ParameterizedTypeReference<Map<String, Object>>() {}
         );
         
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         Map<String, Object> apiDoc = response.getBody();
         assertThat(apiDoc).isNotNull();
         
-        @SuppressWarnings("unchecked")
-        Map<String, Object> paths = (Map<String, Object>) apiDoc.get("paths");
-        assertThat(paths).isNotNull();
+        Map<String, Object> paths = requireStringKeyedMap(apiDoc.get("paths"), "paths");
         
         // Check that main endpoints are documented
         assertThat(paths).containsKey("/api/ratelimit/check");
         assertThat(paths).containsKey("/api/ratelimit/config");
         
         // Check that rate limit check endpoint has POST method
-        @SuppressWarnings("unchecked")
-        Map<String, Object> rateLimitCheck = (Map<String, Object>) paths.get("/api/ratelimit/check");
+        Map<String, Object> rateLimitCheck = requireStringKeyedMap(
+            paths.get("/api/ratelimit/check"),
+            "rateLimitCheck");
         assertThat(rateLimitCheck).containsKey("post");
         
         // Check that config endpoint has GET method
-        @SuppressWarnings("unchecked")
-        Map<String, Object> configEndpoint = (Map<String, Object>) paths.get("/api/ratelimit/config");
+        Map<String, Object> configEndpoint = requireStringKeyedMap(
+            paths.get("/api/ratelimit/config"),
+            "configEndpoint");
         assertThat(configEndpoint).containsKey("get");
     }
 
     @Test
     void testApiTagsArePresent() {
         // Test that API endpoints are properly tagged by checking the OpenAPI spec
-        ResponseEntity<Map> response = restTemplate.getForEntity(
-            "http://localhost:" + port + "/v3/api-docs", 
-            Map.class
+        ResponseEntity<Map<String, Object>> response = restTemplate.exchange(
+            "http://localhost:" + port + "/v3/api-docs",
+            HttpMethod.GET,
+            null,
+            new ParameterizedTypeReference<Map<String, Object>>() {}
         );
         
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         Map<String, Object> apiDoc = response.getBody();
         assertThat(apiDoc).isNotNull();
         
-        @SuppressWarnings("unchecked")
-        Map<String, Object> paths = (Map<String, Object>) apiDoc.get("paths");
-        assertThat(paths).isNotNull();
+        Map<String, Object> paths = requireStringKeyedMap(apiDoc.get("paths"), "paths");
         
         // Check that endpoints have appropriate tags in their operations
         assertThat(paths).containsKey("/api/ratelimit/check");
         assertThat(paths).containsKey("/api/ratelimit/config");
+    }
+
+    private Map<String, Object> requireStringKeyedMap(Object value, String description) {
+        assertThat(value).as(description).isInstanceOf(Map.class);
+        Map<?, ?> raw = (Map<?, ?>) value;
+        Map<String, Object> result = new HashMap<>();
+        for (Map.Entry<?, ?> entry : raw.entrySet()) {
+            assertThat(entry.getKey()).as(description + " key").isInstanceOf(String.class);
+            result.put((String) entry.getKey(), entry.getValue());
+        }
+        return result;
     }
 }

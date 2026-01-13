@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.util.ReflectionTestUtils;
 
@@ -61,7 +62,7 @@ class AdaptiveRateLimitControllerTest {
         
         // Assert
         assertNotNull(response);
-        assertEquals(200, response.getStatusCodeValue());
+        assertEquals(HttpStatus.OK, response.getStatusCode());
         assertNotNull(response.getBody());
         assertEquals(key, response.getBody().getKey());
         assertEquals(120, response.getBody().getCurrentLimits().getCapacity());
@@ -84,7 +85,7 @@ class AdaptiveRateLimitControllerTest {
         
         // Assert
         assertNotNull(response);
-        assertEquals(200, response.getStatusCodeValue());
+        assertEquals(HttpStatus.OK, response.getStatusCode());
         
         verify(adaptiveEngine, times(1)).setOverride(eq(key), any(AdaptiveRateLimitEngine.AdaptationOverride.class));
     }
@@ -99,7 +100,7 @@ class AdaptiveRateLimitControllerTest {
         
         // Assert
         assertNotNull(response);
-        assertEquals(200, response.getStatusCodeValue());
+        assertEquals(HttpStatus.OK, response.getStatusCode());
         
         verify(adaptiveEngine, times(1)).removeOverride(key);
     }
@@ -112,7 +113,7 @@ class AdaptiveRateLimitControllerTest {
         
         // Assert
         assertNotNull(response);
-        assertEquals(200, response.getStatusCodeValue());
+        assertEquals(HttpStatus.OK, response.getStatusCode());
         assertNotNull(response.getBody());
         // Note: enabled is false by default for safety - users must explicitly opt-in
         assertFalse(response.getBody().isEnabled());

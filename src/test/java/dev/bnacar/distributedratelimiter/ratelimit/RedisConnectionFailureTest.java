@@ -2,6 +2,7 @@ package dev.bnacar.distributedratelimiter.ratelimit;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentMatchers;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -36,7 +37,7 @@ class RedisConnectionFailureTest {
     @Test
     void testRedisConnectionFailureDetection() {
         // Mock Redis ping to throw exception
-        when(redisTemplate.execute(any(org.springframework.data.redis.core.RedisCallback.class)))
+        when(redisTemplate.execute(ArgumentMatchers.<org.springframework.data.redis.core.RedisCallback<Object>>any()))
             .thenThrow(new DataAccessException("Connection failed") {});
         
         assertFalse(redisBackend.isAvailable());
@@ -45,9 +46,12 @@ class RedisConnectionFailureTest {
     @Test
     void testFallbackToInMemoryWhenRedisUnavailable() {
         // Mock Redis operations to fail
-        when(redisTemplate.execute(any(org.springframework.data.redis.core.RedisCallback.class)))
+        when(redisTemplate.execute(ArgumentMatchers.<org.springframework.data.redis.core.RedisCallback<Object>>any()))
             .thenThrow(new DataAccessException("Connection failed") {});
-        when(redisTemplate.execute(any(), any(), any()))
+        when(redisTemplate.execute(
+            ArgumentMatchers.<org.springframework.data.redis.core.script.RedisScript<Object>>any(),
+            ArgumentMatchers.<String>anyList(),
+            ArgumentMatchers.<Object[]>any()))
             .thenThrow(new DataAccessException("Connection failed") {});
         
         String key = "test:fallback";
@@ -101,7 +105,7 @@ class RedisConnectionFailureTest {
     @Test
     void testFallbackBehaviorWithMultipleKeys() {
         // Mock Redis to fail
-        when(redisTemplate.execute(any(org.springframework.data.redis.core.RedisCallback.class)))
+        when(redisTemplate.execute(ArgumentMatchers.<org.springframework.data.redis.core.RedisCallback<Object>>any()))
             .thenThrow(new DataAccessException("Connection failed") {});
         
         String key1 = "test:key1";
@@ -119,16 +123,83 @@ class RedisConnectionFailureTest {
     }
 
     @Test
+    void testFallbackWhenPrimaryThrowsDuringConsume() {
+        RateLimiterBackend primaryBackend = mock(RateLimiterBackend.class);
+        RateLimiterBackend fallbackBackend = mock(RateLimiterBackend.class);
+        RateLimiter failingLimiter = mock(RateLimiter.class);
+        RateLimiter fallbackLimiter = mock(RateLimiter.class);
+
+        when(primaryBackend.isAvailable()).thenReturn(true);
+        when(primaryBackend.getRateLimiter(anyString(), any(RateLimitConfig.class))).thenReturn(failingLimiter);
+        when(failingLimiter.tryConsume(anyInt())).thenThrow(new RuntimeException("Primary backend failure"));
+
+        when(fallbackBackend.getRateLimiter(anyString(), any(RateLimitConfig.class))).thenReturn(fallbackLimiter);
+        when(fallbackLimiter.tryConsume(anyInt())).thenReturn(true);
+
+        ConfigurationResolver resolver = new ConfigurationResolver(new RateLimiterConfiguration());
+        DistributedRateLimiterService service = new DistributedRateLimiterService(
+            resolver, primaryBackend, fallbackBackend);
+
+        assertTrue(service.isAllowed("test:runtime-fallback", 1));
+        verify(primaryBackend).getRateLimiter(anyString(), any(RateLimitConfig.class));
+        verify(fallbackBackend).getRateLimiter(anyString(), any(RateLimitConfig.class));
+        verify(failingLimiter).tryConsume(1);
+        verify(fallbackLimiter).tryConsume(1);
+    }
+
+    @Test
+    void testFallbackFailureReturnsFalse() {
+        RateLimiterBackend primaryBackend = mock(RateLimiterBackend.class);
+        RateLimiterBackend fallbackBackend = mock(RateLimiterBackend.class);
+        RateLimiter failingLimiter = mock(RateLimiter.class);
+        RateLimiter fallbackLimiter = mock(RateLimiter.class);
+
+        when(primaryBackend.isAvailable()).thenReturn(true);
+        when(primaryBackend.getRateLimiter(anyString(), any(RateLimitConfig.class))).thenReturn(failingLimiter);
+        when(failingLimiter.tryConsume(anyInt())).thenThrow(new RuntimeException("Primary backend failure"));
+
+        when(fallbackBackend.getRateLimiter(anyString(), any(RateLimitConfig.class))).thenReturn(fallbackLimiter);
+        when(fallbackLimiter.tryConsume(anyInt())).thenThrow(new RuntimeException("Fallback backend failure"));
+
+        ConfigurationResolver resolver = new ConfigurationResolver(new RateLimiterConfiguration());
+        DistributedRateLimiterService service = new DistributedRateLimiterService(
+            resolver, primaryBackend, fallbackBackend);
+
+        assertFalse(service.isAllowed("test:fallback-failure", 1));
+        verify(primaryBackend).getRateLimiter(anyString(), any(RateLimitConfig.class));
+        verify(fallbackBackend).getRateLimiter(anyString(), any(RateLimitConfig.class));
+    }
+
+    @Test
+    void testFallbackBackendExceptionReturnsFalse() {
+        RateLimiterBackend primaryBackend = mock(RateLimiterBackend.class);
+        RateLimiterBackend fallbackBackend = mock(RateLimiterBackend.class);
+        RateLimiter failingLimiter = mock(RateLimiter.class);
+
+        when(primaryBackend.isAvailable()).thenReturn(false);
+        when(fallbackBackend.getRateLimiter(anyString(), any(RateLimitConfig.class))).thenReturn(failingLimiter);
+        when(failingLimiter.tryConsume(anyInt())).thenThrow(new RuntimeException("Fallback failure"));
+
+        ConfigurationResolver resolver = new ConfigurationResolver(new RateLimiterConfiguration());
+        DistributedRateLimiterService service = new DistributedRateLimiterService(
+            resolver, primaryBackend, fallbackBackend);
+
+        assertFalse(service.isAllowed("test:fallback-backend-failure", 1));
+        verify(fallbackBackend).getRateLimiter(anyString(), any(RateLimitConfig.class));
+        verify(primaryBackend).isAvailable();
+    }
+
+    @Test
     void testRedisBackendClearOperation() {
         // Mock Redis operations
         when(redisTemplate.keys(anyString())).thenReturn(java.util.Set.of("key1", "key2"));
         // RedisTemplate.delete returns Long, not void
-        when(redisTemplate.delete(any(java.util.Collection.class))).thenReturn(2L);
+        when(redisTemplate.delete(ArgumentMatchers.<String>anyCollection())).thenReturn(2L);
         
         redisBackend.clear();
         
         verify(redisTemplate).keys("rate_limit:*");
-        verify(redisTemplate).delete(any(java.util.Collection.class));
+        verify(redisTemplate).delete(ArgumentMatchers.<String>anyCollection());
     }
 
     @Test
@@ -145,7 +216,8 @@ class RedisConnectionFailureTest {
     void testRedisBackendHandlesExceptionsGracefully() {
         // Mock Redis operations to throw exceptions
         when(redisTemplate.keys(anyString())).thenThrow(new DataAccessException("Connection error") {});
-        when(redisTemplate.delete(any(java.util.Collection.class))).thenThrow(new DataAccessException("Connection error") {});
+        when(redisTemplate.delete(ArgumentMatchers.<String>anyCollection()))
+            .thenThrow(new DataAccessException("Connection error") {});
         
         // Should not throw exceptions
         assertDoesNotThrow(() -> redisBackend.clear());
