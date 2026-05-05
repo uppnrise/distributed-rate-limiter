@@ -1,6 +1,7 @@
 package dev.bnacar.distributedratelimiter.ratelimit;
 
 import dev.bnacar.distributedratelimiter.models.RateLimitRequest;
+import dev.bnacar.distributedratelimiter.RedisTestContainerFactory;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,8 +25,7 @@ class ConcurrentPerformanceTest {
 
     @Container
     @ServiceConnection
-    static GenericContainer<?> redis = new GenericContainer<>("redis:7.4.1-alpine")
-            .withExposedPorts(6379);
+    static GenericContainer<?> redis = RedisTestContainerFactory.newRedisContainer();
 
     @Autowired
     private RateLimiterService rateLimiterService;
