@@ -1,6 +1,6 @@
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { TrendingUp, TrendingDown, Activity, Award, Key } from "lucide-react";
+import { TrendingUp, TrendingDown, Activity, Award, Key, LucideIcon } from "lucide-react";
 import { PerformanceMetrics, TopKey } from "@/types/analytics";
 import { cn } from "@/lib/utils";
 
@@ -20,7 +20,7 @@ export const PerformanceOverview = ({ metrics, topKeys }: PerformanceOverviewPro
     title: string;
     value: number;
     change: number;
-    icon: any;
+    icon: LucideIcon;
     format?: (v: number) => string;
   }) => (
     <Card className="relative overflow-hidden p-6 shadow-elevated backdrop-blur-sm bg-gradient-to-br from-card to-card/50">

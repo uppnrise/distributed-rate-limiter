@@ -1,6 +1,33 @@
 // Comprehensive Mock API Service for Rate Limiter Dashboard
 
 const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+type MockConfiguration = {
+  global?: {
+    capacity: number;
+    refillRate: number;
+    algorithm: string;
+  };
+  keys?: unknown[];
+  patterns?: unknown[];
+};
+
+type MockApiKeyInput = Record<string, unknown>;
+
+type MockLoadTestConfig = {
+  concurrentUsers?: number;
+  duration?: number;
+  requestsPerSecond?: number;
+  [key: string]: unknown;
+};
+
+type MockWebSocketUpdate = {
+  type: "metrics_update";
+  data: {
+    requestsPerSecond: number;
+    successRate: number;
+    timestamp: string;
+  };
+};
 
 // Simulate realistic network delays
 const randomDelay = () => delay(Math.random() * 150 + 50);
@@ -62,7 +89,7 @@ export class MockApiService {
     };
   }
 
-  static async updateConfiguration(config: any) {
+  static async updateConfiguration(config: MockConfiguration) {
     await randomDelay();
     if (shouldSimulateError()) {
       throw new Error('Failed to update configuration');
@@ -117,7 +144,7 @@ export class MockApiService {
     return [];
   }
 
-  static async createApiKey(keyData: any) {
+  static async createApiKey(keyData: MockApiKeyInput) {
     await randomDelay();
     if (shouldSimulateError()) {
       throw new Error('Failed to create API key');
@@ -141,7 +168,7 @@ export class MockApiService {
   }
 
   // Load Testing API
-  static async runLoadTest(config: any) {
+  static async runLoadTest(config: MockLoadTestConfig) {
     await randomDelay();
     if (shouldSimulateError()) {
       throw new Error('Failed to start load test');
@@ -171,7 +198,7 @@ export class MockApiService {
 
 // WebSocket simulation for real-time updates
 export class MockWebSocketService {
-  private listeners: Set<(data: any) => void> = new Set();
+  private listeners: Set<(data: MockWebSocketUpdate) => void> = new Set();
   private intervalId: NodeJS.Timeout | null = null;
 
   connect() {
@@ -200,7 +227,7 @@ export class MockWebSocketService {
     }
   }
 
-  subscribe(listener: (data: any) => void) {
+  subscribe(listener: (data: MockWebSocketUpdate) => void) {
     this.listeners.add(listener);
     return () => this.listeners.delete(listener);
   }
