@@ -1,5 +1,6 @@
 package dev.bnacar.distributedratelimiter.integration;
 
+import dev.bnacar.distributedratelimiter.RedisTestContainerFactory;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.AfterEach;
@@ -12,12 +13,9 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.testcontainers.containers.GenericContainer;
-import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
-import org.testcontainers.utility.DockerImageName;
 
-import java.time.Duration;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -32,10 +30,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 class DockerContainerIntegrationTest {
 
     @Container
-    static GenericContainer<?> redis = new GenericContainer<>(DockerImageName.parse("redis:7-alpine"))
-            .withExposedPorts(6379)
-            .waitingFor(Wait.forLogMessage(".*Ready to accept connections.*", 1))
-            .withStartupTimeout(Duration.ofMinutes(2));
+    static GenericContainer<?> redis = RedisTestContainerFactory.newRedisContainer();
 
     @LocalServerPort
     private int port;
