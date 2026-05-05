@@ -7,8 +7,8 @@
 **High-performance, Redis-backed rate limiter service with multiple algorithms and REST API**
 
 [![Java](https://img.shields.io/badge/Java-21-orange.svg)](https://openjdk.java.net/projects/jdk/21/)
-[![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.5.4-brightgreen.svg)](https://spring.io/projects/spring-boot)
-[![Redis](https://img.shields.io/badge/Redis-7.x-red.svg)](https://redis.io/)
+[![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.5.11-brightgreen.svg)](https://spring.io/projects/spring-boot)
+[![Redis](https://img.shields.io/badge/Redis-8.x-red.svg)](https://redis.io/)
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE.md)
 [![Build Status](https://github.com/uppnrise/distributed-rate-limiter/workflows/CI%2FCD%20Pipeline/badge.svg)](https://github.com/uppnrise/distributed-rate-limiter/actions)
 
@@ -32,7 +32,7 @@ A production-ready distributed rate limiter supporting **five algorithms** (Toke
 - ⚡ **Production Ready**: Comprehensive monitoring, health checks, and observability
 - 🛡️ **Thread Safe**: Concurrent request handling with atomic operations
 - 📊 **Rich Metrics**: Built-in Prometheus metrics and performance monitoring
-- 🧪 **Thoroughly Tested**: 472+ tests including integration and load testing
+- 🧪 **Thoroughly Tested**: 510+ tests including integration and load testing
 - 🐳 **Container Ready**: Docker support with multi-stage builds
 - 🔧 **Flexible Configuration**: Per-key limits, burst handling, and dynamic rules
 
@@ -187,22 +187,22 @@ Educational page for understanding rate limiting algorithms:
 
 ```bash
 # Download the latest release
-wget https://github.com/uppnrise/distributed-rate-limiter/releases/download/v1.0.0/distributed-rate-limiter-1.0.0.jar
+wget https://github.com/uppnrise/distributed-rate-limiter/releases/download/v1.3.0/distributed-rate-limiter-1.3.0.jar
 
 # Verify checksum (optional)
-wget https://github.com/uppnrise/distributed-rate-limiter/releases/download/v1.0.0/distributed-rate-limiter-1.0.0.jar.sha256
-sha256sum -c distributed-rate-limiter-1.0.0.jar.sha256
+wget https://github.com/uppnrise/distributed-rate-limiter/releases/download/v1.3.0/distributed-rate-limiter-1.3.0.jar.sha256
+sha256sum -c distributed-rate-limiter-1.3.0.jar.sha256
 ```
 
 ### Option 2: Docker
 
 ```bash
 # Run with Docker Compose (includes Redis)
-wget https://github.com/uppnrise/distributed-rate-limiter/releases/download/v1.0.0/docker-compose.yml
+wget https://github.com/uppnrise/distributed-rate-limiter/releases/download/v1.3.0/docker-compose.yml
 docker-compose up -d
 
 # Or run the image directly
-docker run -p 8080:8080 ghcr.io/uppnrise/distributed-rate-limiter:1.0.0
+docker run -p 8080:8080 ghcr.io/uppnrise/distributed-rate-limiter:1.3.0
 ```
 
 ### Option 3: Build from Source
@@ -211,7 +211,7 @@ docker run -p 8080:8080 ghcr.io/uppnrise/distributed-rate-limiter:1.0.0
 git clone https://github.com/uppnrise/distributed-rate-limiter.git
 cd distributed-rate-limiter
 ./mvnw clean install
-java -jar target/distributed-rate-limiter-1.0.0.jar
+java -jar target/distributed-rate-limiter-1.3.0.jar
 ```
 
 ---
@@ -228,10 +228,10 @@ java -jar target/distributed-rate-limiter-1.0.0.jar
 
 ```bash
 # Simple startup (embedded configuration)
-java -jar distributed-rate-limiter-1.0.0.jar
+java -jar distributed-rate-limiter-1.3.0.jar
 
 # With external Redis
-java -jar distributed-rate-limiter-1.0.0.jar \
+java -jar distributed-rate-limiter-1.3.0.jar \
   --spring.data.redis.host=your-redis-server \
   --spring.data.redis.port=6379
 ```
@@ -259,7 +259,7 @@ curl http://localhost:8080/actuator/health
 
 ```bash
 # Start the backend (if not already running)
-java -jar distributed-rate-limiter-1.0.0.jar
+java -jar distributed-rate-limiter-1.3.0.jar
 
 # In a new terminal, start the dashboard
 cd examples/web-dashboard
@@ -807,7 +807,7 @@ ratelimiter.security.ip.blacklist=192.168.1.100
 version: '3.8'
 services:
   rate-limiter:
-    image: ghcr.io/uppnrise/distributed-rate-limiter:1.0.0
+    image: ghcr.io/uppnrise/distributed-rate-limiter:1.3.0
     ports:
       - "8080:8080"
     environment:
@@ -817,7 +817,7 @@ services:
       - redis
       
   redis:
-    image: redis:7-alpine
+    image: redis:8-alpine
     ports:
       - "6379:6379"
 ```
@@ -842,7 +842,7 @@ spec:
     spec:
       containers:
       - name: rate-limiter
-        image: ghcr.io/uppnrise/distributed-rate-limiter:1.0.0
+        image: ghcr.io/uppnrise/distributed-rate-limiter:1.3.0
         ports:
         - containerPort: 8080
         env:

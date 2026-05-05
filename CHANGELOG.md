@@ -5,6 +5,29 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.0] - 2026-05-05
+
+### Added
+- **Adaptive Rate Limiting** with traffic analysis, anomaly detection, and automated limit adjustment.
+- **Time-Based Dynamic Rate Limiting** with schedules, transitions, and dashboard management.
+- **Expanded API Documentation** with Swagger/OpenAPI coverage, deployment guides, ADR updates, and multi-language examples.
+
+### Changed
+- Upgraded the backend platform to **Spring Boot 3.5.11** and **springdoc 2.8.15**.
+- Upgraded dashboard and build dependencies, including security and lint maintenance across the React/Vite frontend.
+- Updated container and CI Redis defaults to **Redis 8**, while keeping explicit Redis 7 compatibility smoke coverage in tests.
+- Pinned Docker build and runtime images to **Eclipse Temurin 21.0.10_7** for reproducible builds.
+- Refreshed release and deployment documentation to reflect current versions and runtime defaults.
+
+### Fixed
+- Cleared dashboard audit findings and lint errors without changing public routes or APIs.
+- Fixed Redis test drift by consolidating Testcontainers setup and validating both Redis 8 default behavior and Redis 7 compatibility.
+- Fixed Docker image validation tests so pinned Temurin 21 images are accepted by the pipeline.
+
+### Technical
+- Total tests now pass at **510** with no known failures on the release branch.
+- Release artifacts now target **v1.3.0** across Maven, Kubernetes examples, and release preparation scripts.
+
 ## [1.2.0] - 2025-10-23
 
 ### Added
@@ -205,6 +228,7 @@ None - all changes are backward compatible. Existing configurations continue to 
 - Multi-architecture Docker images (amd64, arm64)
 - Production-ready logging and health checks
 
+[1.3.0]: https://github.com/uppnrise/distributed-rate-limiter/compare/v1.2.0...v1.3.0
 [1.2.0]: https://github.com/uppnrise/distributed-rate-limiter/compare/v1.1.0...v1.2.0
 [1.1.0]: https://github.com/uppnrise/distributed-rate-limiter/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/uppnrise/distributed-rate-limiter/releases/tag/v1.0.0

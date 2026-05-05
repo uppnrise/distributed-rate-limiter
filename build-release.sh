@@ -1,11 +1,11 @@
 #!/bin/bash
 
-# Distributed Rate Limiter v1.0.0 Release Script
+# Distributed Rate Limiter v1.3.0 Release Script
 # This script builds production-ready artifacts for deployment
 
 set -e
 
-echo "🚀 Building Distributed Rate Limiter v1.0.0 Release"
+echo "🚀 Building Distributed Rate Limiter v1.3.0 Release"
 echo "=================================================="
 
 # Colors for output
@@ -16,7 +16,7 @@ BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
 # Configuration
-VERSION="1.0.0"
+VERSION="1.3.0"
 PROJECT_NAME="distributed-rate-limiter"
 DOCKER_REGISTRY="ghcr.io/uppnrise"
 
@@ -131,26 +131,26 @@ cat > ${RELEASE_DIR}/run-jar.sh << 'EOF'
 # Start the rate limiter JAR file
 # Make sure Redis is running on localhost:6379
 
-echo "🚀 Starting Distributed Rate Limiter v1.0.0"
+echo "🚀 Starting Distributed Rate Limiter v1.3.0"
 echo "============================================="
 
 # Check if Redis is running
 if ! nc -z localhost 6379 2>/dev/null; then
     echo "❌ Redis is not running on localhost:6379"
     echo "Please start Redis first:"
-    echo "  docker run -d -p 6379:6379 redis:7-alpine"
+    echo "  docker run -d -p 6379:6379 redis:8-alpine"
     exit 1
 fi
 
 # Start the application
-java -jar distributed-rate-limiter-1.0.0.jar
+java -jar distributed-rate-limiter-1.3.0.jar
 EOF
 
 cat > ${RELEASE_DIR}/run-docker.sh << 'EOF'
 #!/bin/bash
 # Start the rate limiter using Docker Compose
 
-echo "🚀 Starting Distributed Rate Limiter v1.0.0 with Docker"
+echo "🚀 Starting Distributed Rate Limiter v1.3.0 with Docker"
 echo "======================================================="
 
 # Start services
@@ -174,7 +174,7 @@ chmod +x ${RELEASE_DIR}/run-docker.sh
 
 # Create deployment instructions
 cat > ${RELEASE_DIR}/DEPLOYMENT.md << 'EOF'
-# Distributed Rate Limiter v1.0.0 - Deployment Guide
+# Distributed Rate Limiter v1.3.0 - Deployment Guide
 
 ## Quick Start Options
 
@@ -185,12 +185,12 @@ cat > ${RELEASE_DIR}/DEPLOYMENT.md << 'EOF'
 - Redis server
 
 **Steps:**
-1. Start Redis: `docker run -d -p 6379:6379 redis:7-alpine`
+1. Start Redis: `docker run -d -p 6379:6379 redis:8-alpine`
 2. Run the application: `./run-jar.sh`
 
 **Custom configuration:**
 ```bash
-java -jar distributed-rate-limiter-1.0.0.jar \
+java -jar distributed-rate-limiter-1.3.0.jar \
   --spring.data.redis.host=your-redis-host \
   --spring.data.redis.port=6379 \
   --server.port=8080
@@ -247,7 +247,7 @@ EOF
 
 # Create release summary
 cat > ${RELEASE_DIR}/RELEASE_NOTES.md << 'EOF'
-# Distributed Rate Limiter v1.0.0 Release Notes
+# Distributed Rate Limiter v1.3.0 Release Notes
 
 🎉 **First Production Release** - September 18, 2025
 
