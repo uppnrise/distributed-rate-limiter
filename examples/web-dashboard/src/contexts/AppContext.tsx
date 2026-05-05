@@ -51,8 +51,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
       return;
     }
 
-    let intervalId: NodeJS.Timeout;
-
     const fetchMetrics = async () => {
       try {
         const metrics = await rateLimiterApi.getMetrics();
@@ -68,7 +66,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     fetchMetrics();
 
     // Poll every 5 seconds
-    intervalId = setInterval(fetchMetrics, 5000);
+    const intervalId = setInterval(fetchMetrics, 5000);
 
     return () => {
       if (intervalId) {
