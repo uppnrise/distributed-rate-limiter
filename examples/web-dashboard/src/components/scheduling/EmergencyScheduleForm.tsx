@@ -41,7 +41,10 @@ export const EmergencyScheduleForm = ({ onClose, onSuccess }: EmergencyScheduleF
     }
   };
 
-  const handleChange = (field: keyof EmergencyScheduleRequest, value: any) => {
+  const handleChange = <K extends keyof EmergencyScheduleRequest>(
+    field: K,
+    value: EmergencyScheduleRequest[K]
+  ) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 

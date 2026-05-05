@@ -59,11 +59,14 @@ export const ScheduleForm = ({ schedule, onClose, onSuccess }: ScheduleFormProps
     }
   };
 
-  const handleChange = (field: string, value: any) => {
+  const handleChange = <K extends keyof ScheduleRequest>(field: K, value: ScheduleRequest[K]) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
-  const handleLimitsChange = (field: keyof ScheduleRequest['limits'], value: any) => {
+  const handleLimitsChange = <K extends keyof ScheduleRequest['limits']>(
+    field: K,
+    value: ScheduleRequest['limits'][K]
+  ) => {
     setFormData(prev => ({
       ...prev,
       limits: { ...prev.limits, [field]: value },
