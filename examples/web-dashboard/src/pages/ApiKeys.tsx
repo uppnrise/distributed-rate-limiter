@@ -47,7 +47,7 @@ const ApiKeys = () => {
           rateLimit: {
             capacity: key.capacity,
             refillRate: 0, // Not provided by backend
-            algorithm: key.algorithm.toLowerCase().replace('_', '-') as any,
+            algorithm: key.algorithm.toLowerCase().replace('_', '-'),
           },
           usageStats: {
             totalRequests: 0,

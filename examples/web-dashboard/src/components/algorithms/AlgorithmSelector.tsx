@@ -48,7 +48,7 @@ export const AlgorithmSelector = ({ selected, onToggle }: AlgorithmSelectorProps
   const [infoModalOpen, setInfoModalOpen] = useState(false);
   const [selectedAlgorithm, setSelectedAlgorithm] = useState<string | null>(null);
 
-  const handleInfoClick = (algorithm: AlgorithmType, e: React.MouseEvent) => {
+  const handleInfoClick = (algorithm: AlgorithmType, e: React.SyntheticEvent) => {
     e.stopPropagation();
     setSelectedAlgorithm(algorithm);
     setInfoModalOpen(true);
@@ -86,7 +86,7 @@ export const AlgorithmSelector = ({ selected, onToggle }: AlgorithmSelectorProps
                             onKeyDown={(e) => {
                               if (e.key === "Enter" || e.key === " ") {
                                 e.preventDefault();
-                                handleInfoClick(algo.type, e as any);
+                                handleInfoClick(algo.type, e);
                               }
                             }}
                             className="rounded p-1 hover:bg-background/20 transition-colors flex-shrink-0 cursor-pointer"
