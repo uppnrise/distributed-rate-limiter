@@ -44,7 +44,7 @@ EXAMPLES:
     $0 dev
     $0 prod IMAGE_TAG=v1.2.3
     DRY_RUN=true $0 staging
-    $0 prod IMAGE_TAG=v1.0.0 WAIT_TIMEOUT=900s
+    $0 prod IMAGE_TAG=v1.3.0 WAIT_TIMEOUT=900s
 
 EOF
     exit 1

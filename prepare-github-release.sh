@@ -6,7 +6,7 @@
 set -e
 
 # Configuration
-VERSION="1.2.0"
+VERSION="1.3.0"
 RELEASE_DIR="release-artifacts"
 PROJECT_NAME="distributed-rate-limiter"
 
@@ -50,7 +50,7 @@ echo -e "${BLUE}📋 Creating quick start script...${NC}"
 cat > quick-start.sh << 'EOF'
 #!/bin/bash
 
-# Distributed Rate Limiter v1.2.0 Quick Start
+# Distributed Rate Limiter v1.3.0 Quick Start
 # This script helps you start the rate limiter quickly
 
 set -e
@@ -62,7 +62,7 @@ YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
 NC='\033[0m'
 
-echo -e "${BLUE}🚀 Distributed Rate Limiter v1.2.0 Quick Start${NC}"
+echo -e "${BLUE}🚀 Distributed Rate Limiter v1.3.0 Quick Start${NC}"
 echo "=============================================="
 echo ""
 
@@ -90,12 +90,12 @@ if command -v redis-cli &> /dev/null; then
         echo -e "${YELLOW}⚠️ Redis server not detected on localhost:6379${NC}"
         echo "The application will try to connect to Redis on startup"
         echo "If you don't have Redis running, start it with:"
-        echo "  docker run -d -p 6379:6379 redis:7-alpine"
+        echo "  docker run -d -p 6379:6379 redis:8-alpine"
     fi
 else
     echo -e "${YELLOW}⚠️ Redis CLI not found${NC}"
     echo "Make sure Redis server is running on localhost:6379"
-    echo "Quick Redis setup: docker run -d -p 6379:6379 redis:7-alpine"
+    echo "Quick Redis setup: docker run -d -p 6379:6379 redis:8-alpine"
 fi
 
 echo ""
@@ -106,7 +106,7 @@ echo "⏹️  Press Ctrl+C to stop"
 echo ""
 
 # Start the application
-java -jar distributed-rate-limiter-1.2.0.jar
+java -jar distributed-rate-limiter-1.3.0.jar
 EOF
 
 chmod +x quick-start.sh
@@ -115,11 +115,11 @@ chmod +x quick-start.sh
 cat > docker-quick-start.sh << 'EOF'
 #!/bin/bash
 
-# Distributed Rate Limiter v1.2.0 Docker Quick Start
+# Distributed Rate Limiter v1.3.0 Docker Quick Start
 
 set -e
 
-echo "🐳 Distributed Rate Limiter v1.2.0 - Docker Quick Start"
+echo "🐳 Distributed Rate Limiter v1.3.0 - Docker Quick Start"
 echo "======================================================"
 
 # Check if Docker is available
@@ -144,7 +144,7 @@ version: '3.8'
 
 services:
   redis:
-    image: redis:7-alpine
+    image: redis:8-alpine
     container_name: rate-limiter-redis
     ports:
       - "6379:6379"
@@ -156,7 +156,7 @@ services:
       retries: 3
 
   rate-limiter:
-    image: ghcr.io/uppnrise/distributed-rate-limiter:1.0.0
+    image: ghcr.io/uppnrise/distributed-rate-limiter:1.3.0
     container_name: rate-limiter-app
     ports:
       - "8080:8080"
@@ -196,7 +196,7 @@ chmod +x docker-quick-start.sh
 
 # Create installation guide
 cat > INSTALLATION.md << 'EOF'
-# Installation Guide - Distributed Rate Limiter v1.2.0
+# Installation Guide - Distributed Rate Limiter v1.3.0
 
 ## Quick Installation Options
 
@@ -208,8 +208,8 @@ cat > INSTALLATION.md << 'EOF'
 
 **Steps:**
 1. Download the JAR file from GitHub Releases
-2. Ensure Redis is running: `docker run -d -p 6379:6379 redis:7-alpine`
-3. Run: `java -jar distributed-rate-limiter-1.2.0.jar`
+2. Ensure Redis is running: `docker run -d -p 6379:6379 redis:8-alpine`
+3. Run: `java -jar distributed-rate-limiter-1.3.0.jar`
 4. Test: `curl http://localhost:8080/actuator/health`
 
 **Quick Start Script:**
@@ -225,7 +225,7 @@ chmod +x quick-start.sh
 
 **Steps:**
 1. Run the Docker quick start script: `./docker-quick-start.sh`
-2. Or manually: `docker run -p 8080:8080 ghcr.io/uppnrise/distributed-rate-limiter:1.0.0`
+2. Or manually: `docker run -p 8080:8080 ghcr.io/uppnrise/distributed-rate-limiter:1.3.0`
 
 ### Option 3: Build from Source
 
@@ -239,7 +239,7 @@ chmod +x quick-start.sh
 git clone https://github.com/uppnrise/distributed-rate-limiter.git
 cd distributed-rate-limiter
 ./mvnw clean install
-java -jar target/distributed-rate-limiter-1.2.0.jar
+java -jar target/distributed-rate-limiter-1.3.0.jar
 ```
 
 ## Configuration
@@ -248,7 +248,7 @@ java -jar target/distributed-rate-limiter-1.2.0.jar
 The application uses sensible defaults but can be customized:
 
 ```bash
-java -jar distributed-rate-limiter-1.2.0.jar \
+java -jar distributed-rate-limiter-1.3.0.jar \
   --spring.data.redis.host=your-redis-host \
   --spring.data.redis.port=6379 \
   --server.port=8080
@@ -259,7 +259,7 @@ java -jar distributed-rate-limiter-1.2.0.jar \
 export SPRING_DATA_REDIS_HOST=your-redis-host
 export SPRING_DATA_REDIS_PORT=6379
 export SERVER_PORT=8080
-java -jar distributed-rate-limiter-1.2.0.jar
+java -jar distributed-rate-limiter-1.3.0.jar
 ```
 
 ### Configuration File
@@ -299,7 +299,7 @@ See the main README.md for production deployment guides including:
 **Issue**: Application fails to start with Redis connection error
 **Solution**: Ensure Redis is running and accessible
 ```bash
-docker run -d -p 6379:6379 redis:7-alpine
+docker run -d -p 6379:6379 redis:8-alpine
 ```
 
 **Issue**: Java version error
@@ -314,7 +314,7 @@ java -version
 **Issue**: Port 8080 already in use
 **Solution**: Use a different port
 ```bash
-java -jar distributed-rate-limiter-1.2.0.jar --server.port=8081
+java -jar distributed-rate-limiter-1.3.0.jar --server.port=8081
 ```
 
 ### Getting Help
@@ -329,7 +329,7 @@ cd ..
 
 # Create release notes
 cat > ${RELEASE_DIR}/RELEASE_NOTES.md << 'EOF'
-# Distributed Rate Limiter v1.2.0 - Release Notes
+# Distributed Rate Limiter v1.3.0 - Release Notes
 
 🎉 **Major Feature Release** - October 23, 2025
 
@@ -366,13 +366,13 @@ cat > ${RELEASE_DIR}/RELEASE_NOTES.md << 'EOF'
 ### JAR File (Recommended)
 ```bash
 # Download and run
-wget https://github.com/uppnrise/distributed-rate-limiter/releases/download/v1.2.0/distributed-rate-limiter-1.2.0.jar
-java -jar distributed-rate-limiter-1.2.0.jar
+wget https://github.com/uppnrise/distributed-rate-limiter/releases/download/v1.3.0/distributed-rate-limiter-1.3.0.jar
+java -jar distributed-rate-limiter-1.3.0.jar
 ```
 
 ### Docker
 ```bash
-docker run -p 8080:8080 ghcr.io/uppnrise/distributed-rate-limiter:1.0.0
+docker run -p 8080:8080 ghcr.io/uppnrise/distributed-rate-limiter:1.3.0
 ```
 
 ### Quick Start Scripts
@@ -386,8 +386,8 @@ docker run -p 8080:8080 ghcr.io/uppnrise/distributed-rate-limiter:1.0.0
 - **2GB RAM minimum** for production usage
 
 ## File Checksums
-- **SHA256**: See `distributed-rate-limiter-1.2.0.jar.sha256`
-- **MD5**: See `distributed-rate-limiter-1.2.0.jar.md5`
+- **SHA256**: See `distributed-rate-limiter-1.3.0.jar.sha256`
+- **MD5**: See `distributed-rate-limiter-1.3.0.jar.md5`
 
 ## Breaking Changes
 None - this is the first release.

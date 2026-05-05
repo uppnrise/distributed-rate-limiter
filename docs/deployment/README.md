@@ -41,7 +41,7 @@ This guide covers various deployment options for the Distributed Rate Limiter se
 
 2. **Start Redis using Docker**:
    ```bash
-   docker run -d --name redis -p 6379:6379 redis:7-alpine
+   docker run -d --name redis -p 6379:6379 redis:8-alpine
    ```
 
 3. **Run the application**:
@@ -129,7 +129,7 @@ Create `docker-compose.prod.yml`:
 version: '3.8'
 services:
   redis:
-    image: redis:7-alpine
+    image: redis:8-alpine
     restart: unless-stopped
     command: redis-server --appendonly yes --maxmemory 512mb --maxmemory-policy allkeys-lru
     volumes:
@@ -211,7 +211,7 @@ spec:
     spec:
       containers:
       - name: redis
-        image: redis:7-alpine
+        image: redis:8-alpine
         ports:
         - containerPort: 6379
         command: ["redis-server"]
