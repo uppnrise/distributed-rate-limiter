@@ -111,15 +111,22 @@ const Configuration = () => {
         refillRate: config.refillRate,
         algorithm: config.algorithm.toUpperCase().replace('-', '_'),
       });
-      
-      const newConfig: KeyConfig = {
+
+      const existingConfig = keyConfigs.find((c) => c.keyName === config.keyName);
+      const timestamp = new Date().toISOString();
+      const nextConfig: KeyConfig = {
         ...config,
-        id: Math.random().toString(36).substring(7),
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
+        id: existingConfig?.id ?? Math.random().toString(36).substring(7),
+        createdAt: existingConfig?.createdAt ?? timestamp,
+        updatedAt: timestamp,
       };
-      setKeyConfigs([...keyConfigs, newConfig]);
-      toast.success("Key configuration added successfully");
+
+      setKeyConfigs(
+        existingConfig
+          ? keyConfigs.map((c) => (c.keyName === config.keyName ? nextConfig : c))
+          : [...keyConfigs, nextConfig]
+      );
+      toast.success(existingConfig ? "Key configuration updated successfully" : "Key configuration added successfully");
     } catch (error) {
       toast.error("Failed to add key configuration");
       console.error(error);
@@ -131,19 +138,35 @@ const Configuration = () => {
     config: Omit<KeyConfig, "id" | "createdAt" | "updatedAt">
   ) => {
     try {
+      const previousConfig = keyConfigs.find((c) => c.id === id);
+      if (!previousConfig) {
+        toast.error("Configuration not found");
+        return;
+      }
+
       await rateLimiterApi.updateKeyConfig(config.keyName, {
         capacity: config.capacity,
         refillRate: config.refillRate,
         algorithm: config.algorithm.toUpperCase().replace('-', '_'),
       });
-      
-      setKeyConfigs(
-        keyConfigs.map((c) =>
-          c.id === id
-            ? { ...config, id, createdAt: c.createdAt, updatedAt: new Date().toISOString() }
-            : c
-        )
-      );
+
+      if (previousConfig.keyName !== config.keyName) {
+        await rateLimiterApi.deleteKeyConfig(previousConfig.keyName);
+      }
+
+      const timestamp = new Date().toISOString();
+      const collidedConfig = keyConfigs.find((c) => c.keyName === config.keyName && c.id !== id);
+      const updatedConfig: KeyConfig = {
+        ...config,
+        id: collidedConfig?.id ?? id,
+        createdAt: previousConfig.createdAt,
+        updatedAt: timestamp,
+      };
+
+      setKeyConfigs(() => {
+        const remainingConfigs = keyConfigs.filter((c) => c.id !== id && c.keyName !== config.keyName);
+        return [...remainingConfigs, updatedConfig];
+      });
       toast.success("Key configuration updated successfully");
     } catch (error) {
       toast.error("Failed to update key configuration");
@@ -172,16 +195,24 @@ const Configuration = () => {
       await rateLimiterApi.updatePatternConfig(config.pattern, {
         capacity: config.capacity,
         refillRate: config.refillRate,
+        algorithm: config.algorithm.toUpperCase().replace('-', '_'),
       });
-      
-      const newConfig: PatternConfig = {
+
+      const existingConfig = patternConfigs.find((c) => c.pattern === config.pattern);
+      const timestamp = new Date().toISOString();
+      const nextConfig: PatternConfig = {
         ...config,
-        id: Math.random().toString(36).substring(7),
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
+        id: existingConfig?.id ?? Math.random().toString(36).substring(7),
+        createdAt: existingConfig?.createdAt ?? timestamp,
+        updatedAt: timestamp,
       };
-      setPatternConfigs([...patternConfigs, newConfig]);
-      toast.success("Pattern configuration added successfully");
+
+      setPatternConfigs(
+        existingConfig
+          ? patternConfigs.map((c) => (c.pattern === config.pattern ? nextConfig : c))
+          : [...patternConfigs, nextConfig]
+      );
+      toast.success(existingConfig ? "Pattern configuration updated successfully" : "Pattern configuration added successfully");
     } catch (error) {
       toast.error("Failed to add pattern configuration");
       console.error(error);
@@ -193,18 +224,35 @@ const Configuration = () => {
     config: Omit<PatternConfig, "id" | "createdAt" | "updatedAt">
   ) => {
     try {
+      const previousConfig = patternConfigs.find((c) => c.id === id);
+      if (!previousConfig) {
+        toast.error("Configuration not found");
+        return;
+      }
+
       await rateLimiterApi.updatePatternConfig(config.pattern, {
         capacity: config.capacity,
         refillRate: config.refillRate,
+        algorithm: config.algorithm.toUpperCase().replace('-', '_'),
       });
-      
-      setPatternConfigs(
-        patternConfigs.map((c) =>
-          c.id === id
-            ? { ...config, id, createdAt: c.createdAt, updatedAt: new Date().toISOString() }
-            : c
-        )
-      );
+
+      if (previousConfig.pattern !== config.pattern) {
+        await rateLimiterApi.deletePatternConfig(previousConfig.pattern);
+      }
+
+      const timestamp = new Date().toISOString();
+      const collidedConfig = patternConfigs.find((c) => c.pattern === config.pattern && c.id !== id);
+      const updatedConfig: PatternConfig = {
+        ...config,
+        id: collidedConfig?.id ?? id,
+        createdAt: previousConfig.createdAt,
+        updatedAt: timestamp,
+      };
+
+      setPatternConfigs(() => {
+        const remainingConfigs = patternConfigs.filter((c) => c.id !== id && c.pattern !== config.pattern);
+        return [...remainingConfigs, updatedConfig];
+      });
       toast.success("Pattern configuration updated successfully");
     } catch (error) {
       toast.error("Failed to update pattern configuration");
