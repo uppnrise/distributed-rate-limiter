@@ -25,7 +25,7 @@ patchesStrategicMerge:
 
 images:
 - name: ghcr.io/uppnrise/distributed-rate-limiter
-  newTag: v1.3.0  # Use specific version tags in production
+  newTag: v1.3.1  # Use specific version tags in production
 
 configMapGenerator:
 - name: rate-limiter-config

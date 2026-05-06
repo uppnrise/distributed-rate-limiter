@@ -5,6 +5,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.1] - 2026-05-06
+
+### Fixed
+- Fixed token bucket refill accumulation so sustained traffic no longer loses partial refill progress under frequent checks.
+- Fixed the dashboard backend health banner to work with minimal actuator health responses that only expose top-level status.
+- Fixed load-testing request pacing so configured aggregate rate and duration better match the backend benchmark execution.
+- Fixed dashboard recent activity so it shows a stable startup snapshot plus live delta updates instead of replaying cumulative key totals as fresh events.
+
+### Changed
+- Reworked load-testing reporting to surface throughput and request-count accuracy while marking latency metrics as unavailable until the backend benchmark endpoint provides them.
+- Removed fabricated dashboard algorithm performance values when backend data is unavailable.
+- Refreshed release preparation scripts and generated artifact metadata for the `v1.3.1` patch release.
+
 ## [1.3.0] - 2026-05-05
 
 ### Added
@@ -228,6 +241,7 @@ None - all changes are backward compatible. Existing configurations continue to 
 - Multi-architecture Docker images (amd64, arm64)
 - Production-ready logging and health checks
 
+[1.3.1]: https://github.com/uppnrise/distributed-rate-limiter/compare/v1.3.0...v1.3.1
 [1.3.0]: https://github.com/uppnrise/distributed-rate-limiter/compare/v1.2.0...v1.3.0
 [1.2.0]: https://github.com/uppnrise/distributed-rate-limiter/compare/v1.1.0...v1.2.0
 [1.1.0]: https://github.com/uppnrise/distributed-rate-limiter/compare/v1.0.0...v1.1.0

@@ -1,11 +1,11 @@
 #!/bin/bash
 
-# Distributed Rate Limiter v1.3.0 Release Script
+# Distributed Rate Limiter v1.3.1 Release Script
 # This script builds production-ready artifacts for deployment
 
 set -e
 
-echo "🚀 Building Distributed Rate Limiter v1.3.0 Release"
+echo "🚀 Building Distributed Rate Limiter v1.3.1 Release"
 echo "=================================================="
 
 # Colors for output
@@ -16,7 +16,7 @@ BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
 # Configuration
-VERSION="1.3.0"
+VERSION="1.3.1"
 PROJECT_NAME="distributed-rate-limiter"
 DOCKER_REGISTRY="ghcr.io/uppnrise"
 
@@ -131,7 +131,7 @@ cat > ${RELEASE_DIR}/run-jar.sh << 'EOF'
 # Start the rate limiter JAR file
 # Make sure Redis is running on localhost:6379
 
-echo "🚀 Starting Distributed Rate Limiter v1.3.0"
+echo "🚀 Starting Distributed Rate Limiter v1.3.1"
 echo "============================================="
 
 # Check if Redis is running
@@ -143,14 +143,14 @@ if ! nc -z localhost 6379 2>/dev/null; then
 fi
 
 # Start the application
-java -jar distributed-rate-limiter-1.3.0.jar
+java -jar distributed-rate-limiter-1.3.1.jar
 EOF
 
 cat > ${RELEASE_DIR}/run-docker.sh << 'EOF'
 #!/bin/bash
 # Start the rate limiter using Docker Compose
 
-echo "🚀 Starting Distributed Rate Limiter v1.3.0 with Docker"
+echo "🚀 Starting Distributed Rate Limiter v1.3.1 with Docker"
 echo "======================================================="
 
 # Start services
@@ -174,7 +174,7 @@ chmod +x ${RELEASE_DIR}/run-docker.sh
 
 # Create deployment instructions
 cat > ${RELEASE_DIR}/DEPLOYMENT.md << 'EOF'
-# Distributed Rate Limiter v1.3.0 - Deployment Guide
+# Distributed Rate Limiter v1.3.1 - Deployment Guide
 
 ## Quick Start Options
 
@@ -190,7 +190,7 @@ cat > ${RELEASE_DIR}/DEPLOYMENT.md << 'EOF'
 
 **Custom configuration:**
 ```bash
-java -jar distributed-rate-limiter-1.3.0.jar \
+java -jar distributed-rate-limiter-1.3.1.jar \
   --spring.data.redis.host=your-redis-host \
   --spring.data.redis.port=6379 \
   --server.port=8080
@@ -247,52 +247,25 @@ EOF
 
 # Create release summary
 cat > ${RELEASE_DIR}/RELEASE_NOTES.md << 'EOF'
-# Distributed Rate Limiter v1.3.0 Release Notes
+# Distributed Rate Limiter v1.3.1 Release Notes
 
-🎉 **First Production Release** - September 18, 2025
+Release date: 2026-05-06
 
-## What's New
+## Summary
 
-### Core Features
-- ✅ **Distributed Token Bucket Algorithm** - Fair rate limiting with burst support
-- ✅ **Redis Backend** - Centralized state for multi-instance deployments
-- ✅ **RESTful API** - 18 endpoints for rate limiting, configuration, and monitoring
-- ✅ **Flexible Configuration** - Per-key, pattern-based, and default rate limits
-- ✅ **Security Features** - API key authentication and IP filtering
-- ✅ **Comprehensive Monitoring** - Built-in metrics and health checks
+`v1.3.1` is a patch release focused on correctness and dashboard usability after `v1.3.0`.
 
-### Performance
-- **High Throughput**: 50,000+ requests/second
-- **Low Latency**: P95 < 2ms, P99 < 5ms
-- **Memory Efficient**: ~100MB for 1M active rate limit buckets
-- **CPU Optimized**: <5% overhead under normal load
+## Highlights
 
-### Deployment Options
-- **JAR File**: Self-contained Spring Boot application
-- **Docker Image**: Container-ready with optimized layers
-- **Docker Compose**: Complete stack with Redis
-- **Kubernetes**: Production-ready manifests
-
-### Documentation
-- **Complete API Reference** - OpenAPI/Swagger documentation
-- **Integration Examples** - Java, Python, Node.js, Go clients
-- **Deployment Guides** - Docker, Kubernetes, traditional deployment
-- **Configuration Guide** - Detailed configuration options
-
-## Breaking Changes
-None - this is the first release.
+- Fixes token bucket refill accumulation under frequent checks.
+- Fixes dashboard health handling for minimal actuator responses.
+- Improves dashboard load-testing pacing and reporting.
+- Removes fabricated performance values where backend data is unavailable.
 
 ## Upgrade Notes
-None - this is the first release.
 
-## Known Issues
-None at release time.
-
-## What's Next (v1.1.0)
-- Enhanced monitoring dashboard
-- Advanced rate limiting algorithms
-- Improved performance metrics
-- Additional client libraries
+- Update pinned application version references from `v1.3.0` to `v1.3.1`.
+- Regenerate release artifacts so helper scripts and checksums match the patch release.
 EOF
 
 echo -e "${GREEN}✅ Release package created: ${RELEASE_DIR}/${NC}"
