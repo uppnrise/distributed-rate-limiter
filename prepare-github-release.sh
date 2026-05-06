@@ -417,13 +417,13 @@ echo -e "${GREEN}🎉 GitHub Release v${VERSION} artifacts prepared!${NC}"
 echo "=================================================="
 echo ""
 echo -e "${BLUE}📦 Created artifacts:${NC}"
-ls -la
+ls -la "${RELEASE_DIR}"
 echo ""
 echo -e "${BLUE}📋 File sizes:${NC}"
-du -h *
+du -h "${RELEASE_DIR}"/*
 echo ""
 echo -e "${BLUE}🔐 Checksums:${NC}"
-cat *.sha256
+cat "${RELEASE_DIR}"/*.sha256
 echo ""
 echo -e "${BLUE}🚀 Next steps:${NC}"
 echo "1. Go to: https://github.com/uppnrise/distributed-rate-limiter/releases"
