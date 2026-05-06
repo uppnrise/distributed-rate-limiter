@@ -1,12 +1,10 @@
 import { useEffect, useState } from 'react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Badge } from '@/components/ui/badge';
 import { CheckCircle2, XCircle, Loader2 } from 'lucide-react';
 import { rateLimiterApi } from '@/services/rateLimiterApi';
 
 export const ApiHealthCheck = () => {
   const [status, setStatus] = useState<'checking' | 'healthy' | 'error'>('checking');
-  const [redisStatus, setRedisStatus] = useState<string>('unknown');
 
   useEffect(() => {
     const checkHealth = async () => {
@@ -14,7 +12,6 @@ export const ApiHealthCheck = () => {
         const health = await rateLimiterApi.healthCheck();
         if (health.status === 'UP') {
           setStatus('healthy');
-          setRedisStatus(health.components.redis.status);
         } else {
           setStatus('error');
         }
@@ -56,12 +53,7 @@ export const ApiHealthCheck = () => {
   return (
     <Alert className="border-green-500/50 bg-green-500/10">
       <CheckCircle2 className="h-4 w-4 text-green-600" />
-      <AlertDescription className="flex items-center gap-3">
-        <span>Connected to backend API</span>
-        <Badge variant="secondary" className="text-xs">
-          Redis: {redisStatus}
-        </Badge>
-      </AlertDescription>
+      <AlertDescription>Connected to backend API</AlertDescription>
     </Alert>
   );
 };
