@@ -32,7 +32,7 @@ A production-ready distributed rate limiter supporting **five algorithms** (Toke
 - ⚡ **Production Ready**: Comprehensive monitoring, health checks, and observability
 - 🛡️ **Thread Safe**: Concurrent request handling with atomic operations
 - 📊 **Rich Metrics**: Built-in Prometheus metrics and performance monitoring
-- 🧪 **Thoroughly Tested**: 510+ tests including integration and load testing
+- 🧪 **Thoroughly Tested**: 511+ tests including integration and load testing
 - 🐳 **Container Ready**: Docker support with multi-stage builds
 - 🔧 **Flexible Configuration**: Per-key limits, burst handling, and dynamic rules
 
@@ -129,7 +129,7 @@ The web dashboard provides a comprehensive interface for monitoring and managing
 Real-time visualization of rate limiting activity:
 - **System Metrics**: Current requests/second, token usage, active keys
 - **Algorithm Distribution**: Visual breakdown of Token Bucket, Sliding Window, Fixed Window, Leaky Bucket, Composite usage
-- **Recent Activity Feed**: Live stream of rate limit checks with allow/deny status
+- **Recent Activity Feed**: Current per-key snapshot on page load plus live allow/deny updates
 - **Trend Charts**: Request rate and token consumption over time
 
 ### 🧪 Load Testing Interface
@@ -137,9 +137,11 @@ Real-time visualization of rate limiting activity:
 
 Execute and analyze load tests against the backend:
 - **Test Configuration**: Concurrent requests, duration, key patterns
-- **Real-time Progress**: Requests per second, success/failure rates, latency percentiles
+- **Real-time Progress**: Requests per second, allow/deny rates, and throughput summaries
 - **Results Dashboard**: Comprehensive statistics from backend `/api/benchmark/run` endpoint
 - **Historical Comparison**: Compare test runs to detect performance regressions
+
+> **Note**: The current benchmark API does not expose response-time percentile data, so the dashboard reports throughput and rate-limit outcomes but marks latency metrics as unavailable.
 
 ### ⚙️ Configuration Management
 ![Configuration CRUD](examples/web-dashboard/public/screenshots/configuration-preview.png)
@@ -197,12 +199,12 @@ sha256sum -c distributed-rate-limiter-1.3.1.jar.sha256
 ### Option 2: Docker
 
 ```bash
-# Run with Docker Compose (includes Redis)
-wget https://github.com/uppnrise/distributed-rate-limiter/releases/download/v1.3.1/docker-compose.yml
-docker-compose up -d
-
-# Or run the image directly
+# Run the image directly
 docker run -p 8080:8080 ghcr.io/uppnrise/distributed-rate-limiter:1.3.1
+
+# Or use the compose file from the repository
+curl -O https://raw.githubusercontent.com/uppnrise/distributed-rate-limiter/v1.3.1/docker-compose.yml
+docker compose up -d
 ```
 
 ### Option 3: Build from Source
@@ -242,16 +244,14 @@ java -jar distributed-rate-limiter-1.3.1.jar \
 curl http://localhost:8080/actuator/health
 ```
 
-**Expected Response:**
+**Expected Response (default profile):**
 ```json
 {
-  "status": "UP",
-  "components": {
-    "redis": {"status": "UP"},
-    "rateLimiter": {"status": "UP"}
-  }
+  "status": "UP"
 }
 ```
+
+When health details are enabled, the same endpoint can also include component-level entries such as `redis` and `rateLimiter`.
 
 ### 3. Test Rate Limiting
 
