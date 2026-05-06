@@ -7,7 +7,6 @@ import {
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
-  Legend,
 } from "recharts";
 import { TimeSeriesPoint } from "@/types/loadTesting";
 import { Activity } from "lucide-react";
@@ -98,45 +97,13 @@ export const LiveResults = ({ data }: LiveResultsProps) => {
         </div>
 
         <div>
-          <h4 className="mb-4 text-sm font-medium text-muted-foreground">
-            Response Times
+          <h4 className="mb-2 text-sm font-medium text-muted-foreground">
+            Latency Metrics
           </h4>
-          <ResponsiveContainer width="100%" height={250}>
-            <LineChart data={data}>
-              <CartesianGrid strokeDasharray="3 3" className="stroke-muted" opacity={0.3} />
-              <XAxis
-                dataKey="timestamp"
-                className="text-muted-foreground"
-                tick={{ fontSize: 12 }}
-                tickFormatter={(value) => `${Math.floor(value / 1000)}s`}
-              />
-              <YAxis className="text-muted-foreground" tick={{ fontSize: 12 }} />
-              <Tooltip
-                contentStyle={{
-                  backgroundColor: "hsl(var(--card))",
-                  border: "1px solid hsl(var(--border))",
-                  borderRadius: "8px",
-                }}
-              />
-              <Legend />
-              <Line
-                type="monotone"
-                dataKey="avgResponseTime"
-                stroke="#3b82f6"
-                strokeWidth={2}
-                dot={{ r: 2 }}
-                name="P50 (ms)"
-              />
-              <Line
-                type="monotone"
-                dataKey="p95ResponseTime"
-                stroke="#f97316"
-                strokeWidth={2}
-                dot={{ r: 2 }}
-                name="P95 (ms)"
-              />
-            </LineChart>
-          </ResponsiveContainer>
+          <p className="rounded-lg border border-dashed border-border bg-background/40 p-4 text-sm text-muted-foreground">
+            Response-time metrics are not available yet. The current backend benchmark endpoint
+            returns throughput and allow/deny counters, but not latency percentiles.
+          </p>
         </div>
       </div>
     </Card>

@@ -19,6 +19,10 @@ export const TestExecution = ({
   onStart,
   onStop,
 }: TestExecutionProps) => {
+  const progressLabel = `${Math.round(progress)}%`;
+  const responseTimeLabel =
+    metrics.avgResponseTime > 0 ? `${metrics.avgResponseTime.toFixed(1)}ms` : "Not available";
+
   return (
     <Card className="p-6 shadow-elevated backdrop-blur-sm bg-gradient-to-br from-card to-card/50">
       <div className="space-y-6">
@@ -46,7 +50,7 @@ export const TestExecution = ({
             <div className="space-y-2">
               <div className="flex items-center justify-between text-sm">
                 <span className="text-muted-foreground">Test Progress</span>
-                <span className="font-medium text-foreground">{progress}%</span>
+                <span className="font-medium text-foreground">{progressLabel}</span>
               </div>
               <Progress value={progress} className="h-3" />
             </div>
@@ -99,7 +103,7 @@ export const TestExecution = ({
               <div>
                 <p className="text-sm text-muted-foreground">Avg Response</p>
                 <p className="mt-1 text-xl font-semibold text-foreground">
-                  {metrics.avgResponseTime.toFixed(1)}ms
+                  {responseTimeLabel}
                 </p>
               </div>
             </div>

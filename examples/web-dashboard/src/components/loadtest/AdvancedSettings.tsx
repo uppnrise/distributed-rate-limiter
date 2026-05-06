@@ -28,7 +28,7 @@ export const AdvancedSettings = ({ config, onChange }: AdvancedSettingsProps) =>
   const [isOpen, setIsOpen] = useState(false);
 
   return (
-    <Card className="shadow-elevated backdrop-blur-sm bg-gradient-to-br from-card to-card/50">
+    <Card className="self-start shadow-elevated backdrop-blur-sm bg-gradient-to-br from-card to-card/50">
       <Collapsible open={isOpen} onOpenChange={setIsOpen}>
         <CollapsibleTrigger className={`flex w-full items-center justify-between hover:bg-accent/50 transition-all ${isOpen ? 'p-6' : 'p-4'}`}>
           <div className="flex-1 min-w-0">
