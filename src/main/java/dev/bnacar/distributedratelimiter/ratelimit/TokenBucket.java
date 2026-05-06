@@ -5,7 +5,7 @@ public class TokenBucket implements RateLimiter {
     private final int capacity;
     private final int refillRate;
     private long lastRefillTime;
-    private int currentTokens;
+    private double currentTokens;
 
 
     public TokenBucket(int capacity, int refillRate) {
@@ -16,7 +16,8 @@ public class TokenBucket implements RateLimiter {
     }
 
     public int getCurrentTokens() {
-        return currentTokens;
+        refill();
+        return (int) currentTokens;
     }
 
     public int getCapacity() {
@@ -42,10 +43,17 @@ public class TokenBucket implements RateLimiter {
     }
 
     private synchronized void refill() {
+        if (refillRate <= 0 || currentTokens >= capacity) {
+            return;
+        }
+
         long currentTime = System.currentTimeMillis();
         long timeSinceLastRefill = currentTime - lastRefillTime;
+        if (timeSinceLastRefill <= 0) {
+            return;
+        }
 
-        int tokensToAdd = (int) (timeSinceLastRefill / 1000 * refillRate);
+        double tokensToAdd = (timeSinceLastRefill / 1000.0) * refillRate;
         currentTokens = Math.min(capacity, currentTokens + tokensToAdd);
         lastRefillTime = currentTime;
     }

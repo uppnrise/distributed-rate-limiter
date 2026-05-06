@@ -92,8 +92,8 @@ public class BurstHandlingComparisonTest {
                 .pollInterval(100, TimeUnit.MILLISECONDS)
                 .atMost(3, TimeUnit.SECONDS)
                 .until(() -> {
-                    // Check if either algorithm allows consuming tokens again
-                    return tokenBucket.tryConsume(1) || slidingWindow.tryConsume(1);
+                    // Wait until at least one algorithm has recovered enough capacity
+                    return tokenBucket.getCurrentTokens() > 0 || slidingWindow.getCurrentTokens() > 0;
                 });
         
         // At this point, at least one should allow tokens

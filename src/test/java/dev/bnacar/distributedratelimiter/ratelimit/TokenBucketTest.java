@@ -61,6 +61,18 @@ public class TokenBucketTest {
     }
 
     @Test
+    void test_shouldAccumulateRefillDuringFrequentChecks() {
+        tokenBucket.tryConsume(10);
+
+        Awaitility.await()
+                .pollInterval(100, TimeUnit.MILLISECONDS)
+                .atMost(2, TimeUnit.SECONDS)
+                .until(() -> tokenBucket.tryConsume(1));
+
+        assertTrue(tokenBucket.getCurrentTokens() >= 0);
+    }
+
+    @Test
     void test_threadSafetyOfTokenConsumption() throws InterruptedException {
         int threads = 20;
         int tokensPerThread = 1;
