@@ -8,8 +8,8 @@ interface ActivityEvent {
   timestamp: string;
   key: string;
   algorithm: string;
-  status: "allowed" | "rejected";
-  tokensUsed: number;
+  status: "allowed" | "rejected" | "current";
+  description: string;
 }
 
 interface ActivityFeedProps {
@@ -37,14 +37,20 @@ export const ActivityFeed = ({ events }: ActivityFeedProps) => {
                     {event.key}
                   </span>
                   <Badge
-                    variant={event.status === "allowed" ? "default" : "destructive"}
+                    variant={
+                      event.status === "allowed"
+                        ? "default"
+                        : event.status === "rejected"
+                          ? "destructive"
+                          : "secondary"
+                    }
                     className="text-xs"
                   >
                     {event.status}
                   </Badge>
                 </div>
                 <p className="text-xs text-muted-foreground">
-                  {event.algorithm} • {event.tokensUsed} tokens
+                  {event.algorithm} • {event.description}
                 </p>
               </div>
               <span className="text-xs text-muted-foreground">{event.timestamp}</span>

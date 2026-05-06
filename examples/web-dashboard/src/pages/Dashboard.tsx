@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Key, Activity, TrendingUp, PieChart } from "lucide-react";
 import {
@@ -33,16 +33,32 @@ interface ActivityEvent {
   timestamp: string;
   key: string;
   algorithm: string;
-  status: "allowed" | "rejected";
-  tokensUsed: number;
+  status: "allowed" | "rejected" | "current";
+  description: string;
 }
 
 interface AlgorithmMetric {
   name: string;
   activeKeys: number;
-  avgResponseTime: number;
-  successRate: number;
+  avgResponseTime: number | null;
+  successRate: number | null;
 }
+
+const buildSnapshotActivities = (
+  keyMetrics: Record<string, { allowedRequests: number; deniedRequests: number; lastAccessTime: number }>
+): ActivityEvent[] =>
+  Object.entries(keyMetrics)
+    .filter(([, metric]) => metric.allowedRequests > 0 || metric.deniedRequests > 0)
+    .map(([key, metric]) => ({
+      id: `${key}-snapshot-${metric.lastAccessTime}`,
+      timestamp: new Date(metric.lastAccessTime).toISOString(),
+      key,
+      algorithm: "TOKEN_BUCKET",
+      status: "current" as const,
+      description: `${metric.allowedRequests} allowed • ${metric.deniedRequests} rejected`,
+    }))
+    .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
+    .slice(0, 20);
 
 const Dashboard = () => {
   const { realtimeMetrics, isConnected } = useApp();
@@ -53,7 +69,9 @@ const Dashboard = () => {
   const [algorithmMetrics, setAlgorithmMetrics] = useState<AlgorithmMetric[]>([]);
   const [activities, setActivities] = useState<ActivityEvent[]>([]);
   const [timeSeriesData, setTimeSeriesData] = useState<TimeSeriesData[]>([]);
-  const [previousMetrics, setPreviousMetrics] = useState<{ allowed: number; denied: number; timestamp: number } | null>(null);
+  const previousMetricsRef = useRef<{ allowed: number; denied: number; timestamp: number } | null>(null);
+  const previousKeyMetricsRef = useRef<Record<string, { allowedRequests: number; deniedRequests: number }>>({});
+  const metricsBaselineInitializedRef = useRef(false);
 
   // Enable keyboard shortcuts
   useKeyboardShortcuts(dashboardShortcuts);
@@ -79,8 +97,23 @@ const Dashboard = () => {
           rejected: totalDenied,
           total: totalAllowed + totalDenied,
         }]);
-        
-        setPreviousMetrics({ allowed: totalAllowed, denied: totalDenied, timestamp: Date.now() });
+        setActivities(buildSnapshotActivities(metricsData.keyMetrics));
+
+        previousMetricsRef.current = {
+          allowed: totalAllowed,
+          denied: totalDenied,
+          timestamp: Date.now(),
+        };
+        previousKeyMetricsRef.current = Object.fromEntries(
+          Object.entries(metricsData.keyMetrics).map(([key, value]) => [
+            key,
+            {
+              allowedRequests: value.allowedRequests,
+              deniedRequests: value.deniedRequests,
+            },
+          ])
+        );
+        metricsBaselineInitializedRef.current = true;
         setLoading(false);
       } catch (error) {
         console.error('Failed to load dashboard data:', error);
@@ -93,6 +126,25 @@ const Dashboard = () => {
   // Update metrics from real-time polling (AppContext polls /metrics every 5s)
   useEffect(() => {
     if (!realtimeMetrics) return;
+
+    if (!metricsBaselineInitializedRef.current) {
+      previousMetricsRef.current = {
+        allowed: realtimeMetrics.totalAllowedRequests,
+        denied: realtimeMetrics.totalDeniedRequests,
+        timestamp: Date.now(),
+      };
+      previousKeyMetricsRef.current = Object.fromEntries(
+        Object.entries(realtimeMetrics.keyMetrics).map(([key, value]) => [
+          key,
+          {
+            allowedRequests: value.allowedRequests,
+            deniedRequests: value.deniedRequests,
+          },
+        ])
+      );
+      metricsBaselineInitializedRef.current = true;
+      return;
+    }
     
     const totalRequests = realtimeMetrics.totalAllowedRequests + realtimeMetrics.totalDeniedRequests;
     const currentSuccessRate = totalRequests > 0 
@@ -102,6 +154,7 @@ const Dashboard = () => {
     const currentActiveKeys = Object.keys(realtimeMetrics.keyMetrics).length;
     
     // Calculate requests per second
+    const previousMetrics = previousMetricsRef.current;
     if (previousMetrics) {
       const timeDiff = (Date.now() - previousMetrics.timestamp) / 1000; // seconds
       const allowedDiff = realtimeMetrics.totalAllowedRequests - previousMetrics.allowed;
@@ -130,37 +183,62 @@ const Dashboard = () => {
       return updated;
     });
     
-    // Update previous metrics for rate calculation
-    setPreviousMetrics({
-      allowed: realtimeMetrics.totalAllowedRequests,
-      denied: realtimeMetrics.totalDeniedRequests,
-      timestamp: Date.now()
-    });
-    
-    // Generate activity events from key metrics changes
+    // Generate activity events from per-poll key metric deltas
+    const previousKeyMetrics = previousKeyMetricsRef.current;
     const newActivities: ActivityEvent[] = [];
     Object.entries(realtimeMetrics.keyMetrics).forEach(([key, metric]) => {
-      if (metric.allowedRequests > 0 || metric.deniedRequests > 0) {
-        const totalKeyRequests = metric.allowedRequests + metric.deniedRequests;
-        const wasAllowed = metric.allowedRequests > metric.deniedRequests;
-        
+      const previousKeyMetric = previousKeyMetrics[key] ?? { allowedRequests: 0, deniedRequests: 0 };
+      const allowedDiff = Math.max(0, metric.allowedRequests - previousKeyMetric.allowedRequests);
+      const deniedDiff = Math.max(0, metric.deniedRequests - previousKeyMetric.deniedRequests);
+      const eventTimestamp = new Date(metric.lastAccessTime).toISOString();
+
+      if (allowedDiff > 0) {
         newActivities.push({
-          id: `${key}-${metric.lastAccessTime}`,
-          timestamp: new Date(metric.lastAccessTime).toISOString(),
+          id: `${key}-allowed-${metric.lastAccessTime}-${allowedDiff}`,
+          timestamp: eventTimestamp,
           key: key,
           algorithm: "TOKEN_BUCKET", // Default, will be enriched from admin/keys
-          status: wasAllowed ? "allowed" : "rejected",
-          tokensUsed: 1,
+          status: "allowed",
+          description: `${allowedDiff} request${allowedDiff === 1 ? "" : "s"}`,
+        });
+      }
+
+      if (deniedDiff > 0) {
+        newActivities.push({
+          id: `${key}-rejected-${metric.lastAccessTime}-${deniedDiff}`,
+          timestamp: eventTimestamp,
+          key: key,
+          algorithm: "TOKEN_BUCKET", // Default, will be enriched from admin/keys
+          status: "rejected",
+          description: `${deniedDiff} request${deniedDiff === 1 ? "" : "s"}`,
         });
       }
     });
+
+    if (newActivities.length > 0) {
+      setActivities((prev) =>
+        [...newActivities, ...prev]
+          .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
+          .slice(0, 20)
+      );
+    }
+
+    previousMetricsRef.current = {
+      allowed: realtimeMetrics.totalAllowedRequests,
+      denied: realtimeMetrics.totalDeniedRequests,
+      timestamp: Date.now(),
+    };
+    previousKeyMetricsRef.current = Object.fromEntries(
+      Object.entries(realtimeMetrics.keyMetrics).map(([key, value]) => [
+        key,
+        {
+          allowedRequests: value.allowedRequests,
+          deniedRequests: value.deniedRequests,
+        },
+      ])
+    );
     
-    // Sort by timestamp and keep most recent 20
-    setActivities(newActivities.sort((a, b) => 
-      new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
-    ).slice(0, 20));
-    
-  }, [realtimeMetrics, previousMetrics]);
+  }, [realtimeMetrics]);
 
   // Fetch and update algorithm distribution from admin keys
   useEffect(() => {
@@ -183,8 +261,8 @@ const Dashboard = () => {
         const metrics: AlgorithmMetric[] = Object.entries(algorithmGroups).map(([name, data]) => ({
           name,
           activeKeys: data.count,
-          avgResponseTime: Math.random() * 10 + 2, // Backend doesn't track response time yet
-          successRate: 95 + Math.random() * 5, // Backend doesn't track per-algorithm success rate yet
+          avgResponseTime: null,
+          successRate: null,
         }));
         
         setAlgorithmMetrics(metrics);
