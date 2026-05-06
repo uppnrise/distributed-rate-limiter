@@ -88,9 +88,9 @@ interface SystemMetrics {
 
 interface HealthResponse {
   status: string;
-  components: {
-    redis: { status: string };
-    rateLimiter: { status: string };
+  components?: {
+    redis?: { status: string };
+    rateLimiter?: { status: string };
   };
 }
 
