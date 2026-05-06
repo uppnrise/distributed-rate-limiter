@@ -34,6 +34,7 @@ interface KeyConfig {
 interface PatternConfig {
   capacity: number;
   refillRate: number;
+  algorithm?: string;
 }
 
 interface ActiveKey {
@@ -132,7 +133,18 @@ class RateLimiterApiService {
         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
       }
 
-      return response.json();
+      if (response.status === 204) {
+        return undefined as T;
+      }
+
+      const contentType = response.headers.get('content-type') || '';
+
+      if (contentType.includes('application/json') || contentType.includes('+json')) {
+        return response.json();
+      }
+
+      const text = await response.text();
+      return text as T;
     } catch (error) {
       if (error instanceof Error) {
         throw error;
