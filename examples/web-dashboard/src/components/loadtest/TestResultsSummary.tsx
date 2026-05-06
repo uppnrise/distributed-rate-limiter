@@ -14,6 +14,14 @@ export const TestResultsSummary = ({
   result,
   onSaveConfig,
 }: TestResultsSummaryProps) => {
+  const expectedRequests = result.config.requestRate * result.duration;
+  const achievedThroughput = result.metrics.currentRate;
+  const latencyAvailable =
+    result.metrics.avgResponseTime > 0 ||
+    result.metrics.p50ResponseTime > 0 ||
+    result.metrics.p95ResponseTime > 0 ||
+    result.metrics.p99ResponseTime > 0;
+
   const handleDownloadReport = () => {
     const reportData = {
       testId: result.id,
@@ -62,9 +70,9 @@ export const TestResultsSummary = ({
           </div>
 
           <div className="rounded-lg border border-border bg-background/50 p-4">
-            <p className="text-sm text-muted-foreground">Avg Response Time</p>
+            <p className="text-sm text-muted-foreground">Achieved Throughput</p>
             <p className="mt-2 text-3xl font-bold text-foreground">
-              {result.metrics.avgResponseTime.toFixed(2)}ms
+              {Math.round(achievedThroughput)} req/s
             </p>
           </div>
         </div>
@@ -101,29 +109,63 @@ export const TestResultsSummary = ({
         </div>
 
         <div className="rounded-lg bg-muted/50 p-4">
-          <h4 className="mb-3 font-semibold text-foreground">Response Time Percentiles</h4>
-          <div className="space-y-2">
+          <h4 className="mb-3 font-semibold text-foreground">Execution Summary</h4>
+          <div className="grid gap-3 md:grid-cols-2">
             <div className="flex items-center justify-between">
-              <span className="text-sm text-muted-foreground">P50 (Median)</span>
-              <span className="font-medium text-foreground">
-                {result.metrics.p50ResponseTime.toFixed(2)}ms
-              </span>
+              <span className="text-sm text-muted-foreground">Configured Rate</span>
+              <span className="font-medium text-foreground">{result.config.requestRate} req/s</span>
             </div>
-
             <div className="flex items-center justify-between">
-              <span className="text-sm text-muted-foreground">P95</span>
-              <span className="font-medium text-foreground">
-                {result.metrics.p95ResponseTime.toFixed(2)}ms
-              </span>
+              <span className="text-sm text-muted-foreground">Expected Requests</span>
+              <span className="font-medium text-foreground">{expectedRequests.toLocaleString()}</span>
             </div>
-
             <div className="flex items-center justify-between">
-              <span className="text-sm text-muted-foreground">P99</span>
-              <span className="font-medium text-foreground">
-                {result.metrics.p99ResponseTime.toFixed(2)}ms
-              </span>
+              <span className="text-sm text-muted-foreground">Actual Requests</span>
+              <span className="font-medium text-foreground">{result.metrics.requestsSent.toLocaleString()}</span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-muted-foreground">Tokens Per Request</span>
+              <span className="font-medium text-foreground">{result.config.tokensPerRequest}</span>
             </div>
           </div>
+        </div>
+
+        <div className="rounded-lg bg-muted/50 p-4">
+          <h4 className="mb-3 font-semibold text-foreground">Latency Metrics</h4>
+          {latencyAvailable ? (
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-muted-foreground">P50 (Median)</span>
+                <span className="font-medium text-foreground">
+                  {result.metrics.p50ResponseTime.toFixed(2)}ms
+                </span>
+              </div>
+
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-muted-foreground">P95</span>
+                <span className="font-medium text-foreground">
+                  {result.metrics.p95ResponseTime.toFixed(2)}ms
+                </span>
+              </div>
+
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-muted-foreground">P99</span>
+                <span className="font-medium text-foreground">
+                  {result.metrics.p99ResponseTime.toFixed(2)}ms
+                </span>
+              </div>
+            </div>
+          ) : (
+            <p className="text-sm text-muted-foreground">
+              Response-time metrics are not available yet from the backend benchmark endpoint.
+            </p>
+          )}
+        </div>
+
+        <div className="rounded-lg border border-dashed border-border bg-background/40 p-4 text-sm text-muted-foreground">
+          Actual request counts can be lower than the theoretical target because the benchmark is
+          duration-bound and each worker thread is paced with real sleep intervals and runtime
+          overhead.
         </div>
 
         <div className="flex gap-3">
