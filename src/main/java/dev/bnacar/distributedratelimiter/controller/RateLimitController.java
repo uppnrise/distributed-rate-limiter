@@ -24,7 +24,6 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -41,7 +40,6 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/ratelimit")
 @Tag(name = "Rate Limit", description = "Rate limiting operations for token bucket algorithm")
-@CrossOrigin(origins = {"http://localhost:5173", "http://localhost:3000", "http://127.0.0.1:5173", "http://127.0.0.1:3000", "http://[::1]:5173", "http://[::1]:3000"})
 public class RateLimitController {
     private static final Logger logger = LoggerFactory.getLogger(RateLimitController.class);
 

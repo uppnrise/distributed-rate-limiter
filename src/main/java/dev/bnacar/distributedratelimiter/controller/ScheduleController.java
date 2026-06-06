@@ -25,7 +25,6 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping("/api/ratelimit/schedule")
 @Tag(name = "Rate Limit Scheduling", description = "Time-based dynamic rate limit scheduling and management")
-@CrossOrigin(origins = {"http://localhost:5173", "http://localhost:3000", "http://127.0.0.1:5173", "http://127.0.0.1:3000", "http://[::1]:5173", "http://[::1]:3000"})
 public class ScheduleController {
     
     private final ScheduleManagerService scheduleManager;
