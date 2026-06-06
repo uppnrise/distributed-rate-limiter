@@ -10,6 +10,8 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -32,6 +34,7 @@ import java.util.List;
 @Tag(name = "performance-controller", description = "Performance monitoring and regression analysis for rate limiter operations")
 @CrossOrigin(origins = {"http://localhost:5173", "http://localhost:3000", "http://127.0.0.1:5173", "http://127.0.0.1:3000", "http://[::1]:5173", "http://[::1]:3000"})
 public class PerformanceController {
+    private static final Logger logger = LoggerFactory.getLogger(PerformanceController.class);
 
     private final PerformanceRegressionService regressionService;
 
@@ -58,7 +61,8 @@ public class PerformanceController {
             regressionService.storeBaseline(baseline);
             return ResponseEntity.ok("Performance baseline stored successfully");
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body("Failed to store baseline: " + e.getMessage());
+            logger.error("Failed to store performance baseline", e);
+            return ResponseEntity.badRequest().body("Failed to store baseline");
         }
     }
 
