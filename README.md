@@ -189,21 +189,21 @@ Educational page for understanding rate limiting algorithms:
 
 ```bash
 # Download the latest release
-wget https://github.com/uppnrise/distributed-rate-limiter/releases/download/v1.3.1/distributed-rate-limiter-1.3.1.jar
+wget https://github.com/uppnrise/distributed-rate-limiter/releases/download/v1.3.2/distributed-rate-limiter-1.3.2.jar
 
 # Verify checksum (optional)
-wget https://github.com/uppnrise/distributed-rate-limiter/releases/download/v1.3.1/distributed-rate-limiter-1.3.1.jar.sha256
-sha256sum -c distributed-rate-limiter-1.3.1.jar.sha256
+wget https://github.com/uppnrise/distributed-rate-limiter/releases/download/v1.3.2/distributed-rate-limiter-1.3.2.jar.sha256
+sha256sum -c distributed-rate-limiter-1.3.2.jar.sha256
 ```
 
 ### Option 2: Docker
 
 ```bash
 # Run the image directly
-docker run -p 8080:8080 ghcr.io/uppnrise/distributed-rate-limiter:1.3.1
+docker run -p 8080:8080 ghcr.io/uppnrise/distributed-rate-limiter:1.3.2
 
 # Or use the compose file from the repository
-curl -O https://raw.githubusercontent.com/uppnrise/distributed-rate-limiter/v1.3.1/docker-compose.yml
+curl -O https://raw.githubusercontent.com/uppnrise/distributed-rate-limiter/v1.3.2/docker-compose.yml
 docker compose up -d
 ```
 
@@ -213,7 +213,7 @@ docker compose up -d
 git clone https://github.com/uppnrise/distributed-rate-limiter.git
 cd distributed-rate-limiter
 ./mvnw clean install
-java -jar target/distributed-rate-limiter-1.3.1.jar
+java -jar target/distributed-rate-limiter-1.3.2.jar
 ```
 
 ---
@@ -230,10 +230,10 @@ java -jar target/distributed-rate-limiter-1.3.1.jar
 
 ```bash
 # Simple startup (embedded configuration)
-java -jar distributed-rate-limiter-1.3.1.jar
+java -jar distributed-rate-limiter-1.3.2.jar
 
 # With external Redis
-java -jar distributed-rate-limiter-1.3.1.jar \
+java -jar distributed-rate-limiter-1.3.2.jar \
   --spring.data.redis.host=your-redis-server \
   --spring.data.redis.port=6379
 ```
@@ -259,7 +259,7 @@ When health details are enabled, the same endpoint can also include component-le
 
 ```bash
 # Start the backend (if not already running)
-java -jar distributed-rate-limiter-1.3.1.jar
+java -jar distributed-rate-limiter-1.3.2.jar
 
 # In a new terminal, start the dashboard
 cd examples/web-dashboard
@@ -646,14 +646,14 @@ spring.data.redis.password=
 spring.data.redis.database=0
 
 # Rate Limiter Defaults
-ratelimiter.default.capacity=10
-ratelimiter.default.refill-rate=10
-ratelimiter.default.refill-period-seconds=60
+ratelimiter.capacity=10
+ratelimiter.refillRate=2
+ratelimiter.cleanupIntervalMs=60000
 
 # Performance Tuning
-ratelimiter.redis.connection-pool-size=20
-ratelimiter.performance.metrics-enabled=true
-ratelimiter.performance.detailed-logging=false
+spring.data.redis.lettuce.pool.max-active=20
+spring.data.redis.lettuce.pool.max-idle=10
+spring.data.redis.lettuce.pool.min-idle=5
 
 # Server Configuration
 server.port=8080
@@ -666,9 +666,25 @@ management.endpoints.web.exposure.include=health,metrics,info
 # Production deployment
 export SPRING_DATA_REDIS_HOST=redis.production.com
 export SPRING_DATA_REDIS_PASSWORD=your-redis-password
-export RATELIMITER_DEFAULT_CAPACITY=100
-export RATELIMITER_DEFAULT_REFILL_RATE=50
+export RATELIMITER_CAPACITY=100
+export RATELIMITER_REFILL_RATE=50
 export SERVER_PORT=8080
+```
+
+### CORS Configuration
+
+Frontend origins are now configured centrally through application properties or environment variables instead of controller annotations.
+
+```properties
+ratelimiter.cors.allowed-origins=https://app.example.com,https://admin.example.com
+ratelimiter.cors.allowed-origin-patterns=https://*.internal.example.com
+ratelimiter.cors.allowed-methods=GET,POST,PUT,DELETE,OPTIONS,PATCH
+ratelimiter.cors.allow-credentials=true
+```
+
+```bash
+export RATELIMITER_CORS_ALLOWED_ORIGINS=https://app.example.com,https://admin.example.com
+export RATELIMITER_CORS_ALLOWED_ORIGIN_PATTERNS=https://*.internal.example.com
 ```
 
 ### Dynamic Configuration
@@ -807,7 +823,7 @@ ratelimiter.security.ip.blacklist=192.168.1.100
 version: '3.8'
 services:
   rate-limiter:
-    image: ghcr.io/uppnrise/distributed-rate-limiter:1.3.1
+    image: ghcr.io/uppnrise/distributed-rate-limiter:1.3.2
     ports:
       - "8080:8080"
     environment:
@@ -842,7 +858,7 @@ spec:
     spec:
       containers:
       - name: rate-limiter
-        image: ghcr.io/uppnrise/distributed-rate-limiter:1.3.1
+        image: ghcr.io/uppnrise/distributed-rate-limiter:1.3.2
         ports:
         - containerPort: 8080
         env:

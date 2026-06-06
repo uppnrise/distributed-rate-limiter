@@ -407,6 +407,16 @@ kubectl logs -f deployment/rate-limiter
    spring.redis.lettuce.pool.max-wait=1000ms
    ```
 
+4. **Frontend Origins**:
+   ```properties
+   ratelimiter.cors.allowed-origins=https://app.example.com,https://admin.example.com
+   ratelimiter.cors.allowed-origin-patterns=https://*.internal.example.com
+   ratelimiter.cors.allow-credentials=true
+   ```
+
+   For containerized deployments, the same values can be provided as environment variables:
+   `RATELIMITER_CORS_ALLOWED_ORIGINS` and `RATELIMITER_CORS_ALLOWED_ORIGIN_PATTERNS`.
+
 ### High Availability
 
 1. **Redis Clustering**:

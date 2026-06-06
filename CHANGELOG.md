@@ -5,6 +5,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.2] - 2026-06-06
+
+### Added
+- Added centralized, configurable CORS settings via `ratelimiter.cors.*` properties and environment-variable binding.
+
+### Changed
+- Replaced duplicated controller-level CORS annotations with a single global CORS configuration.
+- Updated README and deployment/configuration guides to document the new CORS settings and refreshed versioned release examples for `v1.3.2`.
+
+### Fixed
+- Sanitized API error responses so controller failures no longer expose raw exception messages to clients.
+- Added focused tests to keep the new CORS configuration code fully covered in patch coverage checks.
+
 ## [1.3.1] - 2026-05-06
 
 ### Fixed
@@ -242,6 +255,7 @@ None - all changes are backward compatible. Existing configurations continue to 
 - Production-ready logging and health checks
 
 [1.3.1]: https://github.com/uppnrise/distributed-rate-limiter/compare/v1.3.0...v1.3.1
+[1.3.2]: https://github.com/uppnrise/distributed-rate-limiter/compare/v1.3.1...v1.3.2
 [1.3.0]: https://github.com/uppnrise/distributed-rate-limiter/compare/v1.2.0...v1.3.0
 [1.2.0]: https://github.com/uppnrise/distributed-rate-limiter/compare/v1.1.0...v1.2.0
 [1.1.0]: https://github.com/uppnrise/distributed-rate-limiter/compare/v1.0.0...v1.1.0
