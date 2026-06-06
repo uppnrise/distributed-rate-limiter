@@ -53,7 +53,25 @@ ratelimiter.patterns.enterprise:*.refillRate=1000
 
 ratelimiter.patterns.*:admin.capacity=1000
 ratelimiter.patterns.*:admin.refillRate=500
+
+# CORS configuration
+ratelimiter.cors.allowed-origins=https://app.example.com,https://admin.example.com
+ratelimiter.cors.allowed-origin-patterns=https://*.internal.example.com
+ratelimiter.cors.allowed-methods=GET,POST,PUT,DELETE,OPTIONS,PATCH
+ratelimiter.cors.allowed-headers=Authorization,Content-Type,X-Requested-With,Accept,Origin,Access-Control-Request-Method,Access-Control-Request-Headers,X-Api-Key
+ratelimiter.cors.exposed-headers=X-Correlation-ID,X-Trace-ID,X-Span-ID,X-RateLimit-Limit,X-RateLimit-Remaining,X-RateLimit-Reset
+ratelimiter.cors.allow-credentials=true
+ratelimiter.cors.max-age=3600
 ```
+
+### CORS Configuration
+
+All HTTP endpoints now use a single global CORS policy backed by `ratelimiter.cors.*` properties.
+
+- `ratelimiter.cors.allowed-origins` sets explicit origins.
+- `ratelimiter.cors.allowed-origin-patterns` supports wildcard-style host patterns.
+- `ratelimiter.cors.allow-credentials` controls credentialed cross-origin requests.
+- Spring environment binding also supports environment variables such as `RATELIMITER_CORS_ALLOWED_ORIGINS`.
 
 ### Pattern Matching
 

@@ -1,11 +1,11 @@
 #!/bin/bash
 
-# Distributed Rate Limiter v1.3.1 Release Script
+# Distributed Rate Limiter v1.3.2 Release Script
 # This script builds production-ready artifacts for deployment
 
 set -e
 
-echo "🚀 Building Distributed Rate Limiter v1.3.1 Release"
+echo "🚀 Building Distributed Rate Limiter v1.3.2 Release"
 echo "=================================================="
 
 # Colors for output
@@ -16,7 +16,7 @@ BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
 # Configuration
-VERSION="1.3.1"
+VERSION="1.3.2"
 PROJECT_NAME="distributed-rate-limiter"
 DOCKER_REGISTRY="ghcr.io/uppnrise"
 
@@ -131,7 +131,7 @@ cat > ${RELEASE_DIR}/run-jar.sh << 'EOF'
 # Start the rate limiter JAR file
 # Make sure Redis is running on localhost:6379
 
-echo "🚀 Starting Distributed Rate Limiter v1.3.1"
+echo "🚀 Starting Distributed Rate Limiter v1.3.2"
 echo "============================================="
 
 # Check if Redis is running
@@ -143,14 +143,14 @@ if ! nc -z localhost 6379 2>/dev/null; then
 fi
 
 # Start the application
-java -jar distributed-rate-limiter-1.3.1.jar
+java -jar distributed-rate-limiter-1.3.2.jar
 EOF
 
 cat > ${RELEASE_DIR}/run-docker.sh << 'EOF'
 #!/bin/bash
 # Start the rate limiter using Docker Compose
 
-echo "🚀 Starting Distributed Rate Limiter v1.3.1 with Docker"
+echo "🚀 Starting Distributed Rate Limiter v1.3.2 with Docker"
 echo "======================================================="
 
 # Start services
@@ -174,7 +174,7 @@ chmod +x ${RELEASE_DIR}/run-docker.sh
 
 # Create deployment instructions
 cat > ${RELEASE_DIR}/DEPLOYMENT.md << 'EOF'
-# Distributed Rate Limiter v1.3.1 - Deployment Guide
+# Distributed Rate Limiter v1.3.2 - Deployment Guide
 
 ## Quick Start Options
 
@@ -190,7 +190,7 @@ cat > ${RELEASE_DIR}/DEPLOYMENT.md << 'EOF'
 
 **Custom configuration:**
 ```bash
-java -jar distributed-rate-limiter-1.3.1.jar \
+java -jar distributed-rate-limiter-1.3.2.jar \
   --spring.data.redis.host=your-redis-host \
   --spring.data.redis.port=6379 \
   --server.port=8080
@@ -247,24 +247,24 @@ EOF
 
 # Create release summary
 cat > ${RELEASE_DIR}/RELEASE_NOTES.md << 'EOF'
-# Distributed Rate Limiter v1.3.1 Release Notes
+# Distributed Rate Limiter v1.3.2 Release Notes
 
-Release date: 2026-05-06
+Release date: 2026-06-06
 
 ## Summary
 
-`v1.3.1` is a patch release focused on correctness and dashboard usability after `v1.3.0`.
+`v1.3.2` is a patch release focused on safer API responses and deployment-friendly CORS configuration.
 
 ## Highlights
 
-- Fixes token bucket refill accumulation under frequent checks.
-- Fixes dashboard health handling for minimal actuator responses.
-- Improves dashboard load-testing pacing and reporting.
-- Removes fabricated performance values where backend data is unavailable.
+- Moves CORS configuration into centralized `ratelimiter.cors.*` properties.
+- Removes duplicated controller-level CORS annotations in favor of one global policy.
+- Sanitizes API error responses so raw exception messages are no longer returned to clients.
+- Refreshes documentation and release examples for `v1.3.2`.
 
 ## Upgrade Notes
 
-- Update pinned application version references from `v1.3.0` to `v1.3.1`.
+- Update pinned application version references from `v1.3.1` to `v1.3.2`.
 - Regenerate release artifacts so helper scripts and checksums match the patch release.
 EOF
 

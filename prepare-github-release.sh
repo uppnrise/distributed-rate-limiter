@@ -6,7 +6,7 @@
 set -e
 
 # Configuration
-VERSION="1.3.1"
+VERSION="1.3.2"
 RELEASE_DIR="release-artifacts"
 PROJECT_NAME="distributed-rate-limiter"
 
@@ -50,7 +50,7 @@ echo -e "${BLUE}📋 Creating quick start script...${NC}"
 cat > quick-start.sh << 'EOF'
 #!/bin/bash
 
-# Distributed Rate Limiter v1.3.1 Quick Start
+# Distributed Rate Limiter v1.3.2 Quick Start
 # This script helps you start the rate limiter quickly
 
 set -e
@@ -62,7 +62,7 @@ YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
 NC='\033[0m'
 
-echo -e "${BLUE}🚀 Distributed Rate Limiter v1.3.1 Quick Start${NC}"
+echo -e "${BLUE}🚀 Distributed Rate Limiter v1.3.2 Quick Start${NC}"
 echo "=============================================="
 echo ""
 
@@ -106,7 +106,7 @@ echo "⏹️  Press Ctrl+C to stop"
 echo ""
 
 # Start the application
-java -jar distributed-rate-limiter-1.3.1.jar
+java -jar distributed-rate-limiter-1.3.2.jar
 EOF
 
 chmod +x quick-start.sh
@@ -115,11 +115,11 @@ chmod +x quick-start.sh
 cat > docker-quick-start.sh << 'EOF'
 #!/bin/bash
 
-# Distributed Rate Limiter v1.3.1 Docker Quick Start
+# Distributed Rate Limiter v1.3.2 Docker Quick Start
 
 set -e
 
-echo "🐳 Distributed Rate Limiter v1.3.1 - Docker Quick Start"
+echo "🐳 Distributed Rate Limiter v1.3.2 - Docker Quick Start"
 echo "======================================================"
 
 # Check if Docker is available
@@ -156,7 +156,7 @@ services:
       retries: 3
 
   rate-limiter:
-    image: ghcr.io/uppnrise/distributed-rate-limiter:1.3.1
+    image: ghcr.io/uppnrise/distributed-rate-limiter:1.3.2
     container_name: rate-limiter-app
     ports:
       - "8080:8080"
@@ -196,7 +196,7 @@ chmod +x docker-quick-start.sh
 
 # Create installation guide
 cat > INSTALLATION.md << 'EOF'
-# Installation Guide - Distributed Rate Limiter v1.3.1
+# Installation Guide - Distributed Rate Limiter v1.3.2
 
 ## Quick Installation Options
 
@@ -209,7 +209,7 @@ cat > INSTALLATION.md << 'EOF'
 **Steps:**
 1. Download the JAR file from GitHub Releases
 2. Ensure Redis is running: `docker run -d -p 6379:6379 redis:8-alpine`
-3. Run: `java -jar distributed-rate-limiter-1.3.1.jar`
+3. Run: `java -jar distributed-rate-limiter-1.3.2.jar`
 4. Test: `curl http://localhost:8080/actuator/health`
 
 **Quick Start Script:**
@@ -225,7 +225,7 @@ chmod +x quick-start.sh
 
 **Steps:**
 1. Run the Docker quick start script: `./docker-quick-start.sh`
-2. Or manually: `docker run -p 8080:8080 ghcr.io/uppnrise/distributed-rate-limiter:1.3.1`
+2. Or manually: `docker run -p 8080:8080 ghcr.io/uppnrise/distributed-rate-limiter:1.3.2`
 
 ### Option 3: Build from Source
 
@@ -239,7 +239,7 @@ chmod +x quick-start.sh
 git clone https://github.com/uppnrise/distributed-rate-limiter.git
 cd distributed-rate-limiter
 ./mvnw clean install
-java -jar target/distributed-rate-limiter-1.3.1.jar
+java -jar target/distributed-rate-limiter-1.3.2.jar
 ```
 
 ## Configuration
@@ -248,7 +248,7 @@ java -jar target/distributed-rate-limiter-1.3.1.jar
 The application uses sensible defaults but can be customized:
 
 ```bash
-java -jar distributed-rate-limiter-1.3.1.jar \
+java -jar distributed-rate-limiter-1.3.2.jar \
   --spring.data.redis.host=your-redis-host \
   --spring.data.redis.port=6379 \
   --server.port=8080
@@ -259,7 +259,7 @@ java -jar distributed-rate-limiter-1.3.1.jar \
 export SPRING_DATA_REDIS_HOST=your-redis-host
 export SPRING_DATA_REDIS_PORT=6379
 export SERVER_PORT=8080
-java -jar distributed-rate-limiter-1.3.1.jar
+java -jar distributed-rate-limiter-1.3.2.jar
 ```
 
 ### Configuration File
@@ -314,7 +314,7 @@ java -version
 **Issue**: Port 8080 already in use
 **Solution**: Use a different port
 ```bash
-java -jar distributed-rate-limiter-1.3.1.jar --server.port=8081
+java -jar distributed-rate-limiter-1.3.2.jar --server.port=8081
 ```
 
 ### Getting Help
@@ -329,32 +329,31 @@ cd ..
 
 # Create release notes
 cat > ${RELEASE_DIR}/RELEASE_NOTES.md << 'EOF'
-# Distributed Rate Limiter v1.3.1 - Release Notes
+# Distributed Rate Limiter v1.3.2 - Release Notes
 
-Release date: 2026-05-06
+Release date: 2026-06-06
 
 ## Summary
 
-`v1.3.1` is a patch release focused on correctness and dashboard usability after `v1.3.0`.
+`v1.3.2` is a patch release focused on safer API responses and deployment-friendly CORS configuration.
 
 ## Highlights
 
-### Backend correctness
+### Deployment flexibility
 
-- Fixes token bucket refill accumulation so sustained traffic no longer loses partial refill progress during frequent checks.
-- Preserves the existing public API while making benchmark and rate-limit behavior more representative under steady load.
+- Moves CORS configuration into centralized `ratelimiter.cors.*` properties.
+- Removes duplicated controller-level CORS annotations so a single global policy applies across the API.
+- Supports environment-specific origin overrides via normal Spring property binding and environment variables.
 
-### Dashboard reliability
+### API hardening
 
-- Fixes the backend health banner so the dashboard works with minimal Spring Boot actuator health responses.
-- Reworks recent activity to show a stable current snapshot on page load and real live deltas afterward.
-- Removes fabricated algorithm performance and latency values where the backend does not provide that data yet.
+- Replaces raw exception messages in API responses with safe client-facing error messages.
+- Adds centralized exception handling while keeping detailed failure information in server logs.
 
-### Load-testing improvements
+### Documentation refresh
 
-- Fixes benchmark pacing from the dashboard so configured aggregate request rate and duration map more closely to backend execution.
-- Improves live progress reporting and final summaries with clearer request-count and throughput context.
-- Marks latency metrics as unavailable until the backend benchmark endpoint exposes real response-time measurements.
+- Updates release examples and artifact references to `v1.3.2`.
+- Documents the new CORS configuration options for production deployments.
 
 ### Deployment Options
 - **JAR File**: Self-contained Spring Boot application (42MB)
@@ -373,13 +372,13 @@ Release date: 2026-05-06
 ### JAR File (Recommended)
 ```bash
 # Download and run
-wget https://github.com/uppnrise/distributed-rate-limiter/releases/download/v1.3.1/distributed-rate-limiter-1.3.1.jar
-java -jar distributed-rate-limiter-1.3.1.jar
+wget https://github.com/uppnrise/distributed-rate-limiter/releases/download/v1.3.2/distributed-rate-limiter-1.3.2.jar
+java -jar distributed-rate-limiter-1.3.2.jar
 ```
 
 ### Docker
 ```bash
-docker run -p 8080:8080 ghcr.io/uppnrise/distributed-rate-limiter:1.3.1
+docker run -p 8080:8080 ghcr.io/uppnrise/distributed-rate-limiter:1.3.2
 ```
 
 ### Quick Start Scripts
@@ -393,22 +392,22 @@ docker run -p 8080:8080 ghcr.io/uppnrise/distributed-rate-limiter:1.3.1
 - **2GB RAM minimum** for production usage
 
 ## File Checksums
-- **SHA256**: See `distributed-rate-limiter-1.3.1.jar.sha256`
-- **MD5**: See `distributed-rate-limiter-1.3.1.jar.md5`
+- **SHA256**: See `distributed-rate-limiter-1.3.2.jar.sha256`
+- **MD5**: See `distributed-rate-limiter-1.3.2.jar.md5`
 
 ## Breaking Changes
 None.
 
 ## Upgrade Notes  
-Update pinned application version references from `v1.3.0` to `v1.3.1`.
+Update pinned application version references from `v1.3.1` to `v1.3.2`.
 
 ## Known Issues
-Latency metrics are not included yet in the backend benchmark endpoint, so release helper dashboards and reports correctly mark them as unavailable.
+Load-test artifacts still do not include backend latency measurements, so helper dashboards and reports continue to mark those metrics as unavailable.
 
-## What's Next (v1.3.1)
+## What's Next (v1.3.2)
+- Continue tightening deployment defaults and production documentation.
 - Add backend latency measurements to benchmark responses.
-- Continue dashboard refinement around live test reporting and activity history.
-- Keep backend and dashboard maintenance moving in small patch releases.
+- Keep backend hardening work moving in small patch releases.
 
 ## Support
 - 📖 **Documentation**: Complete guides included
