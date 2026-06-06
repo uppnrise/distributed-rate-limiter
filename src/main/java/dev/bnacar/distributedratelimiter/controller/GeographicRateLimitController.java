@@ -65,7 +65,7 @@ public class GeographicRateLimitController {
             return ResponseEntity.ok("Geographic rule added successfully: " + rule.getName());
         } catch (Exception e) {
             logger.error("Failed to add geographic rule", e);
-            return ResponseEntity.badRequest().body("Failed to add rule: " + e.getMessage());
+            return ResponseEntity.badRequest().body("Failed to add rule");
         }
     }
 
@@ -120,7 +120,7 @@ public class GeographicRateLimitController {
         } catch (Exception e) {
             logger.error("Failed to detect geographic location", e);
             Map<String, Object> errorResponse = new HashMap<>();
-            errorResponse.put("error", "Failed to detect location: " + e.getMessage());
+            errorResponse.put("error", "Failed to detect location");
             return ResponseEntity.badRequest().body(errorResponse);
         }
     }

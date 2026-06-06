@@ -79,7 +79,8 @@ class GeographicRateLimitControllerTest {
 
         // Then
         assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
-        assertTrue(response.getBody().contains("Failed to add rule"));
+        assertEquals("Failed to add rule", response.getBody());
+        assertFalse(response.getBody().contains("Invalid rule"));
     }
 
     @Test
@@ -206,7 +207,7 @@ class GeographicRateLimitControllerTest {
         assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
         Map<String, Object> body = response.getBody();
         assertNotNull(body);
-        assertTrue(body.get("error").toString().contains("Detection failed"));
+        assertEquals("Failed to detect location", body.get("error"));
     }
 
     @Test

@@ -100,7 +100,7 @@ class PerformanceControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(baseline)))
                 .andExpect(status().isBadRequest())
-                .andExpect(content().string("Failed to store baseline: Storage failed"));
+                .andExpect(content().string("Failed to store baseline"));
     }
 
     @Test
