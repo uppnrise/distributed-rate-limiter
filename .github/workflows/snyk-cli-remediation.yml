@@ -21,7 +21,7 @@ jobs:
       working-directory: .
       package-managers: maven
       severity-threshold: high
-      dry-run: true
+      dry-run: false
       enable-copilot-agent-fallback: false
     secrets:
       SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
