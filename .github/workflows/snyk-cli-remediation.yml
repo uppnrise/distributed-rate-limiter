@@ -4,7 +4,9 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
+  issues: write
+  pull-requests: write
   security-events: write
 
 jobs:
