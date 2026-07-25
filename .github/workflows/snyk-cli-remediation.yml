@@ -17,6 +17,7 @@ jobs:
       target-repository: uppnrise/distributed-rate-limiter
       target-branches: main
       engine-ref: master
+      report-id: maven
       working-directory: .
       package-managers: maven
       severity-threshold: high
@@ -32,6 +33,7 @@ jobs:
       target-repository: uppnrise/distributed-rate-limiter
       target-branches: main
       engine-ref: master
+      report-id: dashboard
       working-directory: examples/web-dashboard
       package-managers: npm
       severity-threshold: high
