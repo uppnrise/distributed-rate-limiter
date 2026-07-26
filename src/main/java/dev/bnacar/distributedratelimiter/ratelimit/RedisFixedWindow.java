@@ -19,7 +19,7 @@ public class RedisFixedWindow implements RateLimiter {
     private final int refillRate; // For compatibility
     private final long windowDurationMs;
     private final RedisTemplate<String, Object> redisTemplate;
-    private final RedisScript<List> fixedWindowScript;
+    private final RedisScript<List<Object>> fixedWindowScript;
     
     public RedisFixedWindow(String key, int capacity, int refillRate, RedisTemplate<String, Object> redisTemplate) {
         this(key, capacity, refillRate, 60000, redisTemplate); // Default 1-minute window
@@ -33,9 +33,9 @@ public class RedisFixedWindow implements RateLimiter {
         this.redisTemplate = redisTemplate;
         
         // Load Lua script
-        DefaultRedisScript<List> script = new DefaultRedisScript<>();
+        DefaultRedisScript<List<Object>> script = new DefaultRedisScript<>();
         script.setLocation(new ClassPathResource("scripts/fixed-window.lua"));
-        script.setResultType(List.class);
+        script.setResultType(RedisScriptResultTypes.objectList());
         this.fixedWindowScript = script;
     }
     
@@ -47,7 +47,7 @@ public class RedisFixedWindow implements RateLimiter {
         
         try {
             long currentTime = System.currentTimeMillis();
-            List<Object> result = redisTemplate.execute(
+            List<?> result = redisTemplate.execute(
                 fixedWindowScript,
                 Collections.singletonList(key),
                 capacity, windowDurationMs, tokens, currentTime
@@ -70,7 +70,7 @@ public class RedisFixedWindow implements RateLimiter {
     public int getCurrentTokens() {
         try {
             long currentTime = System.currentTimeMillis();
-            List<Object> result = redisTemplate.execute(
+            List<?> result = redisTemplate.execute(
                 fixedWindowScript,
                 Collections.singletonList(key),
                 capacity, windowDurationMs, 0, currentTime // 0 tokens = query only
@@ -102,7 +102,7 @@ public class RedisFixedWindow implements RateLimiter {
     public long getLastRefillTime() {
         try {
             long currentTime = System.currentTimeMillis();
-            List<Object> result = redisTemplate.execute(
+            List<?> result = redisTemplate.execute(
                 fixedWindowScript,
                 Collections.singletonList(key),
                 capacity, windowDurationMs, 0, currentTime // 0 tokens = query only
@@ -133,7 +133,7 @@ public class RedisFixedWindow implements RateLimiter {
     public int getCurrentUsage() {
         try {
             long currentTime = System.currentTimeMillis();
-            List<Object> result = redisTemplate.execute(
+            List<?> result = redisTemplate.execute(
                 fixedWindowScript,
                 Collections.singletonList(key),
                 capacity, windowDurationMs, 0, currentTime // 0 tokens = query only

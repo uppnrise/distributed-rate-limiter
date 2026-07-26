@@ -20,7 +20,7 @@ public class RedisLeakyBucket implements RateLimiter {
     private final double leakRatePerSecond;
     private final long maxQueueTimeMs;
     private final RedisTemplate<String, Object> redisTemplate;
-    private final RedisScript<List> leakyBucketScript;
+    private final RedisScript<List<Object>> leakyBucketScript;
     
     public RedisLeakyBucket(String key, int queueCapacity, double leakRatePerSecond, 
                            long maxQueueTimeMs, RedisTemplate<String, Object> redisTemplate) {
@@ -31,9 +31,9 @@ public class RedisLeakyBucket implements RateLimiter {
         this.redisTemplate = redisTemplate;
         
         // Load Lua script
-        DefaultRedisScript<List> script = new DefaultRedisScript<>();
+        DefaultRedisScript<List<Object>> script = new DefaultRedisScript<>();
         script.setLocation(new ClassPathResource("scripts/leaky-bucket.lua"));
-        script.setResultType(List.class);
+        script.setResultType(RedisScriptResultTypes.objectList());
         this.leakyBucketScript = script;
     }
     

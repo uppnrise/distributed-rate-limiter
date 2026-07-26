@@ -1,6 +1,5 @@
 package dev.bnacar.distributedratelimiter.pipeline;
 
-import org.junit.Ignore;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;

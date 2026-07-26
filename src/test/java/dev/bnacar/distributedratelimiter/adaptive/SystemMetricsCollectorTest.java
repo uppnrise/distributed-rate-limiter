@@ -8,9 +8,12 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.boot.actuate.health.HealthContributorRegistry;
+import org.springframework.boot.health.contributor.Health;
+import org.springframework.boot.health.contributor.HealthIndicator;
+import org.springframework.boot.health.registry.HealthContributorRegistry;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class SystemMetricsCollectorTest {
@@ -38,6 +41,16 @@ class SystemMetricsCollectorTest {
         assertTrue(health.getMemoryUtilization() >= 0);
         assertTrue(health.getResponseTimeP95() >= 0);
         assertTrue(health.getErrorRate() >= 0);
+    }
+
+    @Test
+    void testGetCurrentHealth_WhenRedisIsUp() {
+        HealthIndicator redisHealth = () -> Health.up().build();
+        when(healthRegistry.getContributor("redis")).thenReturn(redisHealth);
+
+        SystemHealth health = collector.getCurrentHealth();
+
+        assertTrue(health.isRedisHealthy());
     }
 
     @Test

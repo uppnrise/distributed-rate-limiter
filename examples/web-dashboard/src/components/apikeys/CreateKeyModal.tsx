@@ -28,7 +28,7 @@ import {
 import { CalendarIcon, Copy, Check } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import {
@@ -75,7 +75,10 @@ export const CreateKeyModal = ({ open, onClose, onCreate }: CreateKeyModalProps)
     },
   });
 
-  const useDefaultLimits = form.watch("useDefaultLimits");
+  const useDefaultLimits = useWatch({
+    control: form.control,
+    name: "useDefaultLimits",
+  });
 
   const handleGenerate = () => {
     const key = `rl_${Array.from({ length: 32 }, () =>
