@@ -1,3 +1,4 @@
+import { lazy, Suspense } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -7,15 +8,15 @@ import { useLocation } from "@/lib/router";
 import { AppProvider } from "./contexts/AppContext";
 import { ErrorBoundary } from "./components/ErrorBoundary";
 import { DashboardLayout } from "./components/layout/DashboardLayout";
-import Dashboard from "./pages/Dashboard";
-import Algorithms from "./pages/Algorithms";
-import Configuration from "./pages/Configuration";
-import Scheduling from "./pages/Scheduling";
-import LoadTesting from "./pages/LoadTesting";
-import Analytics from "./pages/Analytics";
-import ApiKeys from "./pages/ApiKeys";
-import Adaptive from "./pages/Adaptive";
-import NotFound from "./pages/NotFound";
+const Dashboard = lazy(() => import("./pages/Dashboard"));
+const Algorithms = lazy(() => import("./pages/Algorithms"));
+const Configuration = lazy(() => import("./pages/Configuration"));
+const Scheduling = lazy(() => import("./pages/Scheduling"));
+const LoadTesting = lazy(() => import("./pages/LoadTesting"));
+const Analytics = lazy(() => import("./pages/Analytics"));
+const ApiKeys = lazy(() => import("./pages/ApiKeys"));
+const Adaptive = lazy(() => import("./pages/Adaptive"));
+const NotFound = lazy(() => import("./pages/NotFound"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -42,12 +43,16 @@ const AppRoute = () => {
   const { pathname } = useLocation();
   const Page = routes[pathname as keyof typeof routes];
 
-  return Page ? (
-    <DashboardLayout>
-      <Page />
-    </DashboardLayout>
-  ) : (
-    <NotFound />
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-background" aria-label="Loading page" />}>
+      {Page ? (
+        <DashboardLayout>
+          <Page />
+        </DashboardLayout>
+      ) : (
+        <NotFound />
+      )}
+    </Suspense>
   );
 };
 

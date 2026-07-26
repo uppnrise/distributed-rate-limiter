@@ -19,6 +19,12 @@
         <jacoco.min.instruction.coverage>0.50</jacoco.min.instruction.coverage>
         <jacoco.min.branch.coverage>0.50</jacoco.min.branch.coverage>
         <maven.project.sourceRoots.warningsDisabled>true</maven.project.sourceRoots.warningsDisabled>
+        <!-- Security overrides newer than the Spring Boot 4.1.0 dependency BOM. -->
+        <jackson-2-bom.version>2.21.5</jackson-2-bom.version>
+        <jackson-bom.version>3.1.5</jackson-bom.version>
+        <logback.version>1.5.36</logback.version>
+        <netty.version>4.2.16.Final</netty.version>
+        <tomcat.version>11.0.23</tomcat.version>
     </properties>
 
     <dependencies>
@@ -40,6 +46,18 @@
             <artifactId>spring-boot-starter-validation</artifactId>
         </dependency>
         <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-logging</artifactId>
+            <exclusions>
+                <!-- Remove the vulnerable Log4j-to-SLF4J compatibility bridge.
+                     The application logs directly through SLF4J and Logback. -->
+                <exclusion>
+                    <groupId>org.apache.logging.log4j</groupId>
+                    <artifactId>log4j-to-slf4j</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-pool2</artifactId>
         </dependency>
@@ -47,7 +65,7 @@
         <dependency>
             <groupId>net.logstash.logback</groupId>
             <artifactId>logstash-logback-encoder</artifactId>
-            <version>8.1</version>
+            <version>9.0</version>
         </dependency>
         <!-- Micrometer for enhanced metrics -->
         <dependency>

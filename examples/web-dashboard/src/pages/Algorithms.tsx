@@ -32,13 +32,10 @@ const Algorithms = () => {
   const [lastEvents, setLastEvents] = useState<Map<AlgorithmType, { allowed: boolean; reason: string }>>(new Map());
   const [stats, setStats] = useState<Map<AlgorithmType, AlgorithmStats>>(new Map());
 
-  const simulatorRef = useRef<AlgorithmSimulator | null>(null);
+  const [simulator] = useState(() => new AlgorithmSimulator(config));
+  const simulatorRef = useRef<AlgorithmSimulator | null>(simulator);
   const timeRef = useRef(0);
   const statsRef = useRef<Map<AlgorithmType, { total: number; rejected: number; responseTimes: number[]; allowedBursts: number }>>(new Map());
-
-  useEffect(() => {
-    simulatorRef.current = new AlgorithmSimulator(config);
-  }, []);
 
   const handleToggleAlgorithm = (algorithm: AlgorithmType) => {
     setSelectedAlgorithms((prev) => {
