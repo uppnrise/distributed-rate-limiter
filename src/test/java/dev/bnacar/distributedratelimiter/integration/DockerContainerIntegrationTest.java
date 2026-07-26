@@ -7,6 +7,9 @@ import org.junit.jupiter.api.AfterEach;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.resttestclient.TestRestTemplate;
 import org.springframework.boot.test.web.server.LocalServerPort;
+import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.ActiveProfiles;
@@ -28,6 +31,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ActiveProfiles("test")
 class DockerContainerIntegrationTest {
+
+    private static final ParameterizedTypeReference<Map<String, Object>> MAP_RESPONSE =
+            new ParameterizedTypeReference<>() {
+            };
 
     @Container
     static GenericContainer<?> redis = RedisTestContainerFactory.newRedisContainer();
@@ -55,9 +62,9 @@ class DockerContainerIntegrationTest {
         assertThat(redis.isRunning()).isTrue();
         
         // Verify that the application can connect to Redis
-        ResponseEntity<Map> healthResponse = restTemplate.getForEntity(
+        ResponseEntity<Map<String, Object>> healthResponse = getMap(
                 "http://localhost:" + port + "/actuator/health",
-                Map.class
+                null
         );
         
         assertThat(healthResponse.getStatusCode()).isEqualTo(HttpStatus.OK);
@@ -74,10 +81,9 @@ class DockerContainerIntegrationTest {
                 "apiKey", "api-key-1"
         );
 
-        ResponseEntity<Map> response = restTemplate.postForEntity(
+        ResponseEntity<Map<String, Object>> response = getMap(
                 "http://localhost:" + port + "/api/ratelimit/check",
-                request,
-                Map.class
+                request
         );
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
@@ -87,9 +93,9 @@ class DockerContainerIntegrationTest {
 
     @Test
     void healthEndpointIsAccessible() {
-        ResponseEntity<Map> response = restTemplate.getForEntity(
+        ResponseEntity<Map<String, Object>> response = getMap(
                 "http://localhost:" + port + "/actuator/health",
-                Map.class
+                null
         );
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
@@ -97,10 +103,9 @@ class DockerContainerIntegrationTest {
         assertThat(response.getBody().get("status")).isEqualTo("UP");
         
         // Verify Redis health is included
-        @SuppressWarnings("unchecked")
-        Map<String, Object> components = (Map<String, Object>) response.getBody().get("components");
-        if (components != null) {
-            assertThat(components).containsKey("redis");
+        Object components = response.getBody().get("components");
+        if (components instanceof Map<?, ?> componentMap) {
+            assertThat(componentMap.containsKey("redis")).isTrue();
         }
     }
 
@@ -108,9 +113,9 @@ class DockerContainerIntegrationTest {
     void applicationHandlesRedisTemporaryUnavailability() {
         // This test verifies graceful handling when Redis becomes unavailable
         // The application should still respond to health checks
-        ResponseEntity<Map> healthResponse = restTemplate.getForEntity(
+        ResponseEntity<Map<String, Object>> healthResponse = getMap(
                 "http://localhost:" + port + "/actuator/health",
-                Map.class
+                null
         );
         
         // Application should be able to respond even if some components are down
@@ -120,9 +125,9 @@ class DockerContainerIntegrationTest {
 
     @Test
     void applicationMetricsAreAvailable() {
-        ResponseEntity<Map> response = restTemplate.getForEntity(
+        ResponseEntity<Map<String, Object>> response = getMap(
                 "http://localhost:" + port + "/metrics",
-                Map.class
+                null
         );
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
@@ -144,5 +149,14 @@ class DockerContainerIntegrationTest {
 
         // The info endpoint should be accessible (may be empty but should return 200)
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+    }
+
+    private ResponseEntity<Map<String, Object>> getMap(
+            String url,
+            Map<String, Object> request
+    ) {
+        HttpMethod method = request == null ? HttpMethod.GET : HttpMethod.POST;
+        HttpEntity<Map<String, Object>> entity = request == null ? null : new HttpEntity<>(request);
+        return restTemplate.exchange(url, method, entity, MAP_RESPONSE);
     }
 }

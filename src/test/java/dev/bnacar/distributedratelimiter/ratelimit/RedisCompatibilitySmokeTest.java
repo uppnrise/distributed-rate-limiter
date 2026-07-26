@@ -15,7 +15,10 @@ import org.springframework.boot.resttestclient.TestRestTemplate;
 import org.springframework.boot.resttestclient.autoconfigure.AutoConfigureTestRestTemplate;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.TestPropertySource;
@@ -32,6 +35,10 @@ import org.testcontainers.junit.jupiter.Testcontainers;
         "ratelimiter.refillRate=1"
 })
 class RedisCompatibilitySmokeTest {
+
+    private static final ParameterizedTypeReference<Map<String, Object>> MAP_RESPONSE =
+            new ParameterizedTypeReference<>() {
+            };
 
     @Container
     @ServiceConnection(name = "redis")
@@ -100,14 +107,17 @@ class RedisCompatibilitySmokeTest {
 
     @Test
     void httpEndpointsWorkWithRedis7() {
-        ResponseEntity<Map> rateLimitResponse = restTemplate.postForEntity(
+        ResponseEntity<Map<String, Object>> rateLimitResponse = restTemplate.exchange(
                 "http://localhost:" + port + "/api/ratelimit/check",
-                Map.of("key", "compat:http", "tokens", 1, "apiKey", "api-key-1"),
-                Map.class
+                HttpMethod.POST,
+                new HttpEntity<>(Map.of("key", "compat:http", "tokens", 1, "apiKey", "api-key-1")),
+                MAP_RESPONSE
         );
-        ResponseEntity<Map> healthResponse = restTemplate.getForEntity(
+        ResponseEntity<Map<String, Object>> healthResponse = restTemplate.exchange(
                 "http://localhost:" + port + "/actuator/health",
-                Map.class
+                HttpMethod.GET,
+                null,
+                MAP_RESPONSE
         );
 
         assertThat(rateLimitResponse.getStatusCode()).isEqualTo(HttpStatus.OK);
