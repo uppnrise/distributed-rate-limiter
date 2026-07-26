@@ -12,32 +12,34 @@ permissions:
 jobs:
   scan-maven:
     name: Scan Maven project
-    uses: uppnrise/snyk-auto-remediate/.github/workflows/snyk-remediate.reusable.yml@master
+    uses: uppnrise/snyk-auto-remediate/.github/workflows/snyk-remediate.reusable.yml@f14d5e8e7cc0f81dddb4c154dcb05cef4a6f78ad
     with:
       target-repository: uppnrise/distributed-rate-limiter
       target-branches: main
-      engine-ref: master
+      engine-ref: f14d5e8e7cc0f81dddb4c154dcb05cef4a6f78ad
       report-id: maven
       working-directory: .
       package-managers: maven
-      severity-threshold: high
+      severity-threshold: low
       dry-run: false
+      fail-on-no-fix: true
       enable-copilot-agent-fallback: false
     secrets:
       SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
 
   scan-dashboard:
     name: Scan npm dashboard
-    uses: uppnrise/snyk-auto-remediate/.github/workflows/snyk-remediate.reusable.yml@master
+    uses: uppnrise/snyk-auto-remediate/.github/workflows/snyk-remediate.reusable.yml@f14d5e8e7cc0f81dddb4c154dcb05cef4a6f78ad
     with:
       target-repository: uppnrise/distributed-rate-limiter
       target-branches: main
-      engine-ref: master
+      engine-ref: f14d5e8e7cc0f81dddb4c154dcb05cef4a6f78ad
       report-id: dashboard
       working-directory: examples/web-dashboard
       package-managers: npm
-      severity-threshold: high
+      severity-threshold: low
       dry-run: false
+      fail-on-no-fix: true
       enable-copilot-agent-fallback: false
     secrets:
       SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}

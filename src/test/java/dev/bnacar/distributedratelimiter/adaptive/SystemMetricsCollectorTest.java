@@ -8,7 +8,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.boot.actuate.health.HealthContributorRegistry;
+import org.springframework.boot.health.registry.HealthContributorRegistry;
 
 import static org.junit.jupiter.api.Assertions.*;
 

@@ -14,8 +14,11 @@ RUN chmod +x mvnw && ./mvnw package -DskipTests -B
 # Runtime stage
 FROM eclipse-temurin:21.0.10_7-jre AS runtime
 
-# Install curl for health checks
-RUN apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/*
+# Apply current Ubuntu security updates and install curl for health checks.
+RUN apt-get update && \
+    apt-get upgrade -y && \
+    apt-get install -y --no-install-recommends curl && \
+    rm -rf /var/lib/apt/lists/*
 
 # Create non-root user for security
 # Use a different UID/GID to avoid conflicts with existing users

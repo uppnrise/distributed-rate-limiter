@@ -136,10 +136,14 @@ jobs:
         path: target/spotbugsXml.xml
 
   security-scan:
-    name: Security Scanning
+    name: Snyk Security Scanning
     runs-on: ubuntu-latest
     needs: test
-    if: github.event_name == 'workflow_dispatch' && inputs.run_security_scan
+    if: >-
+      github.event_name == 'push' ||
+      (github.event_name == 'pull_request' &&
+      github.event.pull_request.head.repo.full_name == github.repository) ||
+      (github.event_name == 'workflow_dispatch' && inputs.run_security_scan)
     
     steps:
     - name: Checkout code
@@ -150,6 +154,13 @@ jobs:
       with:
         java-version: ${{ env.JAVA_VERSION }}
         distribution: ${{ env.JAVA_DISTRIBUTION }}
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '24'
+        cache: npm
+        cache-dependency-path: examples/web-dashboard/package-lock.json
         
     - name: Cache Maven dependencies
       uses: actions/cache@v4
@@ -158,10 +169,54 @@ jobs:
         key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
         restore-keys: ${{ runner.os }}-m2
         
-    - name: Build application
-      run: ./mvnw clean package -DskipTests
+    - name: Install Snyk CLI
+      run: npm install --global snyk@1.1306.1
+
+    - name: Verify Snyk authentication
+      env:
+        SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+      run: |
+        if [ -z "$SNYK_TOKEN" ]; then
+          echo "::error::SNYK_TOKEN is required for dependency vulnerability scanning"
+          exit 1
+        fi
+
+    - name: Prepare security reports
+      run: mkdir -p target/security-reports
+
+    - name: Scan Maven dependencies with Snyk
+      id: snyk-maven
+      continue-on-error: true
+      env:
+        SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+      run: >-
+        snyk test
+        --file=pom.xml
+        --package-manager=maven
+        --severity-threshold=low
+        --json-file-output=target/security-reports/snyk-maven.json
+        --sarif-file-output=target/security-reports/snyk-maven.sarif
+
+    - name: Install dashboard dependencies
+      working-directory: examples/web-dashboard
+      run: npm ci --ignore-scripts
+
+    - name: Scan dashboard dependencies with Snyk
+      id: snyk-dashboard
+      continue-on-error: true
+      working-directory: examples/web-dashboard
+      env:
+        SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+      run: >-
+        snyk test
+        --file=package.json
+        --package-manager=npm
+        --severity-threshold=low
+        --json-file-output=../../target/security-reports/snyk-dashboard.json
+        --sarif-file-output=../../target/security-reports/snyk-dashboard.sarif
       
-    - name: Run dependency vulnerability scan
+    - name: Run OWASP dependency vulnerability scan
+      if: github.event_name == 'workflow_dispatch' && inputs.run_security_scan
       env:
         NVD_API_KEY: ${{ secrets.NVD_API_KEY }}
       run: ./mvnw org.owasp:dependency-check-maven:check
@@ -171,7 +226,22 @@ jobs:
       if: always()
       with:
         name: security-scan-results
-        path: target/dependency-check-report.html
+        path: |
+          target/security-reports/
+          target/dependency-check-report.html
+        if-no-files-found: warn
+
+    - name: Enforce Snyk security gate
+      if: always()
+      run: |
+        if [[ "${{ steps.snyk-maven.outcome }}" != "success" ]]; then
+          echo "::error::Snyk found Maven vulnerabilities, or the Maven scan failed"
+          exit 1
+        fi
+        if [[ "${{ steps.snyk-dashboard.outcome }}" != "success" ]]; then
+          echo "::error::Snyk found dashboard vulnerabilities, or the npm scan failed"
+          exit 1
+        fi
 
   load-test:
     name: Load Testing
@@ -287,6 +357,7 @@ jobs:
     permissions:
       contents: read
       packages: write
+      security-events: write
       
     steps:
     - name: Checkout code
@@ -314,6 +385,7 @@ jobs:
           type=raw,value=latest,enable={{is_default_branch}}
           
     - name: Build and push Docker image
+      id: build
       uses: docker/build-push-action@v5
       with:
         context: .
@@ -325,14 +397,16 @@ jobs:
         cache-to: type=gha,mode=max
         
     - name: Run Trivy vulnerability scanner
-      uses: aquasecurity/trivy-action@master
+      uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
       with:
-        image-ref: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
+        image-ref: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}@${{ steps.build.outputs.digest }}
         format: 'sarif'
         output: 'trivy-results.sarif'
+        severity: 'HIGH,CRITICAL'
+        exit-code: '1'
         
     - name: Upload Trivy scan results
-      uses: github/codeql-action/upload-sarif@v3
+      uses: github/codeql-action/upload-sarif@v4
       if: always()
       with:
         sarif_file: 'trivy-results.sarif'
