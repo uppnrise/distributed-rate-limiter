@@ -115,8 +115,15 @@ public class InMemoryRateLimiterBackend implements RateLimiterBackend {
     }
     
     private void startCleanupTask() {
+        ConcurrentHashMap<String, BucketHolder> bucketsToClean = buckets;
+        AtomicLong cleanupCounterToUpdate = cleanupCounter;
+        AtomicLong lastCleanupTimeToUpdate = lastCleanupTime;
         cleanupExecutor.scheduleWithFixedDelay(
-            this::cleanupExpiredBucketsAsync,
+            () -> cleanupExpiredBuckets(
+                bucketsToClean,
+                cleanupCounterToUpdate,
+                lastCleanupTimeToUpdate
+            ),
             defaultCleanupIntervalMs,
             defaultCleanupIntervalMs,
             TimeUnit.MILLISECONDS
@@ -128,10 +135,14 @@ public class InMemoryRateLimiterBackend implements RateLimiterBackend {
      */
     @Async("rateLimiterTaskExecutor")
     protected void cleanupExpiredBucketsAsync() {
-        cleanupExpiredBuckets();
+        cleanupExpiredBuckets(buckets, cleanupCounter, lastCleanupTime);
     }
 
-    private void cleanupExpiredBuckets() {
+    private static void cleanupExpiredBuckets(
+        ConcurrentHashMap<String, BucketHolder> buckets,
+        AtomicLong cleanupCounter,
+        AtomicLong lastCleanupTime
+    ) {
         long currentTime = System.currentTimeMillis();
         int sizeBefore = buckets.size();
         
@@ -153,7 +164,7 @@ public class InMemoryRateLimiterBackend implements RateLimiterBackend {
      * Force immediate cleanup for testing or manual triggers.
      */
     public void forceCleanup() {
-        cleanupExpiredBuckets();
+        cleanupExpiredBuckets(buckets, cleanupCounter, lastCleanupTime);
     }
     
     public void shutdown() {

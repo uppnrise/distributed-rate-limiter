@@ -18,7 +18,7 @@ public class RedisTokenBucket implements RateLimiter {
     private final int capacity;
     private final int refillRate;
     private final RedisTemplate<String, Object> redisTemplate;
-    private final RedisScript<List> tokenBucketScript;
+    private final RedisScript<List<Object>> tokenBucketScript;
     
     public RedisTokenBucket(String key, int capacity, int refillRate, RedisTemplate<String, Object> redisTemplate) {
         this.key = key;
@@ -27,9 +27,9 @@ public class RedisTokenBucket implements RateLimiter {
         this.redisTemplate = redisTemplate;
         
         // Load Lua script
-        DefaultRedisScript<List> script = new DefaultRedisScript<>();
+        DefaultRedisScript<List<Object>> script = new DefaultRedisScript<>();
         script.setLocation(new ClassPathResource("scripts/token-bucket.lua"));
-        script.setResultType(List.class);
+        script.setResultType(RedisScriptResultTypes.objectList());
         this.tokenBucketScript = script;
     }
     
@@ -41,7 +41,7 @@ public class RedisTokenBucket implements RateLimiter {
         
         try {
             long currentTime = System.currentTimeMillis();
-            List<Object> result = redisTemplate.execute(
+            List<?> result = redisTemplate.execute(
                 tokenBucketScript,
                 Collections.singletonList(key),
                 capacity, refillRate, tokens, currentTime
@@ -68,7 +68,7 @@ public class RedisTokenBucket implements RateLimiter {
         try {
             long currentTime = System.currentTimeMillis();
             // Use a dummy consume of 0 tokens to get current state
-            List<Object> result = redisTemplate.execute(
+            List<?> result = redisTemplate.execute(
                 tokenBucketScript,
                 Collections.singletonList(key),
                 capacity, refillRate, 0, currentTime
@@ -102,7 +102,7 @@ public class RedisTokenBucket implements RateLimiter {
         try {
             long currentTime = System.currentTimeMillis();
             // Use a dummy consume of 0 tokens to get current state
-            List<Object> result = redisTemplate.execute(
+            List<?> result = redisTemplate.execute(
                 tokenBucketScript,
                 Collections.singletonList(key),
                 capacity, refillRate, 0, currentTime
