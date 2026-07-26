@@ -5,10 +5,11 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
+import org.springframework.data.redis.serializer.GenericJacksonJsonRedisSerializer;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
+import tools.jackson.databind.jsontype.BasicPolymorphicTypeValidator;
 
 import java.util.concurrent.Executor;
 
@@ -30,9 +31,18 @@ public class RedisRateLimiterConfiguration {
         template.setKeySerializer(new StringRedisSerializer());
         template.setHashKeySerializer(new StringRedisSerializer());
         
-        // Use JSON serialization for values
-        template.setValueSerializer(new GenericJackson2JsonRedisSerializer());
-        template.setHashValueSerializer(new GenericJackson2JsonRedisSerializer());
+        // Use Jackson 3 JSON serialization with an explicit type allow-list.
+        var typeValidator = BasicPolymorphicTypeValidator.builder()
+            .allowIfSubType("dev.bnacar.distributedratelimiter.")
+            .allowIfSubType("java.lang.")
+            .allowIfSubType("java.util.")
+            .allowIfSubTypeIsArray()
+            .build();
+        var jsonSerializer = GenericJacksonJsonRedisSerializer.builder()
+            .enableDefaultTyping(typeValidator)
+            .build();
+        template.setValueSerializer(jsonSerializer);
+        template.setHashValueSerializer(jsonSerializer);
         
         // Enable transaction support for better consistency
         template.setEnableTransactionSupport(true);

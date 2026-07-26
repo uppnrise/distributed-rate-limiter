@@ -6,9 +6,10 @@ import io.micrometer.core.instrument.distribution.HistogramSnapshot;
 import io.micrometer.core.instrument.distribution.ValueAtPercentile;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.boot.actuate.health.Health;
-import org.springframework.boot.actuate.health.HealthIndicator;
-import org.springframework.boot.actuate.health.HealthContributorRegistry;
+import org.springframework.boot.health.contributor.Health;
+import org.springframework.boot.health.contributor.HealthIndicator;
+import org.springframework.boot.health.contributor.Status;
+import org.springframework.boot.health.registry.HealthContributorRegistry;
 import org.springframework.stereotype.Component;
 
 import java.lang.management.ManagementFactory;
@@ -188,7 +189,7 @@ public class SystemMetricsCollector {
             if (contributor instanceof HealthIndicator) {
                 HealthIndicator redisHealth = (HealthIndicator) contributor;
                 Health health = redisHealth.health();
-                return health.getStatus().equals(org.springframework.boot.actuate.health.Status.UP);
+                return health.getStatus().equals(Status.UP);
             }
         } catch (Exception e) {
             logger.debug("Could not retrieve Redis health status", e);
