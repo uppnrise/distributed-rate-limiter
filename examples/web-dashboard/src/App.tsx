@@ -2,8 +2,8 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ThemeProvider } from "next-themes";
+import { useLocation } from "@/lib/router";
 import { AppProvider } from "./contexts/AppContext";
 import { ErrorBoundary } from "./components/ErrorBoundary";
 import { DashboardLayout } from "./components/layout/DashboardLayout";
@@ -27,6 +27,30 @@ const queryClient = new QueryClient({
   },
 });
 
+const routes = {
+  "/": Dashboard,
+  "/algorithms": Algorithms,
+  "/configuration": Configuration,
+  "/scheduling": Scheduling,
+  "/load-testing": LoadTesting,
+  "/analytics": Analytics,
+  "/api-keys": ApiKeys,
+  "/adaptive": Adaptive,
+} as const;
+
+const AppRoute = () => {
+  const { pathname } = useLocation();
+  const Page = routes[pathname as keyof typeof routes];
+
+  return Page ? (
+    <DashboardLayout>
+      <Page />
+    </DashboardLayout>
+  ) : (
+    <NotFound />
+  );
+};
+
 const App = () => (
   <ErrorBoundary>
     <QueryClientProvider client={queryClient}>
@@ -35,21 +59,7 @@ const App = () => (
           <TooltipProvider>
             <Toaster />
             <Sonner />
-            <BrowserRouter>
-              <Routes>
-                <Route element={<DashboardLayout />}>
-                  <Route path="/" element={<Dashboard />} />
-                  <Route path="/algorithms" element={<Algorithms />} />
-                  <Route path="/configuration" element={<Configuration />} />
-                  <Route path="/scheduling" element={<Scheduling />} />
-                  <Route path="/load-testing" element={<LoadTesting />} />
-                  <Route path="/analytics" element={<Analytics />} />
-                  <Route path="/api-keys" element={<ApiKeys />} />
-                  <Route path="/adaptive" element={<Adaptive />} />
-                </Route>
-                <Route path="*" element={<NotFound />} />
-              </Routes>
-            </BrowserRouter>
+            <AppRoute />
           </TooltipProvider>
         </AppProvider>
       </ThemeProvider>
