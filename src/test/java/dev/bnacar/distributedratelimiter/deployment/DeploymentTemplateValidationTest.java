@@ -203,7 +203,11 @@ class DeploymentTemplateValidationTest {
         // Check security context
         Map<String, Object> securityContext = (Map<String, Object>) podSpec.get("securityContext");
         assertThat(securityContext.get("runAsNonRoot")).isEqualTo(true);
-        assertThat(securityContext.get("runAsUser")).isEqualTo(1001);
+        assertThat(securityContext.get("runAsUser")).isEqualTo(10001);
+        assertThat(securityContext.get("runAsGroup")).isEqualTo(10001);
+        assertThat(securityContext.get("fsGroup")).isEqualTo(10001);
+        assertThat((Map<String, Object>) securityContext.get("seccompProfile"))
+            .containsEntry("type", "RuntimeDefault");
         
         // Check containers
         List<Map<String, Object>> containers = (List<Map<String, Object>>) podSpec.get("containers");
@@ -212,6 +216,18 @@ class DeploymentTemplateValidationTest {
         Map<String, Object> container = containers.get(0);
         assertThat(container.get("name")).isEqualTo("rate-limiter");
         assertThat(container.get("image")).isEqualTo("ghcr.io/uppnrise/distributed-rate-limiter:latest");
+        assertThat(container.get("imagePullPolicy")).isEqualTo("Always");
+
+        Map<String, Object> containerSecurityContext =
+            (Map<String, Object>) container.get("securityContext");
+        assertThat(containerSecurityContext)
+            .containsEntry("allowPrivilegeEscalation", false)
+            .containsEntry("readOnlyRootFilesystem", true)
+            .containsEntry("runAsNonRoot", true)
+            .containsEntry("runAsUser", 10001)
+            .containsEntry("runAsGroup", 10001);
+        assertThat((List<String>) ((Map<String, Object>) containerSecurityContext
+            .get("capabilities")).get("drop")).containsExactly("ALL");
         
         // Check resource limits
         Map<String, Object> resources = (Map<String, Object>) container.get("resources");
@@ -223,6 +239,105 @@ class DeploymentTemplateValidationTest {
         // Check volume mounts
         List<Map<String, Object>> volumeMounts = (List<Map<String, Object>>) container.get("volumeMounts");
         assertThat(volumeMounts).isNotEmpty();
+    }
+
+    @Test
+    @SuppressWarnings("unchecked")
+    void testEnvironmentDeploymentPatchesRepeatRequiredSecurityControls() throws IOException {
+        for (String environment : List.of("dev", "prod")) {
+            Path patchPath = Paths.get(K8S_ENVIRONMENTS_PATH, environment,
+                "deployment-patch.yaml");
+            Map<String, Object> patch = loadSingleYamlDocument(patchPath);
+            Map<String, Object> spec = mapAt(patch, "spec");
+            Map<String, Object> template = mapAt(spec, "template");
+            Map<String, Object> podSpec = mapAt(template, "spec");
+            Map<String, Object> podSecurityContext = mapAt(podSpec, "securityContext");
+
+            assertThat(podSecurityContext)
+                .as("%s pod security context", environment)
+                .containsEntry("runAsNonRoot", true)
+                .containsEntry("runAsUser", 10001)
+                .containsEntry("runAsGroup", 10001)
+                .containsEntry("fsGroup", 10001);
+            assertThat(mapAt(podSecurityContext, "seccompProfile"))
+                .containsEntry("type", "RuntimeDefault");
+
+            List<Map<String, Object>> containers = listAt(podSpec, "containers");
+            Map<String, Object> container = containers.get(0);
+            assertThat(container.get("imagePullPolicy")).isEqualTo("Always");
+
+            Map<String, Object> containerSecurityContext = mapAt(container, "securityContext");
+            assertThat(containerSecurityContext)
+                .containsEntry("allowPrivilegeEscalation", false)
+                .containsEntry("readOnlyRootFilesystem", true)
+                .containsEntry("runAsNonRoot", true)
+                .containsEntry("runAsUser", 10001)
+                .containsEntry("runAsGroup", 10001);
+            assertThat((List<String>) mapAt(containerSecurityContext, "capabilities")
+                .get("drop")).containsExactly("ALL");
+        }
+    }
+
+    @Test
+    @SuppressWarnings("unchecked")
+    void testApplicationServiceAccountHasNoUnusedRbacPermissions() throws IOException {
+        Yaml yaml = new Yaml();
+        List<Map<String, Object>> manifests = new java.util.ArrayList<>();
+        for (Object document : yaml.loadAll(Files.readString(
+            Paths.get(K8S_BASE_PATH, "rbac.yaml")))) {
+            manifests.add((Map<String, Object>) document);
+        }
+
+        assertThat(manifests).hasSize(1);
+        assertThat(manifests.get(0).get("kind")).isEqualTo("ServiceAccount");
+        assertThat(manifests.get(0).get("automountServiceAccountToken")).isEqualTo(false);
+    }
+
+    @Test
+    @SuppressWarnings("unchecked")
+    void testBackupCronJobUsesNonHostUid() throws IOException {
+        Yaml yaml = new Yaml();
+        Map<String, Object> cronJob = null;
+        for (Object document : yaml.loadAll(Files.readString(
+            Paths.get(K8S_BASE_PATH, "backup-cronjob.yaml")))) {
+            Map<String, Object> manifest = (Map<String, Object>) document;
+            if ("CronJob".equals(manifest.get("kind"))) {
+                cronJob = manifest;
+                break;
+            }
+        }
+
+        assertThat(cronJob).isNotNull();
+        Map<String, Object> jobTemplate = mapAt(mapAt(cronJob, "spec"), "jobTemplate");
+        Map<String, Object> jobSpec = mapAt(jobTemplate, "spec");
+        Map<String, Object> template = mapAt(jobSpec, "template");
+        Map<String, Object> podSpec = mapAt(template, "spec");
+        assertThat(mapAt(podSpec, "securityContext"))
+            .containsEntry("runAsNonRoot", true)
+            .containsEntry("runAsUser", 10001)
+            .containsEntry("runAsGroup", 10001)
+            .containsEntry("fsGroup", 10001);
+
+        Map<String, Object> container = listAt(podSpec, "containers").get(0);
+        assertThat(mapAt(container, "securityContext"))
+            .containsEntry("runAsNonRoot", true)
+            .containsEntry("runAsUser", 10001)
+            .containsEntry("runAsGroup", 10001);
+    }
+
+    @SuppressWarnings("unchecked")
+    private Map<String, Object> loadSingleYamlDocument(Path path) throws IOException {
+        return (Map<String, Object>) new Yaml().load(Files.readString(path));
+    }
+
+    @SuppressWarnings("unchecked")
+    private Map<String, Object> mapAt(Map<String, Object> parent, String key) {
+        return (Map<String, Object>) parent.get(key);
+    }
+
+    @SuppressWarnings("unchecked")
+    private List<Map<String, Object>> listAt(Map<String, Object> parent, String key) {
+        return (List<Map<String, Object>>) parent.get(key);
     }
     
     @Test

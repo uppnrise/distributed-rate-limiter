@@ -47,12 +47,14 @@ class UserBehaviorModelerTest {
     }
 
     @Test
-    void testBurstinessCalculation() {
+    void testBurstinessCalculation() throws InterruptedException {
         // Arrange
         String key = "test:key";
 
         // Record requests with varying intervals to create burstiness
-        for (int i = 0; i < 20; i++) {
+        modeler.recordRequest(key, 1, true);
+        Thread.sleep(2);
+        for (int i = 1; i < 20; i++) {
             modeler.recordRequest(key, 1, true);
         }
 
@@ -61,7 +63,7 @@ class UserBehaviorModelerTest {
 
         // Assert
         assertNotNull(behavior);
-        assertTrue(behavior.getBurstiness() >= 0);
+        assertTrue(behavior.getBurstiness() > 0);
     }
 
     @Test
