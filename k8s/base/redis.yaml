@@ -26,11 +26,13 @@ spec:
     spec:
       securityContext:
         runAsNonRoot: true
-        runAsUser: 999
-        fsGroup: 999
+        runAsUser: 10001
+        runAsGroup: 10001
+        fsGroup: 10001
       containers:
       - name: redis
         image: redis:7.4-alpine
+        imagePullPolicy: Always
         ports:
         - containerPort: 6379
           name: redis
@@ -94,12 +96,16 @@ spec:
         securityContext:
           allowPrivilegeEscalation: false
           readOnlyRootFilesystem: true
+          runAsNonRoot: true
+          runAsUser: 10001
+          runAsGroup: 10001
           capabilities:
             drop:
             - ALL
       # Redis Exporter for Prometheus monitoring
       - name: redis-exporter
         image: oliver006/redis_exporter:v1.66.0
+        imagePullPolicy: Always
         ports:
         - containerPort: 9121
           name: metrics
@@ -119,9 +125,20 @@ spec:
           limits:
             memory: "128Mi"
             cpu: "100m"
+        livenessProbe:
+          httpGet:
+            path: /metrics
+            port: metrics
+          initialDelaySeconds: 10
+          periodSeconds: 10
+          timeoutSeconds: 3
+          failureThreshold: 3
         securityContext:
           allowPrivilegeEscalation: false
           readOnlyRootFilesystem: true
+          runAsNonRoot: true
+          runAsUser: 10001
+          runAsGroup: 10001
           capabilities:
             drop:
             - ALL
