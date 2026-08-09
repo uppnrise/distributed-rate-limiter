@@ -14,9 +14,10 @@ RUN chmod +x mvnw && ./mvnw package -DskipTests -B
 # Runtime stage
 FROM eclipse-temurin:21.0.11_10-jre-alpine-3.23 AS runtime
 
-# Create a locked-down system user without a home directory or login shell.
-RUN addgroup -S -g 1001 appuser && \
-    adduser -S -D -H -u 1001 -G appuser appuser
+# Apply Alpine security fixes, then create a locked-down high-numbered system user.
+RUN apk upgrade --no-cache && \
+    addgroup -S -g 10001 appuser && \
+    adduser -S -D -H -u 10001 -G appuser appuser
 
 # Set working directory
 WORKDIR /app
