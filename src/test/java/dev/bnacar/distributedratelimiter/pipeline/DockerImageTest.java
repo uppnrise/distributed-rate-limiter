@@ -28,8 +28,8 @@ import static org.junit.jupiter.api.Assertions.*;
 class DockerImageTest {
 
     private static final String TEMURIN_21_BUILD_STAGE = "FROM eclipse-temurin:21";
-    private static final String TEMURIN_21_RUNTIME_STAGE = "FROM eclipse-temurin:21";
-    private static final String PINNED_RUNTIME_IMAGE = "eclipse-temurin:21.0.10_7-jre";
+    private static final String TEMURIN_21_RUNTIME_STAGE = "FROM eclipse-temurin:21.0.11_10-jre-alpine-3.23";
+    private static final String PINNED_RUNTIME_IMAGE = "eclipse-temurin:21.0.11_10-jre-alpine-3.23";
 
     @Test
     @DisplayName("Dockerfile should contain multi-stage build")
@@ -54,6 +54,10 @@ class DockerImageTest {
         
         assertTrue(dockerfileContent.contains("USER appuser"), 
             "Dockerfile should run as non-root user");
+        assertTrue(dockerfileContent.contains("jre-alpine-3.23"),
+            "Dockerfile should use the security-hardened Alpine runtime image");
+        assertFalse(dockerfileContent.contains("apt-get"),
+            "Dockerfile runtime should not install Ubuntu packages");
         assertTrue(dockerfileContent.contains("HEALTHCHECK"), 
             "Dockerfile should include health check");
     }
