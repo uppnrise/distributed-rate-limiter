@@ -132,12 +132,12 @@ curl http://localhost:8080/metrics
 The Dockerfile uses a multi-stage build:
 
 1. **Build Stage**: Uses `eclipse-temurin:21-jdk` to compile the application
-2. **Runtime Stage**: Uses `eclipse-temurin:21-jre` for smaller image size
+2. **Runtime Stage**: Uses a pinned `eclipse-temurin:21-jre-alpine` image for a smaller image and reduced OS-package attack surface
 
 ### Security Features
 
-- Runs as non-root user (`appuser:1000`)
-- Minimal runtime dependencies
+- Runs as non-root user (`appuser:1001`)
+- Minimal Alpine runtime with no additional packages installed
 - Health check integrated
 - Proper signal handling for graceful shutdown
 
@@ -167,7 +167,7 @@ The Dockerfile uses a multi-stage build:
    docker compose logs app
    
    # Manual health check
-   docker compose exec app curl -f http://localhost:8080/actuator/health
+   docker compose exec app wget -qO- http://localhost:8080/actuator/health
    ```
 
 3. **Port conflicts**
@@ -204,7 +204,7 @@ The Dockerfile uses a multi-stage build:
 
 ```bash
 # Interactive debugging
-docker compose exec app bash
+docker compose exec app sh
 
 # View logs
 docker compose logs -f app
