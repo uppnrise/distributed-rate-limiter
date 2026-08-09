@@ -56,6 +56,8 @@ class DockerImageTest {
             "Dockerfile should run as non-root user");
         assertTrue(dockerfileContent.contains("jre-alpine-3.23"),
             "Dockerfile should use the security-hardened Alpine runtime image");
+        assertTrue(dockerfileContent.contains("apk upgrade --no-cache"),
+            "Dockerfile should install all available Alpine security upgrades");
         assertFalse(dockerfileContent.contains("apt-get"),
             "Dockerfile runtime should not install Ubuntu packages");
         assertTrue(dockerfileContent.contains("HEALTHCHECK"), 
