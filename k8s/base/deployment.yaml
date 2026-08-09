@@ -34,8 +34,11 @@ spec:
       serviceAccountName: rate-limiter
       securityContext:
         runAsNonRoot: true
-        runAsUser: 1001
-        fsGroup: 1001
+        runAsUser: 10001
+        runAsGroup: 10001
+        fsGroup: 10001
+        seccompProfile:
+          type: RuntimeDefault
       containers:
       - name: rate-limiter
         image: ghcr.io/uppnrise/distributed-rate-limiter:latest
@@ -117,6 +120,9 @@ spec:
         securityContext:
           allowPrivilegeEscalation: false
           readOnlyRootFilesystem: true
+          runAsNonRoot: true
+          runAsUser: 10001
+          runAsGroup: 10001
           capabilities:
             drop:
             - ALL

@@ -27,8 +27,11 @@ spec:
           serviceAccountName: redis-backup
           securityContext:
             runAsNonRoot: true
-            runAsUser: 1001
-            fsGroup: 1001
+            runAsUser: 10001
+            runAsGroup: 10001
+            fsGroup: 10001
+            seccompProfile:
+              type: RuntimeDefault
           containers:
           - name: backup
             image: ghcr.io/uppnrise/distributed-rate-limiter:backup-tools
@@ -83,6 +86,9 @@ spec:
             securityContext:
               allowPrivilegeEscalation: false
               readOnlyRootFilesystem: true
+              runAsNonRoot: true
+              runAsUser: 10001
+              runAsGroup: 10001
               capabilities:
                 drop:
                 - ALL
