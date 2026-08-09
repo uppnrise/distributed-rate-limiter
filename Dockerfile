@@ -1,6 +1,6 @@
 # Multi-stage Docker build for Distributed Rate Limiter
 # Build stage
-FROM eclipse-temurin:21.0.10_7-jdk AS build
+FROM eclipse-temurin:21.0.11_10-jdk AS build
 
 # Set working directory
 WORKDIR /app
@@ -12,27 +12,17 @@ COPY . .
 RUN chmod +x mvnw && ./mvnw package -DskipTests -B
 
 # Runtime stage
-FROM eclipse-temurin:21.0.10_7-jre AS runtime
+FROM eclipse-temurin:21.0.11_10-jre-alpine-3.23 AS runtime
 
-# Apply current Ubuntu security updates and install curl for health checks.
-RUN apt-get update && \
-    apt-get upgrade -y && \
-    apt-get install -y --no-install-recommends curl && \
-    rm -rf /var/lib/apt/lists/*
-
-# Create non-root user for security
-# Use a different UID/GID to avoid conflicts with existing users
-RUN groupadd -g 1001 appuser && \
-    useradd -d /app -g appuser -u 1001 appuser
+# Create a locked-down system user without a home directory or login shell.
+RUN addgroup -S -g 1001 appuser && \
+    adduser -S -D -H -u 1001 -G appuser appuser
 
 # Set working directory
 WORKDIR /app
 
-# Copy the built JAR from build stage
-COPY --from=build /app/target/*.jar app.jar
-
-# Change ownership to non-root user
-RUN chown -R appuser:appuser /app
+# Copy the built JAR with its final ownership, avoiding an extra writable layer.
+COPY --from=build --chown=appuser:appuser /app/target/*.jar app.jar
 
 # Switch to non-root user
 USER appuser
@@ -45,7 +35,7 @@ ENV JAVA_OPTS="-Djava.security.egd=file:/dev/./urandom -Xmx512m -Xms256m"
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-    CMD curl -f http://localhost:8080/actuator/health || exit 1
+    CMD wget -q --spider http://localhost:8080/actuator/health || exit 1
 
 # Start the application with graceful shutdown
 ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -jar app.jar"]
