@@ -5,6 +5,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.0] - 2026-09-05
+
+### Changed
+- Upgraded the Spring Boot parent to **4.1.1** (from 4.1.0).
+- Bumped security-relevant BOM overrides: Jackson 2.x to 2.22.2, Jackson 3.x to 3.2.2, Logback to 1.6.3, Netty to 4.2.17.Final, Tomcat to 11.0.25.
+- Upgraded `springdoc-openapi-starter-webmvc-ui` to 3.1.0, `geoip2` to 5.2.0, and `gatling-charts-highcharts` to 3.15.1.
+- Upgraded build plugins: `maven-compiler-plugin` (3.16.0), `jacoco-maven-plugin` (0.8.15), `spotbugs-maven-plugin` (4.10.4.0), `org.owasp:dependency-check-maven` (13.0.0), `scala-maven-plugin` (4.9.10), `gatling-maven-plugin` (4.21.11).
+
+### Security
+- Applied verified Snyk npm remediation for Maven build tooling and resolved remaining Snyk container and Kubernetes manifest findings.
+- Resolved web dashboard npm audit findings, including newly-disclosed advisories in `browserslist`, `@humanfs/node`, and `postcss-selector-parser`.
+
+### Fixed
+- Stabilized Codecov project/patch status reporting.
+
 ## [1.3.2] - 2026-06-06
 
 ### Added

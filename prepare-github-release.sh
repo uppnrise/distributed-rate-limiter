@@ -6,7 +6,7 @@
 set -e
 
 # Configuration
-VERSION="1.3.2"
+VERSION="1.4.0"
 RELEASE_DIR="release-artifacts"
 PROJECT_NAME="distributed-rate-limiter"
 
@@ -50,7 +50,7 @@ echo -e "${BLUE}📋 Creating quick start script...${NC}"
 cat > quick-start.sh << 'EOF'
 #!/bin/bash
 
-# Distributed Rate Limiter v1.3.2 Quick Start
+# Distributed Rate Limiter v1.4.0 Quick Start
 # This script helps you start the rate limiter quickly
 
 set -e
@@ -62,7 +62,7 @@ YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
 NC='\033[0m'
 
-echo -e "${BLUE}🚀 Distributed Rate Limiter v1.3.2 Quick Start${NC}"
+echo -e "${BLUE}🚀 Distributed Rate Limiter v1.4.0 Quick Start${NC}"
 echo "=============================================="
 echo ""
 
@@ -106,7 +106,7 @@ echo "⏹️  Press Ctrl+C to stop"
 echo ""
 
 # Start the application
-java -jar distributed-rate-limiter-1.3.2.jar
+java -jar distributed-rate-limiter-1.4.0.jar
 EOF
 
 chmod +x quick-start.sh
@@ -115,11 +115,11 @@ chmod +x quick-start.sh
 cat > docker-quick-start.sh << 'EOF'
 #!/bin/bash
 
-# Distributed Rate Limiter v1.3.2 Docker Quick Start
+# Distributed Rate Limiter v1.4.0 Docker Quick Start
 
 set -e
 
-echo "🐳 Distributed Rate Limiter v1.3.2 - Docker Quick Start"
+echo "🐳 Distributed Rate Limiter v1.4.0 - Docker Quick Start"
 echo "======================================================"
 
 # Check if Docker is available
@@ -156,7 +156,7 @@ services:
       retries: 3
 
   rate-limiter:
-    image: ghcr.io/uppnrise/distributed-rate-limiter:1.3.2
+    image: ghcr.io/uppnrise/distributed-rate-limiter:1.4.0
     container_name: rate-limiter-app
     ports:
       - "8080:8080"
@@ -196,7 +196,7 @@ chmod +x docker-quick-start.sh
 
 # Create installation guide
 cat > INSTALLATION.md << 'EOF'
-# Installation Guide - Distributed Rate Limiter v1.3.2
+# Installation Guide - Distributed Rate Limiter v1.4.0
 
 ## Quick Installation Options
 
@@ -209,7 +209,7 @@ cat > INSTALLATION.md << 'EOF'
 **Steps:**
 1. Download the JAR file from GitHub Releases
 2. Ensure Redis is running: `docker run -d -p 6379:6379 redis:8-alpine`
-3. Run: `java -jar distributed-rate-limiter-1.3.2.jar`
+3. Run: `java -jar distributed-rate-limiter-1.4.0.jar`
 4. Test: `curl http://localhost:8080/actuator/health`
 
 **Quick Start Script:**
@@ -225,7 +225,7 @@ chmod +x quick-start.sh
 
 **Steps:**
 1. Run the Docker quick start script: `./docker-quick-start.sh`
-2. Or manually: `docker run -p 8080:8080 ghcr.io/uppnrise/distributed-rate-limiter:1.3.2`
+2. Or manually: `docker run -p 8080:8080 ghcr.io/uppnrise/distributed-rate-limiter:1.4.0`
 
 ### Option 3: Build from Source
 
@@ -239,7 +239,7 @@ chmod +x quick-start.sh
 git clone https://github.com/uppnrise/distributed-rate-limiter.git
 cd distributed-rate-limiter
 ./mvnw clean install
-java -jar target/distributed-rate-limiter-1.3.2.jar
+java -jar target/distributed-rate-limiter-1.4.0.jar
 ```
 
 ## Configuration
@@ -248,7 +248,7 @@ java -jar target/distributed-rate-limiter-1.3.2.jar
 The application uses sensible defaults but can be customized:
 
 ```bash
-java -jar distributed-rate-limiter-1.3.2.jar \
+java -jar distributed-rate-limiter-1.4.0.jar \
   --spring.data.redis.host=your-redis-host \
   --spring.data.redis.port=6379 \
   --server.port=8080
@@ -259,7 +259,7 @@ java -jar distributed-rate-limiter-1.3.2.jar \
 export SPRING_DATA_REDIS_HOST=your-redis-host
 export SPRING_DATA_REDIS_PORT=6379
 export SERVER_PORT=8080
-java -jar distributed-rate-limiter-1.3.2.jar
+java -jar distributed-rate-limiter-1.4.0.jar
 ```
 
 ### Configuration File
@@ -314,7 +314,7 @@ java -version
 **Issue**: Port 8080 already in use
 **Solution**: Use a different port
 ```bash
-java -jar distributed-rate-limiter-1.3.2.jar --server.port=8081
+java -jar distributed-rate-limiter-1.4.0.jar --server.port=8081
 ```
 
 ### Getting Help
@@ -329,31 +329,33 @@ cd ..
 
 # Create release notes
 cat > ${RELEASE_DIR}/RELEASE_NOTES.md << 'EOF'
-# Distributed Rate Limiter v1.3.2 - Release Notes
+# Distributed Rate Limiter v1.4.0 - Release Notes
 
-Release date: 2026-06-06
+Release date: 2026-09-05
 
 ## Summary
 
-`v1.3.2` is a patch release focused on safer API responses and deployment-friendly CORS configuration.
+`v1.4.0` is a minor release focused on third-party dependency modernization and security hardening across the Maven backend, build tooling, and the web dashboard's npm dependencies. No public API or configuration changes.
 
 ## Highlights
 
-### Deployment flexibility
+### Dependency upgrades
 
-- Moves CORS configuration into centralized `ratelimiter.cors.*` properties.
-- Removes duplicated controller-level CORS annotations so a single global policy applies across the API.
-- Supports environment-specific origin overrides via normal Spring property binding and environment variables.
+- Upgraded Spring Boot parent to **4.1.1** (from 4.1.0).
+- Bumped security-relevant BOM overrides: Jackson 2.x to 2.22.2, Jackson 3.x to 3.2.2, Logback to 1.6.3, Netty to 4.2.17.Final, Tomcat to 11.0.25.
+- Upgraded `springdoc-openapi-starter-webmvc-ui` to 3.1.0, `geoip2` to 5.2.0 (unused in application code, zero runtime risk), and `gatling-charts-highcharts` to 3.15.1.
+- Upgraded build plugins: `maven-compiler-plugin` 3.16.0, `jacoco-maven-plugin` 0.8.15, `spotbugs-maven-plugin` 4.10.4.0, `org.owasp:dependency-check-maven` 13.0.0, `scala-maven-plugin` 4.9.10, `gatling-maven-plugin` 4.21.11.
+- Kept `scala-library` on the latest stable 2.13.x release (2.13.17); the only newer release is a Scala 3 pre-release, intentionally excluded.
 
-### API hardening
+### Security hardening
 
-- Replaces raw exception messages in API responses with safe client-facing error messages.
-- Adds centralized exception handling while keeping detailed failure information in server logs.
+- Applied verified Snyk npm remediation for the Maven build tooling and resolved remaining Snyk container and Kubernetes manifest findings.
+- Resolved dashboard (web-dashboard) npm audit findings on two occasions, including newly-disclosed advisories in `browserslist`, `@humanfs/node`, and `postcss-selector-parser`.
+- Stabilized Codecov project/patch status reporting.
 
 ### Documentation refresh
 
-- Updates release examples and artifact references to `v1.3.2`.
-- Documents the new CORS configuration options for production deployments.
+- Updates release examples and artifact references to `v1.4.0`.
 
 ### Deployment Options
 - **JAR File**: Self-contained Spring Boot application (42MB)
@@ -372,13 +374,13 @@ Release date: 2026-06-06
 ### JAR File (Recommended)
 ```bash
 # Download and run
-wget https://github.com/uppnrise/distributed-rate-limiter/releases/download/v1.3.2/distributed-rate-limiter-1.3.2.jar
-java -jar distributed-rate-limiter-1.3.2.jar
+wget https://github.com/uppnrise/distributed-rate-limiter/releases/download/v1.4.0/distributed-rate-limiter-1.4.0.jar
+java -jar distributed-rate-limiter-1.4.0.jar
 ```
 
 ### Docker
 ```bash
-docker run -p 8080:8080 ghcr.io/uppnrise/distributed-rate-limiter:1.3.2
+docker run -p 8080:8080 ghcr.io/uppnrise/distributed-rate-limiter:1.4.0
 ```
 
 ### Quick Start Scripts
@@ -392,22 +394,23 @@ docker run -p 8080:8080 ghcr.io/uppnrise/distributed-rate-limiter:1.3.2
 - **2GB RAM minimum** for production usage
 
 ## File Checksums
-- **SHA256**: See `distributed-rate-limiter-1.3.2.jar.sha256`
-- **MD5**: See `distributed-rate-limiter-1.3.2.jar.md5`
+- **SHA256**: See `distributed-rate-limiter-1.4.0.jar.sha256`
+- **MD5**: See `distributed-rate-limiter-1.4.0.jar.md5`
 
 ## Breaking Changes
-None.
+None. This release is intended as a drop-in upgrade from `v1.3.2`.
 
-## Upgrade Notes  
-Update pinned application version references from `v1.3.1` to `v1.3.2`.
+## Upgrade Notes
+- Update pinned application version references from `v1.3.2` to `v1.4.0`.
+- No configuration or API changes are required.
 
 ## Known Issues
 Load-test artifacts still do not include backend latency measurements, so helper dashboards and reports continue to mark those metrics as unavailable.
 
-## What's Next (v1.3.2)
-- Continue tightening deployment defaults and production documentation.
+## What's Next (post v1.4.0)
+- Continue routine dependency and security maintenance.
 - Add backend latency measurements to benchmark responses.
-- Keep backend hardening work moving in small patch releases.
+- Keep backend hardening work moving in small releases.
 
 ## Support
 - 📖 **Documentation**: Complete guides included
