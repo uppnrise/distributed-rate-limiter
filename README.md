@@ -189,21 +189,21 @@ Educational page for understanding rate limiting algorithms:
 
 ```bash
 # Download the latest release
-wget https://github.com/uppnrise/distributed-rate-limiter/releases/download/v1.3.2/distributed-rate-limiter-1.3.2.jar
+wget https://github.com/uppnrise/distributed-rate-limiter/releases/download/v1.4.0/distributed-rate-limiter-1.4.0.jar
 
 # Verify checksum (optional)
-wget https://github.com/uppnrise/distributed-rate-limiter/releases/download/v1.3.2/distributed-rate-limiter-1.3.2.jar.sha256
-sha256sum -c distributed-rate-limiter-1.3.2.jar.sha256
+wget https://github.com/uppnrise/distributed-rate-limiter/releases/download/v1.4.0/distributed-rate-limiter-1.4.0.jar.sha256
+sha256sum -c distributed-rate-limiter-1.4.0.jar.sha256
 ```
 
 ### Option 2: Docker
 
 ```bash
 # Run the image directly
-docker run -p 8080:8080 ghcr.io/uppnrise/distributed-rate-limiter:1.3.2
+docker run -p 8080:8080 ghcr.io/uppnrise/distributed-rate-limiter:1.4.0
 
 # Or use the compose file from the repository
-curl -O https://raw.githubusercontent.com/uppnrise/distributed-rate-limiter/v1.3.2/docker-compose.yml
+curl -O https://raw.githubusercontent.com/uppnrise/distributed-rate-limiter/v1.4.0/docker-compose.yml
 docker compose up -d
 ```
 
@@ -213,7 +213,7 @@ docker compose up -d
 git clone https://github.com/uppnrise/distributed-rate-limiter.git
 cd distributed-rate-limiter
 ./mvnw clean install
-java -jar target/distributed-rate-limiter-1.3.2.jar
+java -jar target/distributed-rate-limiter-1.4.0.jar
 ```
 
 ---
@@ -230,10 +230,10 @@ java -jar target/distributed-rate-limiter-1.3.2.jar
 
 ```bash
 # Simple startup (embedded configuration)
-java -jar distributed-rate-limiter-1.3.2.jar
+java -jar distributed-rate-limiter-1.4.0.jar
 
 # With external Redis
-java -jar distributed-rate-limiter-1.3.2.jar \
+java -jar distributed-rate-limiter-1.4.0.jar \
   --spring.data.redis.host=your-redis-server \
   --spring.data.redis.port=6379
 ```
@@ -259,7 +259,7 @@ When health details are enabled, the same endpoint can also include component-le
 
 ```bash
 # Start the backend (if not already running)
-java -jar distributed-rate-limiter-1.3.2.jar
+java -jar distributed-rate-limiter-1.4.0.jar
 
 # In a new terminal, start the dashboard
 cd examples/web-dashboard
@@ -823,7 +823,7 @@ ratelimiter.security.ip.blacklist=192.168.1.100
 version: '3.8'
 services:
   rate-limiter:
-    image: ghcr.io/uppnrise/distributed-rate-limiter:1.3.2
+    image: ghcr.io/uppnrise/distributed-rate-limiter:1.4.0
     ports:
       - "8080:8080"
     environment:
@@ -858,7 +858,7 @@ spec:
     spec:
       containers:
       - name: rate-limiter
-        image: ghcr.io/uppnrise/distributed-rate-limiter:1.3.2
+        image: ghcr.io/uppnrise/distributed-rate-limiter:1.4.0
         ports:
         - containerPort: 8080
         env:
