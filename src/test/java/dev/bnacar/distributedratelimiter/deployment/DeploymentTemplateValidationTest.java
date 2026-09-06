@@ -390,6 +390,11 @@ class DeploymentTemplateValidationTest {
         
         Map<String, Object> template = (Map<String, Object>) spec.get("template");
         Map<String, Object> podSpec = (Map<String, Object>) template.get("spec");
+
+        Map<String, Object> podSecurityContext =
+            (Map<String, Object>) podSpec.get("securityContext");
+        assertThat(podSecurityContext.get("runAsUser")).isEqualTo(10001);
+        assertThat(podSecurityContext.get("fsGroup")).isEqualTo(10001);
         
         // Check containers (should have redis + redis-exporter)
         List<Map<String, Object>> containers = (List<Map<String, Object>>) podSpec.get("containers");
@@ -402,6 +407,9 @@ class DeploymentTemplateValidationTest {
             .orElse(null);
         assertThat(redisContainer).isNotNull();
         assertThat(redisContainer.get("image")).asString().contains("redis:");
+        assertThat(redisContainer.get("imagePullPolicy")).isEqualTo("Always");
+        assertThat((Map<String, Object>) redisContainer.get("securityContext"))
+            .containsEntry("runAsUser", 10001);
         
         // Check redis-exporter container
         Map<String, Object> exporterContainer = containers.stream()
@@ -410,6 +418,10 @@ class DeploymentTemplateValidationTest {
             .orElse(null);
         assertThat(exporterContainer).isNotNull();
         assertThat(exporterContainer.get("image")).asString().contains("redis_exporter:");
+        assertThat(exporterContainer.get("imagePullPolicy")).isEqualTo("Always");
+        assertThat(exporterContainer).containsKey("livenessProbe");
+        assertThat((Map<String, Object>) exporterContainer.get("securityContext"))
+            .containsEntry("runAsUser", 10001);
     }
     
     @Test

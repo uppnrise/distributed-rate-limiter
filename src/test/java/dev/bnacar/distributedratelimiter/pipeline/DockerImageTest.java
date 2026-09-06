@@ -28,8 +28,8 @@ import static org.junit.jupiter.api.Assertions.*;
 class DockerImageTest {
 
     private static final String TEMURIN_21_BUILD_STAGE = "FROM eclipse-temurin:21";
-    private static final String TEMURIN_21_RUNTIME_STAGE = "FROM eclipse-temurin:21.0.11_10-jre-alpine-3.23";
-    private static final String PINNED_RUNTIME_IMAGE = "eclipse-temurin:21.0.11_10-jre-alpine-3.23";
+    private static final String TEMURIN_21_RUNTIME_STAGE = "FROM eclipse-temurin:21.0.11_10-jre-ubi10-minimal";
+    private static final String PINNED_RUNTIME_IMAGE = "eclipse-temurin:21.0.11_10-jre-ubi10-minimal";
 
     @Test
     @DisplayName("Dockerfile should contain multi-stage build")
@@ -52,12 +52,12 @@ class DockerImageTest {
         Path dockerfilePath = Paths.get("Dockerfile");
         String dockerfileContent = Files.readString(dockerfilePath);
         
-        assertTrue(dockerfileContent.contains("USER appuser"), 
+        assertTrue(dockerfileContent.contains("USER 10001"),
             "Dockerfile should run as non-root user");
-        assertTrue(dockerfileContent.contains("jre-alpine-3.23"),
-            "Dockerfile should use the security-hardened Alpine runtime image");
-        assertTrue(dockerfileContent.contains("apk upgrade --no-cache"),
-            "Dockerfile should install all available Alpine security upgrades");
+        assertTrue(dockerfileContent.contains("jre-ubi10-minimal"),
+            "Dockerfile should use the vulnerability-free UBI 10 minimal runtime image");
+        assertFalse(dockerfileContent.contains("jre-alpine"),
+            "Dockerfile should not use the vulnerable Alpine runtime image");
         assertFalse(dockerfileContent.contains("apt-get"),
             "Dockerfile runtime should not install Ubuntu packages");
         assertTrue(dockerfileContent.contains("HEALTHCHECK"), 
