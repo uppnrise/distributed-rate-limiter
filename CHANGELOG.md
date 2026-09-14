@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Security
 - Bumped the Docker base image from `eclipse-temurin:21.0.11_10` to `21.0.12_8` (build and Alpine 3.23 JRE runtime stages), resolving High-severity Snyk-reported CVEs in the Alpine OS packages `expat` (→ 2.8.4-r0), `sqlite-libs` (→ 3.53.4-r0), `p11-kit-trust` (→ 0.26.2-r0), and `openssl`/`libssl3`/`libcrypto3` (→ 3.5.8-r0).
 - Hardened the Kubernetes Redis manifest (`k8s/base/redis.yaml`): added a liveness/readiness probe to the `redis-exporter` sidecar container, and changed the pod/container `runAsUser`/`runAsGroup`/`fsGroup` from `999` to `10001` to eliminate a potential UID clash with host user IDs, matching the convention used elsewhere in the manifests.
+- Bumped the `netty.version` BOM override from `4.2.17.Final` to `4.2.18.Final`, resolving a Medium-severity Snyk-reported HTTP Request Smuggling issue (SNYK-JAVA-IONETTY-19778369) in `netty-codec-http`, pulled in transitively via the Gatling load-testing dependencies.
 
 ### Fixed
 - Updated `DockerImageTest` to assert against the new pinned base image version.

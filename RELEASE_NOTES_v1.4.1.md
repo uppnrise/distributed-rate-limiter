@@ -21,6 +21,10 @@ Release date: 2026-09-14
 - Added a missing liveness/readiness probe (`httpGet /metrics:9121`) to the `redis-exporter` sidecar container in `k8s/base/redis.yaml` (SNYK-CC-K8S-41).
 - Changed the Redis pod's `runAsUser`/`runAsGroup`/`fsGroup` from `999` to `10001`, and added explicit container-level `securityContext` overrides on both `redis` and `redis-exporter`, to eliminate a potential UID clash with host user IDs (SNYK-CC-K8S-11). This also aligns Redis with the UID convention already used in the main application deployment.
 
+### Dependency security
+
+- Bumped the `netty.version` BOM override from `4.2.17.Final` to `4.2.18.Final`, resolving a Medium-severity Snyk finding (SNYK-JAVA-IONETTY-19778369, HTTP Request Smuggling) in `netty-codec-http`, pulled in transitively via `gatling-charts-highcharts` → `gatling-recorder` (test-scope only, load-testing tooling).
+
 ### Documentation refresh
 
 - Updated release examples and artifact references to `v1.4.1`.

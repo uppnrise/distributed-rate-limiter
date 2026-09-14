@@ -253,12 +253,13 @@ Release date: 2026-09-14
 
 ## Summary
 
-`v1.4.1` is a patch release focused on resolving Snyk-reported container and Kubernetes manifest security findings. No public API or configuration changes.
+`v1.4.1` is a patch release focused on resolving Snyk-reported container, Kubernetes manifest, and dependency security findings. No public API or configuration changes.
 
 ## Highlights
 
 - Bumped the Docker base image from `eclipse-temurin:21.0.11_10` to `21.0.12_8` (JDK build stage and Alpine 3.23 JRE runtime stage), picking up patched Alpine OS packages that resolve High-severity CVEs in `expat`, `sqlite-libs`, `p11-kit-trust`, and `openssl`.
 - Hardened the Kubernetes Redis manifest (`k8s/base/redis.yaml`): added a liveness/readiness probe to the `redis-exporter` sidecar, and changed the pod/container `runAsUser`/`runAsGroup`/`fsGroup` from `999` to `10001` to avoid a UID clash with host user IDs, matching the convention used elsewhere in the manifests.
+- Bumped the `netty.version` BOM override to `4.2.18.Final`, resolving a Medium-severity Snyk finding (HTTP Request Smuggling) in `netty-codec-http`, a transitive test-scope dependency of Gatling.
 - Refreshes documentation and release examples for `v1.4.1`.
 
 ## Upgrade Notes
