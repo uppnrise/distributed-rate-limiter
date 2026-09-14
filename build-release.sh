@@ -1,11 +1,11 @@
 #!/bin/bash
 
-# Distributed Rate Limiter v1.4.0 Release Script
+# Distributed Rate Limiter v1.4.1 Release Script
 # This script builds production-ready artifacts for deployment
 
 set -e
 
-echo "🚀 Building Distributed Rate Limiter v1.4.0 Release"
+echo "🚀 Building Distributed Rate Limiter v1.4.1 Release"
 echo "=================================================="
 
 # Colors for output
@@ -16,7 +16,7 @@ BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
 # Configuration
-VERSION="1.4.0"
+VERSION="1.4.1"
 PROJECT_NAME="distributed-rate-limiter"
 DOCKER_REGISTRY="ghcr.io/uppnrise"
 
@@ -131,7 +131,7 @@ cat > ${RELEASE_DIR}/run-jar.sh << 'EOF'
 # Start the rate limiter JAR file
 # Make sure Redis is running on localhost:6379
 
-echo "🚀 Starting Distributed Rate Limiter v1.4.0"
+echo "🚀 Starting Distributed Rate Limiter v1.4.1"
 echo "============================================="
 
 # Check if Redis is running
@@ -143,14 +143,14 @@ if ! nc -z localhost 6379 2>/dev/null; then
 fi
 
 # Start the application
-java -jar distributed-rate-limiter-1.4.0.jar
+java -jar distributed-rate-limiter-1.4.1.jar
 EOF
 
 cat > ${RELEASE_DIR}/run-docker.sh << 'EOF'
 #!/bin/bash
 # Start the rate limiter using Docker Compose
 
-echo "🚀 Starting Distributed Rate Limiter v1.4.0 with Docker"
+echo "🚀 Starting Distributed Rate Limiter v1.4.1 with Docker"
 echo "======================================================="
 
 # Start services
@@ -174,7 +174,7 @@ chmod +x ${RELEASE_DIR}/run-docker.sh
 
 # Create deployment instructions
 cat > ${RELEASE_DIR}/DEPLOYMENT.md << 'EOF'
-# Distributed Rate Limiter v1.4.0 - Deployment Guide
+# Distributed Rate Limiter v1.4.1 - Deployment Guide
 
 ## Quick Start Options
 
@@ -190,7 +190,7 @@ cat > ${RELEASE_DIR}/DEPLOYMENT.md << 'EOF'
 
 **Custom configuration:**
 ```bash
-java -jar distributed-rate-limiter-1.4.0.jar \
+java -jar distributed-rate-limiter-1.4.1.jar \
   --spring.data.redis.host=your-redis-host \
   --spring.data.redis.port=6379 \
   --server.port=8080
@@ -247,24 +247,24 @@ EOF
 
 # Create release summary
 cat > ${RELEASE_DIR}/RELEASE_NOTES.md << 'EOF'
-# Distributed Rate Limiter v1.4.0 Release Notes
+# Distributed Rate Limiter v1.4.1 Release Notes
 
-Release date: 2026-09-05
+Release date: 2026-09-14
 
 ## Summary
 
-`v1.4.0` is a minor release focused on third-party dependency modernization and security hardening across the Maven backend, build tooling, and the web dashboard's npm dependencies. No public API or configuration changes.
+`v1.4.1` is a patch release focused on resolving Snyk-reported container, Kubernetes manifest, and dependency security findings. No public API or configuration changes.
 
 ## Highlights
 
-- Upgrades Spring Boot parent to 4.1.1 and bumps Jackson, Logback, Netty, Tomcat, springdoc, geoip2, and Gatling dependency/plugin versions.
-- Resolves Snyk npm, container, and Kubernetes manifest security findings.
-- Fixes newly-disclosed npm audit vulnerabilities in the web dashboard (`browserslist`, `@humanfs/node`, `postcss-selector-parser`).
-- Refreshes documentation and release examples for `v1.4.0`.
+- Bumped the Docker base image from `eclipse-temurin:21.0.11_10` to `21.0.12_8` (JDK build stage and Alpine 3.23 JRE runtime stage), picking up patched Alpine OS packages that resolve High-severity CVEs in `expat`, `sqlite-libs`, `p11-kit-trust`, and `openssl`.
+- Hardened the Kubernetes Redis manifest (`k8s/base/redis.yaml`): added a liveness/readiness probe to the `redis-exporter` sidecar, and changed the pod/container `runAsUser`/`runAsGroup`/`fsGroup` from `999` to `10001` to avoid a UID clash with host user IDs, matching the convention used elsewhere in the manifests.
+- Bumped the `netty.version` BOM override to `4.2.18.Final`, resolving a Medium-severity Snyk finding (HTTP Request Smuggling) in `netty-codec-http`, a transitive test-scope dependency of Gatling.
+- Refreshes documentation and release examples for `v1.4.1`.
 
 ## Upgrade Notes
 
-- Update pinned application version references from `v1.3.2` to `v1.4.0`.
+- Update pinned application version references from `v1.4.0` to `v1.4.1`.
 - Regenerate release artifacts so helper scripts and checksums match the patch release.
 EOF
 
