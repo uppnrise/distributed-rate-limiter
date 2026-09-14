@@ -335,7 +335,7 @@ Release date: 2026-09-14
 
 ## Summary
 
-`v1.4.1` is a patch release focused on resolving Snyk-reported container and Kubernetes manifest security findings. No public API or configuration changes.
+`v1.4.1` is a patch release focused on resolving Snyk-reported container, Kubernetes manifest, and dependency security findings. No public API or configuration changes.
 
 ## Highlights
 
@@ -347,6 +347,10 @@ Release date: 2026-09-14
 
 - Added a missing liveness/readiness probe to the `redis-exporter` sidecar container in `k8s/base/redis.yaml`.
 - Changed the Redis pod's `runAsUser`/`runAsGroup`/`fsGroup` from `999` to `10001` (and added explicit container-level `securityContext` overrides) to avoid a UID clash with host user IDs, aligning with the UID convention already used in the main application deployment.
+
+### Dependency security
+
+- Bumped the `netty.version` BOM override from `4.2.17.Final` to `4.2.18.Final`, resolving a Medium-severity Snyk finding (SNYK-JAVA-IONETTY-19778369, HTTP Request Smuggling) in `netty-codec-http`, a transitive test-scope dependency pulled in via Gatling load-testing tooling.
 
 ### Documentation refresh
 

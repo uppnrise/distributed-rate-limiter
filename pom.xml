@@ -23,7 +23,7 @@
         <jackson-2-bom.version>2.22.2</jackson-2-bom.version>
         <jackson-bom.version>3.2.2</jackson-bom.version>
         <logback.version>1.6.3</logback.version>
-        <netty.version>4.2.17.Final</netty.version>
+        <netty.version>4.2.18.Final</netty.version>
         <tomcat.version>11.0.25</tomcat.version>
     </properties>
 
