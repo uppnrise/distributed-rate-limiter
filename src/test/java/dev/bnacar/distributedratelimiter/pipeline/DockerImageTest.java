@@ -28,8 +28,8 @@ import static org.junit.jupiter.api.Assertions.*;
 class DockerImageTest {
 
     private static final String TEMURIN_21_BUILD_STAGE = "FROM eclipse-temurin:21";
-    private static final String TEMURIN_21_RUNTIME_STAGE = "FROM eclipse-temurin:21.0.11_10-jre-alpine-3.23";
-    private static final String PINNED_RUNTIME_IMAGE = "eclipse-temurin:21.0.11_10-jre-alpine-3.23";
+    private static final String TEMURIN_21_RUNTIME_STAGE = "FROM eclipse-temurin:21.0.12_8-jre-alpine-3.23";
+    private static final String PINNED_RUNTIME_IMAGE = "eclipse-temurin:21.0.12_8-jre-alpine-3.23";
 
     @Test
     @DisplayName("Dockerfile should contain multi-stage build")

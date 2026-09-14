@@ -5,6 +5,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.1] - 2026-09-14
+
+### Security
+- Bumped the Docker base image from `eclipse-temurin:21.0.11_10` to `21.0.12_8` (build and Alpine 3.23 JRE runtime stages), resolving High-severity Snyk-reported CVEs in the Alpine OS packages `expat` (→ 2.8.4-r0), `sqlite-libs` (→ 3.53.4-r0), `p11-kit-trust` (→ 0.26.2-r0), and `openssl`/`libssl3`/`libcrypto3` (→ 3.5.8-r0).
+- Hardened the Kubernetes Redis manifest (`k8s/base/redis.yaml`): added a liveness/readiness probe to the `redis-exporter` sidecar container, and changed the pod/container `runAsUser`/`runAsGroup`/`fsGroup` from `999` to `10001` to eliminate a potential UID clash with host user IDs, matching the convention used elsewhere in the manifests.
+
+### Fixed
+- Updated `DockerImageTest` to assert against the new pinned base image version.
+
 ## [1.4.0] - 2026-09-05
 
 ### Changed
