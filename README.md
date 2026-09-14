@@ -7,7 +7,7 @@
 **High-performance, Redis-backed rate limiter service with multiple algorithms and REST API**
 
 [![Java](https://img.shields.io/badge/Java-21-orange.svg)](https://openjdk.java.net/projects/jdk/21/)
-[![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.5.11-brightgreen.svg)](https://spring.io/projects/spring-boot)
+[![Spring Boot](https://img.shields.io/badge/Spring%20Boot-4.1.1-brightgreen.svg)](https://spring.io/projects/spring-boot)
 [![Redis](https://img.shields.io/badge/Redis-8.x-red.svg)](https://redis.io/)
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE.md)
 [![Build Status](https://github.com/uppnrise/distributed-rate-limiter/workflows/CI%2FCD%20Pipeline/badge.svg)](https://github.com/uppnrise/distributed-rate-limiter/actions)
