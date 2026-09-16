@@ -13,6 +13,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 import java.util.UUID;
+import java.util.regex.Pattern;
 
 /**
  * Filter that adds correlation ID to every HTTP request for distributed tracing.
@@ -30,6 +31,14 @@ public class CorrelationIdFilter extends OncePerRequestFilter {
     public static final String CORRELATION_ID_MDC_KEY = "correlationId";
     public static final String TRACE_ID_MDC_KEY = "traceId";
     public static final String SPAN_ID_MDC_KEY = "spanId";
+
+    // Correlation/trace IDs are echoed back as response headers, so incoming
+    // client-supplied values must be restricted to a safe character set.
+    // Rejecting anything else (e.g. CR/LF control characters) before it ever
+    // reaches setHeader() prevents HTTP response splitting / header injection
+    // (CWE-113); non-conforming values are treated as absent and replaced
+    // with a freshly generated UUID.
+    private static final Pattern SAFE_ID_PATTERN = Pattern.compile("^[a-zA-Z0-9\\-]{1,128}$");
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
@@ -64,7 +73,7 @@ public class CorrelationIdFilter extends OncePerRequestFilter {
     
     private String extractOrGenerateCorrelationId(HttpServletRequest request) {
         String correlationId = request.getHeader(CORRELATION_ID_HEADER);
-        if (correlationId == null || correlationId.trim().isEmpty()) {
+        if (!isSafeId(correlationId)) {
             correlationId = UUID.randomUUID().toString();
         }
         return correlationId;
@@ -72,10 +81,14 @@ public class CorrelationIdFilter extends OncePerRequestFilter {
     
     private String extractOrGenerateTraceId(HttpServletRequest request) {
         String traceId = request.getHeader(TRACE_ID_HEADER);
-        if (traceId == null || traceId.trim().isEmpty()) {
+        if (!isSafeId(traceId)) {
             traceId = UUID.randomUUID().toString();
         }
         return traceId;
+    }
+    
+    private boolean isSafeId(String value) {
+        return value != null && SAFE_ID_PATTERN.matcher(value).matches();
     }
     
     private String generateSpanId() {

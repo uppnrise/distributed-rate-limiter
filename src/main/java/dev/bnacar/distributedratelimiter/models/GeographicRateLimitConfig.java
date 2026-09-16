@@ -1,6 +1,7 @@
 package dev.bnacar.distributedratelimiter.models;
 
 import dev.bnacar.distributedratelimiter.ratelimit.RateLimitConfig;
+import dev.bnacar.distributedratelimiter.util.WildcardPatternMatcher;
 import java.time.LocalDateTime;
 import java.util.Objects;
 
@@ -96,33 +97,13 @@ public class GeographicRateLimitConfig {
         return true;
     }
 
+    /**
+     * Pattern matching supporting '*' wildcard. Delegates to a linear-time
+     * matcher instead of compiling user-controlled patterns into a regex,
+     * which avoids a regular expression / ReDoS injection risk (CWE-400).
+     */
     private boolean matchesPattern(String key, String pattern) {
-        if (pattern.equals("*")) {
-            return true;
-        }
-        
-        if (!pattern.contains("*")) {
-            return key.equals(pattern);
-        }
-        
-        // Convert pattern to regex
-        String regex = pattern
-            .replace("\\", "\\\\")
-            .replace(".", "\\.")
-            .replace("+", "\\+")
-            .replace("?", "\\?")
-            .replace("^", "\\^")
-            .replace("$", "\\$")
-            .replace("|", "\\|")
-            .replace("(", "\\(")
-            .replace(")", "\\)")
-            .replace("[", "\\[")
-            .replace("]", "\\]")
-            .replace("{", "\\{")
-            .replace("}", "\\}")
-            .replace("*", ".*");
-            
-        return key.matches("^" + regex + "$");
+        return WildcardPatternMatcher.matches(key, pattern);
     }
 
     // Getters and setters
