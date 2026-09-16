@@ -155,4 +155,80 @@ class CorrelationIdFilterTest {
         String responseTraceId = response.getHeader(CorrelationIdFilter.TRACE_ID_HEADER);
         assertThat(responseTraceId).isEqualTo(existingTraceId);
     }
+
+    @Test
+    void shouldRejectCorrelationIdContainingCrlfAndGenerateNewOne() throws ServletException, IOException {
+        // Given - a malicious correlation ID attempting HTTP response splitting
+        String maliciousCorrelationId = "abc\r\nSet-Cookie: session=hijacked";
+        request.addHeader(CorrelationIdFilter.CORRELATION_ID_HEADER, maliciousCorrelationId);
+
+        // When
+        correlationIdFilter.doFilterInternal(request, response, filterChain);
+
+        // Then - the malicious value must never be reflected back; a safe UUID is generated instead
+        String responseCorrelationId = response.getHeader(CorrelationIdFilter.CORRELATION_ID_HEADER);
+        assertThat(responseCorrelationId).isNotEqualTo(maliciousCorrelationId);
+        assertThat(responseCorrelationId).doesNotContain("\r").doesNotContain("\n");
+        assertThat(responseCorrelationId).matches("[0-9a-f-]{36}"); // UUID format
+    }
+
+    @Test
+    void shouldRejectTraceIdContainingCrlfAndGenerateNewOne() throws ServletException, IOException {
+        // Given - a malicious trace ID attempting header injection
+        String maliciousTraceId = "trace\r\nX-Injected-Header: evil";
+        request.addHeader(CorrelationIdFilter.TRACE_ID_HEADER, maliciousTraceId);
+
+        // When
+        correlationIdFilter.doFilterInternal(request, response, filterChain);
+
+        // Then
+        String responseTraceId = response.getHeader(CorrelationIdFilter.TRACE_ID_HEADER);
+        assertThat(responseTraceId).isNotEqualTo(maliciousTraceId);
+        assertThat(responseTraceId).doesNotContain("\r").doesNotContain("\n");
+        assertThat(responseTraceId).matches("[0-9a-f-]{36}"); // UUID format
+    }
+
+    @Test
+    void shouldRejectCorrelationIdWithDisallowedCharactersAndGenerateNewOne() throws ServletException, IOException {
+        // Given - a value with characters outside the safe identifier charset
+        String invalidCorrelationId = "id with spaces/and;special<chars>";
+        request.addHeader(CorrelationIdFilter.CORRELATION_ID_HEADER, invalidCorrelationId);
+
+        // When
+        correlationIdFilter.doFilterInternal(request, response, filterChain);
+
+        // Then
+        String responseCorrelationId = response.getHeader(CorrelationIdFilter.CORRELATION_ID_HEADER);
+        assertThat(responseCorrelationId).isNotEqualTo(invalidCorrelationId);
+        assertThat(responseCorrelationId).matches("[0-9a-f-]{36}"); // UUID format
+    }
+
+    @Test
+    void shouldRejectOverlyLongCorrelationIdAndGenerateNewOne() throws ServletException, IOException {
+        // Given - a value exceeding the maximum allowed identifier length
+        String overlyLongCorrelationId = "a".repeat(200);
+        request.addHeader(CorrelationIdFilter.CORRELATION_ID_HEADER, overlyLongCorrelationId);
+
+        // When
+        correlationIdFilter.doFilterInternal(request, response, filterChain);
+
+        // Then
+        String responseCorrelationId = response.getHeader(CorrelationIdFilter.CORRELATION_ID_HEADER);
+        assertThat(responseCorrelationId).isNotEqualTo(overlyLongCorrelationId);
+        assertThat(responseCorrelationId).matches("[0-9a-f-]{36}"); // UUID format
+    }
+
+    @Test
+    void shouldAcceptValidAlphanumericCorrelationIdWithHyphens() throws ServletException, IOException {
+        // Given - a value within the safe charset (letters, digits, hyphens)
+        String validCorrelationId = "Req-12345-ABCDE";
+        request.addHeader(CorrelationIdFilter.CORRELATION_ID_HEADER, validCorrelationId);
+
+        // When
+        correlationIdFilter.doFilterInternal(request, response, filterChain);
+
+        // Then - safe values pass through unchanged
+        String responseCorrelationId = response.getHeader(CorrelationIdFilter.CORRELATION_ID_HEADER);
+        assertThat(responseCorrelationId).isEqualTo(validCorrelationId);
+    }
 }

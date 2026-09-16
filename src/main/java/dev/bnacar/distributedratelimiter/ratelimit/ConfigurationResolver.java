@@ -1,6 +1,7 @@
 package dev.bnacar.distributedratelimiter.ratelimit;
 
 import dev.bnacar.distributedratelimiter.schedule.ScheduleManagerService;
+import dev.bnacar.distributedratelimiter.util.WildcardPatternMatcher;
 import org.springframework.stereotype.Service;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -107,34 +108,12 @@ public class ConfigurationResolver {
      * - "user:*" matches "user:123", "user:abc", etc.
      * - "*:admin" matches "user:admin", "system:admin", etc.
      * - "api:v1:*" matches "api:v1:users", "api:v1:orders", etc.
+     * Delegates to a linear-time matcher instead of compiling
+     * user-controlled patterns into a regex, which avoids a regular
+     * expression / ReDoS injection risk (CWE-400).
      */
     private boolean matchesPattern(String key, String pattern) {
-        if (pattern.equals("*")) {
-            return true;
-        }
-        
-        if (!pattern.contains("*")) {
-            return key.equals(pattern);
-        }
-        
-        // Convert pattern to regex: escape special chars except *, then replace * with .*
-        String regex = pattern
-            .replace("\\", "\\\\")
-            .replace(".", "\\.")
-            .replace("+", "\\+")
-            .replace("?", "\\?")
-            .replace("^", "\\^")
-            .replace("$", "\\$")
-            .replace("|", "\\|")
-            .replace("(", "\\(")
-            .replace(")", "\\)")
-            .replace("[", "\\[")
-            .replace("]", "\\]")
-            .replace("{", "\\{")
-            .replace("}", "\\}")
-            .replace("*", ".*");
-            
-        return key.matches("^" + regex + "$");
+        return WildcardPatternMatcher.matches(key, pattern);
     }
     
     /**

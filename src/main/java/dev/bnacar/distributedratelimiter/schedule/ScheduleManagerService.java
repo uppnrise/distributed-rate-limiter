@@ -3,6 +3,7 @@ package dev.bnacar.distributedratelimiter.schedule;
 import dev.bnacar.distributedratelimiter.ratelimit.ConfigurationResolver;
 import dev.bnacar.distributedratelimiter.ratelimit.RateLimitAlgorithm;
 import dev.bnacar.distributedratelimiter.ratelimit.RateLimitConfig;
+import dev.bnacar.distributedratelimiter.util.WildcardPatternMatcher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -194,33 +195,12 @@ public class ScheduleManagerService {
     
     /**
      * Pattern matching supporting '*' wildcard (same as ConfigurationResolver).
+     * Delegates to a linear-time matcher instead of compiling user-controlled
+     * patterns into a regex, which avoids a regular expression / ReDoS
+     * injection risk (CWE-400).
      */
     private boolean matchesPattern(String key, String pattern) {
-        if (pattern.equals("*")) {
-            return true;
-        }
-        
-        if (!pattern.contains("*")) {
-            return key.equals(pattern);
-        }
-        
-        String regex = pattern
-            .replace("\\", "\\\\")
-            .replace(".", "\\.")
-            .replace("+", "\\+")
-            .replace("?", "\\?")
-            .replace("^", "\\^")
-            .replace("$", "\\$")
-            .replace("|", "\\|")
-            .replace("(", "\\(")
-            .replace(")", "\\)")
-            .replace("[", "\\[")
-            .replace("]", "\\]")
-            .replace("{", "\\{")
-            .replace("}", "\\}")
-            .replace("*", ".*");
-            
-        return key.matches("^" + regex + "$");
+        return WildcardPatternMatcher.matches(key, pattern);
     }
     
     /**
