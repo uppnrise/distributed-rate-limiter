@@ -1,11 +1,11 @@
 #!/bin/bash
 
-# Distributed Rate Limiter v1.4.1 Release Script
+# Distributed Rate Limiter v1.4.2 Release Script
 # This script builds production-ready artifacts for deployment
 
 set -e
 
-echo "🚀 Building Distributed Rate Limiter v1.4.1 Release"
+echo "🚀 Building Distributed Rate Limiter v1.4.2 Release"
 echo "=================================================="
 
 # Colors for output
@@ -16,7 +16,7 @@ BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
 # Configuration
-VERSION="1.4.1"
+VERSION="1.4.2"
 PROJECT_NAME="distributed-rate-limiter"
 DOCKER_REGISTRY="ghcr.io/uppnrise"
 
@@ -131,7 +131,7 @@ cat > ${RELEASE_DIR}/run-jar.sh << 'EOF'
 # Start the rate limiter JAR file
 # Make sure Redis is running on localhost:6379
 
-echo "🚀 Starting Distributed Rate Limiter v1.4.1"
+echo "🚀 Starting Distributed Rate Limiter v1.4.2"
 echo "============================================="
 
 # Check if Redis is running
@@ -143,14 +143,14 @@ if ! nc -z localhost 6379 2>/dev/null; then
 fi
 
 # Start the application
-java -jar distributed-rate-limiter-1.4.1.jar
+java -jar distributed-rate-limiter-1.4.2.jar
 EOF
 
 cat > ${RELEASE_DIR}/run-docker.sh << 'EOF'
 #!/bin/bash
 # Start the rate limiter using Docker Compose
 
-echo "🚀 Starting Distributed Rate Limiter v1.4.1 with Docker"
+echo "🚀 Starting Distributed Rate Limiter v1.4.2 with Docker"
 echo "======================================================="
 
 # Start services
@@ -174,7 +174,7 @@ chmod +x ${RELEASE_DIR}/run-docker.sh
 
 # Create deployment instructions
 cat > ${RELEASE_DIR}/DEPLOYMENT.md << 'EOF'
-# Distributed Rate Limiter v1.4.1 - Deployment Guide
+# Distributed Rate Limiter v1.4.2 - Deployment Guide
 
 ## Quick Start Options
 
@@ -190,7 +190,7 @@ cat > ${RELEASE_DIR}/DEPLOYMENT.md << 'EOF'
 
 **Custom configuration:**
 ```bash
-java -jar distributed-rate-limiter-1.4.1.jar \
+java -jar distributed-rate-limiter-1.4.2.jar \
   --spring.data.redis.host=your-redis-host \
   --spring.data.redis.port=6379 \
   --server.port=8080
@@ -247,24 +247,23 @@ EOF
 
 # Create release summary
 cat > ${RELEASE_DIR}/RELEASE_NOTES.md << 'EOF'
-# Distributed Rate Limiter v1.4.1 Release Notes
+# Distributed Rate Limiter v1.4.2 Release Notes
 
-Release date: 2026-09-14
+Release date: 2026-09-16
 
 ## Summary
 
-`v1.4.1` is a patch release focused on resolving Snyk-reported container, Kubernetes manifest, and dependency security findings. No public API or configuration changes.
+`v1.4.2` is a patch release focused on resolving Snyk-reported code and Kubernetes manifest security findings. No public API or configuration changes.
 
 ## Highlights
 
-- Bumped the Docker base image from `eclipse-temurin:21.0.11_10` to `21.0.12_8` (JDK build stage and Alpine 3.23 JRE runtime stage), picking up patched Alpine OS packages that resolve High-severity CVEs in `expat`, `sqlite-libs`, `p11-kit-trust`, and `openssl`.
-- Hardened the Kubernetes Redis manifest (`k8s/base/redis.yaml`): added a liveness/readiness probe to the `redis-exporter` sidecar, and changed the pod/container `runAsUser`/`runAsGroup`/`fsGroup` from `999` to `10001` to avoid a UID clash with host user IDs, matching the convention used elsewhere in the manifests.
-- Bumped the `netty.version` BOM override to `4.2.18.Final`, resolving a Medium-severity Snyk finding (HTTP Request Smuggling) in `netty-codec-http`, a transitive test-scope dependency of Gatling.
-- Refreshes documentation and release examples for `v1.4.1`.
+- Resolved Snyk Code (CWE-79, Cross-Site Scripting) findings in `GeographicRateLimitController`, `RateLimitConfigController`, and `AdminController` where unsanitized request URL/body input (rule name, rule ID, rate-limit key, pattern) was reflected directly into plain-text HTTP responses. All reflected values are now HTML-escaped via `HtmlUtils.htmlEscape()`.
+- Hardened the Kubernetes Redis manifest (`k8s/base/redis.yaml`, SNYK-CC-K8S-42): set `imagePullPolicy: Always` on the `redis` and `redis-exporter` containers, matching the convention already used in `deployment.yaml` and `backup-cronjob.yaml`.
+- Refreshes documentation and release examples for `v1.4.2`.
 
 ## Upgrade Notes
 
-- Update pinned application version references from `v1.4.0` to `v1.4.1`.
+- Update pinned application version references from `v1.4.1` to `v1.4.2`.
 - Regenerate release artifacts so helper scripts and checksums match the patch release.
 EOF
 

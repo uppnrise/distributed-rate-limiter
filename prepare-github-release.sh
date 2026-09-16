@@ -6,7 +6,7 @@
 set -e
 
 # Configuration
-VERSION="1.4.1"
+VERSION="1.4.2"
 RELEASE_DIR="release-artifacts"
 PROJECT_NAME="distributed-rate-limiter"
 
@@ -50,7 +50,7 @@ echo -e "${BLUE}📋 Creating quick start script...${NC}"
 cat > quick-start.sh << 'EOF'
 #!/bin/bash
 
-# Distributed Rate Limiter v1.4.1 Quick Start
+# Distributed Rate Limiter v1.4.2 Quick Start
 # This script helps you start the rate limiter quickly
 
 set -e
@@ -62,7 +62,7 @@ YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
 NC='\033[0m'
 
-echo -e "${BLUE}🚀 Distributed Rate Limiter v1.4.1 Quick Start${NC}"
+echo -e "${BLUE}🚀 Distributed Rate Limiter v1.4.2 Quick Start${NC}"
 echo "=============================================="
 echo ""
 
@@ -106,7 +106,7 @@ echo "⏹️  Press Ctrl+C to stop"
 echo ""
 
 # Start the application
-java -jar distributed-rate-limiter-1.4.1.jar
+java -jar distributed-rate-limiter-1.4.2.jar
 EOF
 
 chmod +x quick-start.sh
@@ -115,11 +115,11 @@ chmod +x quick-start.sh
 cat > docker-quick-start.sh << 'EOF'
 #!/bin/bash
 
-# Distributed Rate Limiter v1.4.1 Docker Quick Start
+# Distributed Rate Limiter v1.4.2 Docker Quick Start
 
 set -e
 
-echo "🐳 Distributed Rate Limiter v1.4.1 - Docker Quick Start"
+echo "🐳 Distributed Rate Limiter v1.4.2 - Docker Quick Start"
 echo "======================================================"
 
 # Check if Docker is available
@@ -156,7 +156,7 @@ services:
       retries: 3
 
   rate-limiter:
-    image: ghcr.io/uppnrise/distributed-rate-limiter:1.4.1
+    image: ghcr.io/uppnrise/distributed-rate-limiter:1.4.2
     container_name: rate-limiter-app
     ports:
       - "8080:8080"
@@ -196,7 +196,7 @@ chmod +x docker-quick-start.sh
 
 # Create installation guide
 cat > INSTALLATION.md << 'EOF'
-# Installation Guide - Distributed Rate Limiter v1.4.1
+# Installation Guide - Distributed Rate Limiter v1.4.2
 
 ## Quick Installation Options
 
@@ -209,7 +209,7 @@ cat > INSTALLATION.md << 'EOF'
 **Steps:**
 1. Download the JAR file from GitHub Releases
 2. Ensure Redis is running: `docker run -d -p 6379:6379 redis:8-alpine`
-3. Run: `java -jar distributed-rate-limiter-1.4.1.jar`
+3. Run: `java -jar distributed-rate-limiter-1.4.2.jar`
 4. Test: `curl http://localhost:8080/actuator/health`
 
 **Quick Start Script:**
@@ -225,7 +225,7 @@ chmod +x quick-start.sh
 
 **Steps:**
 1. Run the Docker quick start script: `./docker-quick-start.sh`
-2. Or manually: `docker run -p 8080:8080 ghcr.io/uppnrise/distributed-rate-limiter:1.4.1`
+2. Or manually: `docker run -p 8080:8080 ghcr.io/uppnrise/distributed-rate-limiter:1.4.2`
 
 ### Option 3: Build from Source
 
@@ -239,7 +239,7 @@ chmod +x quick-start.sh
 git clone https://github.com/uppnrise/distributed-rate-limiter.git
 cd distributed-rate-limiter
 ./mvnw clean install
-java -jar target/distributed-rate-limiter-1.4.1.jar
+java -jar target/distributed-rate-limiter-1.4.2.jar
 ```
 
 ## Configuration
@@ -248,7 +248,7 @@ java -jar target/distributed-rate-limiter-1.4.1.jar
 The application uses sensible defaults but can be customized:
 
 ```bash
-java -jar distributed-rate-limiter-1.4.1.jar \
+java -jar distributed-rate-limiter-1.4.2.jar \
   --spring.data.redis.host=your-redis-host \
   --spring.data.redis.port=6379 \
   --server.port=8080
@@ -259,7 +259,7 @@ java -jar distributed-rate-limiter-1.4.1.jar \
 export SPRING_DATA_REDIS_HOST=your-redis-host
 export SPRING_DATA_REDIS_PORT=6379
 export SERVER_PORT=8080
-java -jar distributed-rate-limiter-1.4.1.jar
+java -jar distributed-rate-limiter-1.4.2.jar
 ```
 
 ### Configuration File
@@ -314,7 +314,7 @@ java -version
 **Issue**: Port 8080 already in use
 **Solution**: Use a different port
 ```bash
-java -jar distributed-rate-limiter-1.4.1.jar --server.port=8081
+java -jar distributed-rate-limiter-1.4.2.jar --server.port=8081
 ```
 
 ### Getting Help
@@ -329,32 +329,27 @@ cd ..
 
 # Create release notes
 cat > ${RELEASE_DIR}/RELEASE_NOTES.md << 'EOF'
-# Distributed Rate Limiter v1.4.1 - Release Notes
+# Distributed Rate Limiter v1.4.2 - Release Notes
 
-Release date: 2026-09-14
+Release date: 2026-09-16
 
 ## Summary
 
-`v1.4.1` is a patch release focused on resolving Snyk-reported container, Kubernetes manifest, and dependency security findings. No public API or configuration changes.
+`v1.4.2` is a patch release focused on resolving Snyk-reported code and Kubernetes manifest security findings. No public API or configuration changes.
 
 ## Highlights
 
-### Container security
+### Application security
 
-- Bumped the Docker base image from `eclipse-temurin:21.0.11_10` to `21.0.12_8` (JDK build stage and Alpine 3.23 JRE runtime stage), which resolves High-severity CVEs in the Alpine OS packages `expat` (2.8.3-r0 → 2.8.4-r0), `sqlite-libs` (→ 3.53.4-r0), `p11-kit-trust` (0.25.5-r2 → 0.26.2-r0), and `openssl`/`libssl3`/`libcrypto3` (3.5.7-r0 → 3.5.8-r0).
+- Resolved Snyk Code (CWE-79, Cross-Site Scripting) findings in `GeographicRateLimitController`, `RateLimitConfigController`, and `AdminController`, where unsanitized request URL/body input (rule name, rule ID, rate-limit key, pattern) was reflected directly into plain-text HTTP responses. All reflected values are now HTML-escaped via `HtmlUtils.htmlEscape()` before being included in the response body.
 
 ### Kubernetes hardening
 
-- Added a missing liveness/readiness probe to the `redis-exporter` sidecar container in `k8s/base/redis.yaml`.
-- Changed the Redis pod's `runAsUser`/`runAsGroup`/`fsGroup` from `999` to `10001` (and added explicit container-level `securityContext` overrides) to avoid a UID clash with host user IDs, aligning with the UID convention already used in the main application deployment.
-
-### Dependency security
-
-- Bumped the `netty.version` BOM override from `4.2.17.Final` to `4.2.18.Final`, resolving a Medium-severity Snyk finding (SNYK-JAVA-IONETTY-19778369, HTTP Request Smuggling) in `netty-codec-http`, a transitive test-scope dependency pulled in via Gatling load-testing tooling.
+- Set `imagePullPolicy: Always` on the `redis` and `redis-exporter` containers in `k8s/base/redis.yaml` (SNYK-CC-K8S-42), matching the convention already used in `deployment.yaml` and `backup-cronjob.yaml`.
 
 ### Documentation refresh
 
-- Updates release examples and artifact references to `v1.4.1`.
+- Updates release examples and artifact references to `v1.4.2`.
 
 ### Deployment Options
 - **JAR File**: Self-contained Spring Boot application (42MB)
@@ -373,13 +368,13 @@ Release date: 2026-09-14
 ### JAR File (Recommended)
 ```bash
 # Download and run
-wget https://github.com/uppnrise/distributed-rate-limiter/releases/download/v1.4.1/distributed-rate-limiter-1.4.1.jar
-java -jar distributed-rate-limiter-1.4.1.jar
+wget https://github.com/uppnrise/distributed-rate-limiter/releases/download/v1.4.2/distributed-rate-limiter-1.4.2.jar
+java -jar distributed-rate-limiter-1.4.2.jar
 ```
 
 ### Docker
 ```bash
-docker run -p 8080:8080 ghcr.io/uppnrise/distributed-rate-limiter:1.4.1
+docker run -p 8080:8080 ghcr.io/uppnrise/distributed-rate-limiter:1.4.2
 ```
 
 ### Quick Start Scripts
@@ -393,20 +388,20 @@ docker run -p 8080:8080 ghcr.io/uppnrise/distributed-rate-limiter:1.4.1
 - **2GB RAM minimum** for production usage
 
 ## File Checksums
-- **SHA256**: See `distributed-rate-limiter-1.4.1.jar.sha256`
-- **MD5**: See `distributed-rate-limiter-1.4.1.jar.md5`
+- **SHA256**: See `distributed-rate-limiter-1.4.2.jar.sha256`
+- **MD5**: See `distributed-rate-limiter-1.4.2.jar.md5`
 
 ## Breaking Changes
-None. This release is intended as a drop-in upgrade from `v1.4.0`.
+None. This release is intended as a drop-in upgrade from `v1.4.1`.
 
 ## Upgrade Notes
-- Update pinned application version references from `v1.4.0` to `v1.4.1`.
-- No configuration or API changes are required. If deploying `k8s/base/redis.yaml` to an existing cluster, note that the Redis pod's UID changed from `999` to `10001`; the PVC-backed `/data` volume is re-owned automatically via `fsGroup` on pod (re)scheduling.
+- Update pinned application version references from `v1.4.1` to `v1.4.2`.
+- No configuration or API changes are required.
 
 ## Known Issues
 Load-test artifacts still do not include backend latency measurements, so helper dashboards and reports continue to mark those metrics as unavailable.
 
-## What's Next (post v1.4.1)
+## What's Next (post v1.4.2)
 - Continue routine dependency and security maintenance.
 - Add backend latency measurements to benchmark responses.
 - Keep backend hardening work moving in small releases.
