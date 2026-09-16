@@ -23,6 +23,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.util.HtmlUtils;
 
 import jakarta.validation.Valid;
 import java.util.List;
@@ -151,7 +152,7 @@ public class AdminController {
         configurationResolver.clearCache();
 
         if (configRemoved || bucketRemoved) {
-            return ResponseEntity.ok("Limits removed for key: " + key);
+            return ResponseEntity.ok("Limits removed for key: " + HtmlUtils.htmlEscape(key));
         } else {
             return ResponseEntity.notFound().build();
         }
