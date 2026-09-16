@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.2] - 2026-09-16
+
+### Security
+- Resolved Snyk Code (CWE-79, Cross-Site Scripting) findings in `GeographicRateLimitController`, `RateLimitConfigController`, and `AdminController`, where unsanitized request URL/body input (rule name, rule ID, rate-limit key, pattern) was reflected directly into plain-text HTTP responses. All reflected values are now HTML-escaped via `HtmlUtils.htmlEscape()`.
+- Set `imagePullPolicy: Always` on the `redis` and `redis-exporter` containers in `k8s/base/redis.yaml` (SNYK-CC-K8S-42), matching the convention already used in `deployment.yaml` and `backup-cronjob.yaml`.
+
 ## [1.4.1] - 2026-09-14
 
 ### Security
