@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.3] - 2026-09-16
+
+### Security
+- Resolved a Regular Expression Injection / ReDoS finding (CWE-400) in `ScheduleManagerService`, `ConfigurationResolver`, and `GeographicRateLimitConfig`: user-controlled wildcard patterns were compiled into a regex and matched with `String.matches()`, vulnerable to catastrophic backtracking. Replaced with a new linear-time, backtracking-free `WildcardPatternMatcher` utility.
+- Resolved a CRLF/HTTP header injection finding (CWE-113) in `CorrelationIdFilter`: incoming `X-Correlation-ID`/`X-Trace-ID` header values are now validated against a safe identifier charset before being reflected into response headers, instead of being echoed back unchecked.
+
+### Added
+- `WildcardPatternMatcherTest` covering matching parity, regex-metacharacter literal handling, null/length guards, and adversarial-pattern timing assertions.
+- `CorrelationIdFilterTest` cases for CRLF injection attempts, disallowed characters, oversized input, and valid IDs.
+
 ## [1.4.2] - 2026-09-16
 
 ### Security
