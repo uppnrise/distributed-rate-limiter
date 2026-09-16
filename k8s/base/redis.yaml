@@ -34,6 +34,7 @@ spec:
       containers:
       - name: redis
         image: redis:7.4-alpine
+        imagePullPolicy: Always
         ports:
         - containerPort: 6379
           name: redis
@@ -106,6 +107,7 @@ spec:
       # Redis Exporter for Prometheus monitoring
       - name: redis-exporter
         image: oliver006/redis_exporter:v1.66.0
+        imagePullPolicy: Always
         ports:
         - containerPort: 9121
           name: metrics

@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.util.HtmlUtils;
 
 /**
  * Controller for managing rate limiter configuration.
@@ -69,7 +70,7 @@ public class RateLimitConfigController {
                                                         @RequestBody RateLimiterConfiguration.KeyConfig keyConfig) {
         configuration.putKey(key, keyConfig);
         reloadConfiguration();
-        return ResponseEntity.ok("Configuration updated for key: " + key);
+        return ResponseEntity.ok("Configuration updated for key: " + HtmlUtils.htmlEscape(key));
     }
 
     /**
@@ -80,7 +81,7 @@ public class RateLimitConfigController {
                                                             @RequestBody RateLimiterConfiguration.KeyConfig keyConfig) {
         configuration.putPattern(pattern, keyConfig);
         reloadConfiguration();
-        return ResponseEntity.ok("Configuration updated for pattern: " + pattern);
+        return ResponseEntity.ok("Configuration updated for pattern: " + HtmlUtils.htmlEscape(pattern));
     }
 
     /**
@@ -108,7 +109,7 @@ public class RateLimitConfigController {
     public ResponseEntity<String> removeKeyConfiguration(@PathVariable("key") String key) {
         configuration.removeKey(key);
         reloadConfiguration();
-        return ResponseEntity.ok("Configuration removed for key: " + key);
+        return ResponseEntity.ok("Configuration removed for key: " + HtmlUtils.htmlEscape(key));
     }
 
     /**
@@ -118,7 +119,7 @@ public class RateLimitConfigController {
     public ResponseEntity<String> removePatternConfiguration(@PathVariable("pattern") String pattern) {
         configuration.removePattern(pattern);
         reloadConfiguration();
-        return ResponseEntity.ok("Configuration removed for pattern: " + pattern);
+        return ResponseEntity.ok("Configuration removed for pattern: " + HtmlUtils.htmlEscape(pattern));
     }
 
     /**

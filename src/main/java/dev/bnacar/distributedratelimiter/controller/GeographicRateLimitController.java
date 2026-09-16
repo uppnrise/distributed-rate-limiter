@@ -12,6 +12,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.util.HtmlUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -61,7 +62,7 @@ public class GeographicRateLimitController {
     public ResponseEntity<String> addRule(@RequestBody GeographicRateLimitConfig rule) {
         try {
             geographicConfigResolver.addGeographicRule(rule);
-            return ResponseEntity.ok("Geographic rule added successfully: " + rule.getName());
+            return ResponseEntity.ok("Geographic rule added successfully: " + HtmlUtils.htmlEscape(rule.getName()));
         } catch (Exception e) {
             logger.error("Failed to add geographic rule", e);
             return ResponseEntity.badRequest().body("Failed to add rule");
@@ -78,7 +79,7 @@ public class GeographicRateLimitController {
     public ResponseEntity<String> removeRule(@Parameter(description = "Rule ID to remove") @PathVariable String ruleId) {
         boolean removed = geographicConfigResolver.removeGeographicRule(ruleId);
         if (removed) {
-            return ResponseEntity.ok("Geographic rule removed successfully: " + ruleId);
+            return ResponseEntity.ok("Geographic rule removed successfully: " + HtmlUtils.htmlEscape(ruleId));
         } else {
             return ResponseEntity.notFound().build();
         }
