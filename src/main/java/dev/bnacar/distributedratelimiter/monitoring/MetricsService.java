@@ -4,6 +4,8 @@ import dev.bnacar.distributedratelimiter.models.MetricsResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationListener;
+import org.springframework.context.event.ContextClosedEvent;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.stereotype.Service;
 
@@ -11,10 +13,11 @@ import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
 import java.util.Map;
 import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 
 @Service
-public class MetricsService {
+public class MetricsService implements ApplicationListener<ContextClosedEvent> {
     
     private static final Logger logger = LoggerFactory.getLogger(MetricsService.class);
     
@@ -25,6 +28,11 @@ public class MetricsService {
     private final AtomicLong totalBucketCleanups = new AtomicLong(0);
     private final AtomicLong totalProcessingTimeMs = new AtomicLong(0);
     private volatile boolean redisConnected = false;
+    // Set as soon as the application context begins closing, so the scheduled
+    // health check stops running before Spring's Lifecycle beans (e.g. the
+    // Redis connection factory) are stopped. This avoids logging expected
+    // shutdown noise ("... has been STOPPED. Use start() ...") as an error.
+    private final AtomicBoolean shuttingDown = new AtomicBoolean(false);
     private ScheduledExecutorService healthCheckExecutor;
     private RedisConnectionFactory redisConnectionFactory;
 
@@ -58,6 +66,12 @@ public class MetricsService {
     }
 
     private void checkRedisHealth() {
+        // Skip entirely once shutdown has started: the Redis connection
+        // factory may already be stopped even though this task was still
+        // queued, and that is an expected condition, not an error.
+        if (shuttingDown.get()) {
+            return;
+        }
         if (redisConnectionFactory != null) {
             try {
                 redisConnectionFactory.getConnection().ping();
@@ -66,6 +80,20 @@ public class MetricsService {
                 }
                 setRedisConnected(true);
             } catch (Exception e) {
+                if (shuttingDown.get() || isConnectionFactoryStopped(e)) {
+                    // The connection factory has been explicitly stopped
+                    // (application/context shutdown, or - in tests - the
+                    // underlying container being torn down). This is a
+                    // terminal, expected lifecycle state rather than an
+                    // operational Redis outage: log it quietly and stop
+                    // polling a factory that will not recover without an
+                    // explicit start().
+                    logger.info("Redis connection factory has been stopped; halting health checks: {}",
+                            e.getMessage());
+                    setRedisConnected(false);
+                    stopHealthCheck();
+                    return;
+                }
                 if (redisConnected) {
                     logger.error("Redis connection lost: {}", e.getMessage());
                 }
@@ -76,16 +104,46 @@ public class MetricsService {
         }
     }
 
+    /**
+     * Detects whether the given exception indicates that the underlying
+     * {@code LettuceConnectionFactory} has reached its terminal STOPPED
+     * state, as opposed to a transient network-level connectivity failure.
+     * Spring/Lettuce raise a distinctive message for this ("... has been
+     * STOPPED. Use start() to initialize it") rather than throwing a
+     * generic connection exception.
+     */
+    private boolean isConnectionFactoryStopped(Exception e) {
+        String message = e.getMessage();
+        return message != null && message.contains("has been STOPPED");
+    }
+
+    /**
+     * Reacts to the application context closing by immediately stopping the
+     * health-check scheduler. {@link ContextClosedEvent} is published before
+     * Spring stops {@code Lifecycle} beans (such as the Redis connection
+     * factory) and before {@code @PreDestroy} callbacks run, so cancelling
+     * here guarantees no further health checks execute against an
+     * already-stopped connection factory.
+     */
+    @Override
+    public void onApplicationEvent(ContextClosedEvent event) {
+        stopHealthCheck();
+    }
+
     @PreDestroy
     public void shutdown() {
+        stopHealthCheck();
+    }
+
+    private void stopHealthCheck() {
+        if (!shuttingDown.compareAndSet(false, true)) {
+            return;
+        }
         if (healthCheckExecutor != null) {
-            healthCheckExecutor.shutdown();
+            healthCheckExecutor.shutdownNow();
             try {
-                if (!healthCheckExecutor.awaitTermination(5, TimeUnit.SECONDS)) {
-                    healthCheckExecutor.shutdownNow();
-                }
+                healthCheckExecutor.awaitTermination(5, TimeUnit.SECONDS);
             } catch (InterruptedException e) {
-                healthCheckExecutor.shutdownNow();
                 Thread.currentThread().interrupt();
             }
         }
