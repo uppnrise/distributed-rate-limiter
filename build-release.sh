@@ -1,11 +1,11 @@
 #!/bin/bash
 
-# Distributed Rate Limiter v1.4.3 Release Script
+# Distributed Rate Limiter v1.4.4 Release Script
 # This script builds production-ready artifacts for deployment
 
 set -e
 
-echo "🚀 Building Distributed Rate Limiter v1.4.3 Release"
+echo "🚀 Building Distributed Rate Limiter v1.4.4 Release"
 echo "=================================================="
 
 # Colors for output
@@ -16,7 +16,7 @@ BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
 # Configuration
-VERSION="1.4.3"
+VERSION="1.4.4"
 PROJECT_NAME="distributed-rate-limiter"
 DOCKER_REGISTRY="ghcr.io/uppnrise"
 
@@ -63,7 +63,7 @@ fi
 
 # Test the JAR
 echo -e "${BLUE}🧪 Testing JAR...${NC}"
-timeout 30s java -jar target/${PROJECT_NAME}-${VERSION}.jar --spring.profiles.active=test --server.port=8082 &
+java -jar target/${PROJECT_NAME}-${VERSION}.jar --spring.profiles.active=test --server.port=8082 &
 JAR_PID=$!
 
 sleep 10
@@ -93,20 +93,28 @@ fi
 
 # Test Docker image
 echo -e "${BLUE}🧪 Testing Docker Image...${NC}"
+docker network create test-rate-limiter-net > /dev/null 2>&1 || true
+docker run -d --name test-rate-limiter-redis --network test-rate-limiter-net redis:8-alpine > /dev/null
+
 docker run -d --name test-rate-limiter -p 8083:8080 \
+    --network test-rate-limiter-net \
     -e SPRING_PROFILES_ACTIVE=test \
+    -e SPRING_DATA_REDIS_HOST=test-rate-limiter-redis \
+    -e SPRING_DATA_REDIS_PORT=6379 \
     ${DOCKER_REGISTRY}/${PROJECT_NAME}:${VERSION}
 
 sleep 15
 
 if curl -f http://localhost:8083/actuator/health > /dev/null 2>&1; then
     echo -e "${GREEN}✅ Docker image test successful${NC}"
-    docker stop test-rate-limiter > /dev/null 2>&1
-    docker rm test-rate-limiter > /dev/null 2>&1
+    docker stop test-rate-limiter test-rate-limiter-redis > /dev/null 2>&1
+    docker rm test-rate-limiter test-rate-limiter-redis > /dev/null 2>&1
+    docker network rm test-rate-limiter-net > /dev/null 2>&1
 else
     echo -e "${RED}❌ Docker image test failed${NC}"
-    docker stop test-rate-limiter > /dev/null 2>&1
-    docker rm test-rate-limiter > /dev/null 2>&1
+    docker stop test-rate-limiter test-rate-limiter-redis > /dev/null 2>&1
+    docker rm test-rate-limiter test-rate-limiter-redis > /dev/null 2>&1
+    docker network rm test-rate-limiter-net > /dev/null 2>&1
     exit 1
 fi
 
@@ -131,7 +139,7 @@ cat > ${RELEASE_DIR}/run-jar.sh << 'EOF'
 # Start the rate limiter JAR file
 # Make sure Redis is running on localhost:6379
 
-echo "🚀 Starting Distributed Rate Limiter v1.4.3"
+echo "🚀 Starting Distributed Rate Limiter v1.4.4"
 echo "============================================="
 
 # Check if Redis is running
@@ -143,14 +151,14 @@ if ! nc -z localhost 6379 2>/dev/null; then
 fi
 
 # Start the application
-java -jar distributed-rate-limiter-1.4.3.jar
+java -jar distributed-rate-limiter-1.4.4.jar
 EOF
 
 cat > ${RELEASE_DIR}/run-docker.sh << 'EOF'
 #!/bin/bash
 # Start the rate limiter using Docker Compose
 
-echo "🚀 Starting Distributed Rate Limiter v1.4.3 with Docker"
+echo "🚀 Starting Distributed Rate Limiter v1.4.4 with Docker"
 echo "======================================================="
 
 # Start services
@@ -174,7 +182,7 @@ chmod +x ${RELEASE_DIR}/run-docker.sh
 
 # Create deployment instructions
 cat > ${RELEASE_DIR}/DEPLOYMENT.md << 'EOF'
-# Distributed Rate Limiter v1.4.3 - Deployment Guide
+# Distributed Rate Limiter v1.4.4 - Deployment Guide
 
 ## Quick Start Options
 
@@ -190,7 +198,7 @@ cat > ${RELEASE_DIR}/DEPLOYMENT.md << 'EOF'
 
 **Custom configuration:**
 ```bash
-java -jar distributed-rate-limiter-1.4.3.jar \
+java -jar distributed-rate-limiter-1.4.4.jar \
   --spring.data.redis.host=your-redis-host \
   --spring.data.redis.port=6379 \
   --server.port=8080
@@ -247,24 +255,25 @@ EOF
 
 # Create release summary
 cat > ${RELEASE_DIR}/RELEASE_NOTES.md << 'EOF'
-# Distributed Rate Limiter v1.4.3 Release Notes
+# Distributed Rate Limiter v1.4.4 Release Notes
 
-Release date: 2026-09-16
+Release date: 2026-09-25
 
 ## Summary
 
-`v1.4.3` is a patch release focused on resolving Snyk-reported code security findings. No public API or configuration changes.
+`v1.4.4` is a patch release focused on resolving Snyk-reported security findings (CSRF, insecure cookies, and stale Jackson CVEs) and hardening IP allow/deny-list matching against IPv6 loopback/mapped-address bypasses. No breaking API or configuration changes.
 
 ## Highlights
 
-- Resolved a Regular Expression Injection / ReDoS finding (CWE-400) in `ScheduleManagerService`, `ConfigurationResolver`, and `GeographicRateLimitConfig`: user-controlled wildcard patterns were compiled into a regex and matched with `String.matches()`, which is vulnerable to catastrophic backtracking. Replaced with a new linear-time `WildcardPatternMatcher` utility.
-- Resolved a CRLF/HTTP header injection finding (CWE-113) in `CorrelationIdFilter`: incoming `X-Correlation-ID`/`X-Trace-ID` header values are now validated against a safe identifier charset before being reflected into response headers, instead of being echoed back unchecked.
-- Adds unit tests covering the new wildcard matcher (including adversarial-pattern timing assertions) and the CRLF-rejection behavior.
-- Refreshes documentation and release examples for `v1.4.3`.
+- Resolved CSRF and insecure-cookie Snyk findings by adding explicit CSRF/cookie security configuration (`ApiSecurityConfig`) and hardening a frontend cookie usage in the web dashboard sidebar component.
+- Bumped Jackson to patched versions (2.22.3 / 3.2.3) to resolve known CVEs pulled in via the Spring Boot 4.1.1 BOM.
+- Fixed IP allow/deny-list checks (`IpSecurityService`) to correctly normalize IPv6 loopback and IPv4-mapped address forms, preventing equivalent-but-differently-formatted addresses from bypassing whitelist/blacklist rules.
+- Replaced the `InetAddress`-based IP canonicalizer with a pure, dependency-free string/int-based implementation, removing an unreachable checked-exception code path and achieving 100% line and branch test coverage on the security-critical normalization logic.
+- Fixed a documentation bug where the Swagger/OpenAPI page hardcoded a stale API version instead of reading it from the build.
 
 ## Upgrade Notes
 
-- Update pinned application version references from `v1.4.2` to `v1.4.3`.
+- Update pinned application version references from `v1.4.3` to `v1.4.4`.
 - Regenerate release artifacts so helper scripts and checksums match the patch release.
 EOF
 

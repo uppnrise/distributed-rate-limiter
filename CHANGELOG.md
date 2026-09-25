@@ -5,6 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.4] - 2026-09-25
+
+### Security
+- Resolved CSRF and insecure-cookie Snyk findings by adding explicit CSRF/cookie security configuration (`ApiSecurityConfig`) and hardening a cookie usage in the web dashboard's `sidebar.tsx` component.
+- Bumped Jackson to patched versions (2.22.3 / 3.2.3) to resolve known CVEs pulled in via the Spring Boot 4.1.1 BOM.
+- Fixed IP allow/deny-list checks (`IpSecurityService`) to correctly normalize IPv6 loopback and IPv4-mapped address forms, preventing equivalent-but-differently-formatted addresses from bypassing whitelist/blacklist rules.
+- Replaced the `InetAddress`-based IP canonicalizer with a pure, dependency-free string/int-based implementation, removing an unreachable checked-exception code path and achieving 100% line and branch test coverage on the security-critical normalization logic.
+
+### Fixed
+- Swagger/OpenAPI page no longer hardcodes a stale API version; it is now read from the build.
+
 ## [1.4.3] - 2026-09-16
 
 ### Security
