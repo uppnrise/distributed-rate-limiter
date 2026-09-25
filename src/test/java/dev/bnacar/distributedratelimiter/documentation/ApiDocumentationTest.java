@@ -70,7 +70,11 @@ class ApiDocumentationTest {
         assertThat(openAPI.getInfo()).isNotNull();
         assertThat(openAPI.getInfo().getTitle()).isEqualTo("Distributed Rate Limiter API");
         assertThat(openAPI.getInfo().getDescription()).contains("distributed token bucket rate limiter");
-        assertThat(openAPI.getInfo().getVersion()).isEqualTo("0.0.1-SNAPSHOT");
+        // Version now comes from Spring Boot's BuildProperties (populated from
+        // pom.xml at build time), so it must not be hardcoded here either -
+        // just assert it is present rather than pinning it to a literal that
+        // would go stale on every release.
+        assertThat(openAPI.getInfo().getVersion()).isNotBlank();
         assertThat(openAPI.getInfo().getContact()).isNotNull();
         assertThat(openAPI.getInfo().getLicense()).isNotNull();
         assertThat(openAPI.getInfo().getLicense().getName()).isEqualTo("MIT License");
