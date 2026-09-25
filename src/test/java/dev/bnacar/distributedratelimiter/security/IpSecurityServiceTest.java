@@ -118,6 +118,38 @@ public class IpSecurityServiceTest {
     }
 
     @Test
+    public void testIpv6NonZeroGroup1PreventsIpv4MappedCollapse() {
+        // Exercises the groups[1] != 0 short-circuit of the IPv4-mapped check.
+        securityConfiguration.getIp().setWhitelist(Arrays.asList("0:1:0:0:0:0:0:0"));
+
+        assertTrue(ipSecurityService.isIpAllowed("0:1::"));
+    }
+
+    @Test
+    public void testIpv6NonZeroGroup2PreventsIpv4MappedCollapse() {
+        // Exercises the groups[2] != 0 short-circuit of the IPv4-mapped check.
+        securityConfiguration.getIp().setWhitelist(Arrays.asList("0:0:1:0:0:0:0:0"));
+
+        assertTrue(ipSecurityService.isIpAllowed("0:0:1::"));
+    }
+
+    @Test
+    public void testIpv6NonZeroGroup3PreventsIpv4MappedCollapse() {
+        // Exercises the groups[3] != 0 short-circuit of the IPv4-mapped check.
+        securityConfiguration.getIp().setWhitelist(Arrays.asList("0:0:0:1:0:0:0:0"));
+
+        assertTrue(ipSecurityService.isIpAllowed("0:0:0:1::"));
+    }
+
+    @Test
+    public void testIpv6NonZeroGroup4PreventsIpv4MappedCollapse() {
+        // Exercises the groups[4] != 0 short-circuit of the IPv4-mapped check.
+        securityConfiguration.getIp().setWhitelist(Arrays.asList("0:0:0:0:1:0:0:0"));
+
+        assertTrue(ipSecurityService.isIpAllowed("0:0:0:0:1::"));
+    }
+
+    @Test
     public void testIpv4CompatibleIpv6DoesNotCollapseToDottedDecimal() {
         // "::0.0.0.1" is the deprecated IPv4-compatible form (no "ffff"
         // marker), which the JDK renders as expanded hex ("0:...:0:1"),
