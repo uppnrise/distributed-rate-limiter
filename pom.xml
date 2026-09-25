@@ -157,6 +157,17 @@
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
+                <executions>
+                    <!-- Generates META-INF/build-info.properties so the app's
+                         actual pom.xml version is available at runtime via
+                         BuildProperties, instead of being hand-duplicated
+                         (and going stale) in places like OpenApiConfig. -->
+                    <execution>
+                        <goals>
+                            <goal>build-info</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
             
             <!-- JaCoCo for code coverage -->

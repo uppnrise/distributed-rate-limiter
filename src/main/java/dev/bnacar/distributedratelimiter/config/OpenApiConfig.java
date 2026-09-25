@@ -5,6 +5,8 @@ import io.swagger.v3.oas.models.info.Contact;
 import io.swagger.v3.oas.models.info.Info;
 import io.swagger.v3.oas.models.info.License;
 import io.swagger.v3.oas.models.servers.Server;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.info.BuildProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -12,6 +14,13 @@ import java.util.List;
 
 @Configuration
 public class OpenApiConfig {
+
+    private final BuildProperties buildProperties;
+
+    @Autowired
+    public OpenApiConfig(BuildProperties buildProperties) {
+        this.buildProperties = buildProperties;
+    }
 
     @Bean
     public OpenAPI customOpenAPI() {
@@ -21,7 +30,7 @@ public class OpenApiConfig {
                         .description("A comprehensive distributed token bucket rate limiter implementation with Redis support, " +
                                    "featuring configurable capacity and refill rates, thread-safe operations, " +
                                    "performance monitoring, and administrative controls.")
-                        .version("0.0.1-SNAPSHOT")
+                        .version(buildProperties.getVersion())
                         .contact(new Contact()
                                 .name("Distributed Rate Limiter")
                                 .url("https://github.com/uppnrise/distributed-rate-limiter"))
