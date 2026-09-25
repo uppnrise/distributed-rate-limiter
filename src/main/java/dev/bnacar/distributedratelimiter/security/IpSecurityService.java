@@ -102,14 +102,13 @@ public class IpSecurityService {
             // avoid triggering a DNS lookup on client-controlled input.
             return null;
         }
+        // getByName() only performs a DNS lookup for non-literal input; since
+        // ipAddress already matched IPV4_PATTERN/IPV6_PATTERN above, parsing a
+        // literal here can never throw, so there is no reachable failure path
+        // to (or need to) handle beyond satisfying the checked exception.
         try {
             return InetAddress.getByName(ipAddress).getHostAddress();
-        } catch (UnknownHostException e) {
-            // Matched the literal pattern but failed to parse (shouldn't
-            // normally happen); the raw string comparison in containsIp()
-            // already covers this value.
-            return null;
-        }
+        } catch (UnknownHostException e) { throw new IllegalStateException("Unreachable: literal IP failed to parse: " + ipAddress, e); }
     }
 
     private boolean isIpLiteral(String value) {
