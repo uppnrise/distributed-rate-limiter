@@ -3,8 +3,14 @@ package dev.bnacar.distributedratelimiter.monitoring;
 import dev.bnacar.distributedratelimiter.models.MetricsResponse;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.context.event.ContextClosedEvent;
+import org.springframework.context.support.GenericApplicationContext;
+import org.springframework.data.redis.connection.RedisConnectionFactory;
+
+import java.lang.reflect.Method;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
 public class MetricsServiceTest {
 
@@ -136,5 +142,58 @@ public class MetricsServiceTest {
         long lastAccessTime = metrics.getKeyMetrics().get(key).getLastAccessTime();
         assertTrue(lastAccessTime >= beforeTime);
         assertTrue(lastAccessTime <= afterTime);
+    }
+
+    @Test
+    void onApplicationEvent_ContextClosed_ShouldStopFurtherHealthChecks() throws Exception {
+        RedisConnectionFactory redisConnectionFactory = mock(RedisConnectionFactory.class);
+        metricsService.setRedisConnectionFactory(redisConnectionFactory);
+        metricsService.initialize();
+
+        GenericApplicationContext context = new GenericApplicationContext();
+        context.refresh();
+        metricsService.onApplicationEvent(new ContextClosedEvent(context));
+
+        // Reset interactions recorded by any health check that may have already
+        // run before the context-closed event was handled.
+        clearInvocations(redisConnectionFactory);
+
+        // Directly invoke the scheduled health check task: after the context
+        // has closed, it must be a no-op and must not touch the (possibly
+        // already-stopped) Redis connection factory.
+        Method checkRedisHealth = MetricsService.class.getDeclaredMethod("checkRedisHealth");
+        checkRedisHealth.setAccessible(true);
+        checkRedisHealth.invoke(metricsService);
+
+        verifyNoInteractions(redisConnectionFactory);
+
+        context.close();
+    }
+
+    @Test
+    void checkRedisHealth_WhenConnectionFactoryStopped_ShouldLogQuietlyAndStopPolling() throws Exception {
+        // Simulates the scenario where the LettuceConnectionFactory reaches
+        // its terminal STOPPED state (e.g. its backing container was torn
+        // down in tests) without the application context itself closing.
+        RedisConnectionFactory redisConnectionFactory = mock(RedisConnectionFactory.class);
+        when(redisConnectionFactory.getConnection())
+                .thenThrow(new IllegalStateException(
+                        "LettuceConnectionFactory has been STOPPED. Use start() to initialize it"));
+        metricsService.setRedisConnectionFactory(redisConnectionFactory);
+        metricsService.initialize();
+        metricsService.setRedisConnected(true);
+
+        Method checkRedisHealth = MetricsService.class.getDeclaredMethod("checkRedisHealth");
+        checkRedisHealth.setAccessible(true);
+        checkRedisHealth.invoke(metricsService);
+
+        assertFalse(metricsService.isRedisConnected());
+
+        // A subsequent invocation must be a no-op: the health-check scheduler
+        // is expected to have stopped itself, so the factory must not be
+        // queried again.
+        clearInvocations(redisConnectionFactory);
+        checkRedisHealth.invoke(metricsService);
+        verifyNoInteractions(redisConnectionFactory);
     }
 }
