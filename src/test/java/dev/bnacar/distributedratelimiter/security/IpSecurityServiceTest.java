@@ -77,4 +77,32 @@ public class IpSecurityServiceTest {
         assertEquals("user123", ipSecurityService.createIpBasedKey("user123", ""));
         assertEquals("user123", ipSecurityService.createIpBasedKey("user123", "   "));
     }
+
+    @Test
+    public void testIpv6LoopbackVariantsAreTreatedAsEquivalent() {
+        // "::1" and "0:0:0:0:0:0:0:1" are the same address; the servlet
+        // container may report either form depending on platform/JDK.
+        securityConfiguration.getIp().setWhitelist(Arrays.asList("127.0.0.1", "::1"));
+
+        assertTrue(ipSecurityService.isIpAllowed("::1"));
+        assertTrue(ipSecurityService.isIpAllowed("0:0:0:0:0:0:0:1"));
+        assertFalse(ipSecurityService.isIpAllowed("::2"));
+    }
+
+    @Test
+    public void testIpv4MappedIpv6AddressMatchesIpv4Whitelist() {
+        securityConfiguration.getIp().setWhitelist(Arrays.asList("127.0.0.1"));
+
+        assertTrue(ipSecurityService.isIpAllowed("::ffff:127.0.0.1"));
+    }
+
+    @Test
+    public void testNonIpValuesFallBackToRawStringComparisonWithoutDnsLookup() {
+        // Values that are not valid IP literals must never trigger a DNS
+        // lookup; they can only match via exact string equality.
+        securityConfiguration.getIp().setWhitelist(Arrays.asList("not-an-ip"));
+
+        assertTrue(ipSecurityService.isIpAllowed("not-an-ip"));
+        assertFalse(ipSecurityService.isIpAllowed("still-not-an-ip"));
+    }
 }
