@@ -38,3 +38,4 @@ examples/web-dashboard/dist/
 examples/web-dashboard/dist-ssr/
 examples/web-dashboard/.DS_Store
 examples/web-dashboard/*.local
+release-*/
