@@ -54,10 +54,13 @@ public class CorrelationIdFilter extends OncePerRequestFilter {
             MDC.put(TRACE_ID_MDC_KEY, traceId);
             MDC.put(SPAN_ID_MDC_KEY, spanId);
             
-            // Add headers to response for downstream services
-            response.setHeader(CORRELATION_ID_HEADER, correlationId);
-            response.setHeader(TRACE_ID_HEADER, traceId);
-            response.setHeader(SPAN_ID_HEADER, spanId);
+            // Add headers to response for downstream services. Values are already
+            // validated against SAFE_ID_PATTERN above, but CR/LF characters are
+            // stripped again immediately before the sink as defense in depth against
+            // HTTP response splitting / header injection (CWE-113).
+            response.setHeader(CORRELATION_ID_HEADER, stripCrlf(correlationId));
+            response.setHeader(TRACE_ID_HEADER, stripCrlf(traceId));
+            response.setHeader(SPAN_ID_HEADER, stripCrlf(spanId));
             
             logger.debug("Request started with correlation_id={}, trace_id={}, span_id={}, method={}, uri={}",
                     correlationId, traceId, spanId, request.getMethod(), request.getRequestURI());
@@ -89,6 +92,15 @@ public class CorrelationIdFilter extends OncePerRequestFilter {
     
     private boolean isSafeId(String value) {
         return value != null && SAFE_ID_PATTERN.matcher(value).matches();
+    }
+
+    /**
+     * Removes CR/LF characters from a value right before it is written to an
+     * HTTP response header, preventing response splitting / header injection
+     * (CWE-113) even if an unexpected value ever reaches this point.
+     */
+    private static String stripCrlf(String value) {
+        return value == null ? null : value.replaceAll("[\\r\\n]", "");
     }
     
     private String generateSpanId() {
