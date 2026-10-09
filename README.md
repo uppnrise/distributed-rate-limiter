@@ -791,6 +791,16 @@ curl http://localhost:8080/actuator/health/rateLimiter
 
 ## 🛡️ Security
 
+### Automated Dependency Remediation
+
+The [Snyk Auto-Remediation workflow](.github/workflows/snyk-cli-remediation.yml)
+scans the Maven backend and npm dashboard separately every Monday at 03:00 UTC.
+It verifies exact Snyk upgrade paths and validates changes before opening remediation PRs
+against `main`. Manual runs default to dry-run.
+
+See the [setup and operation guide](docs/SNYK_REMEDIATION.md) for required secrets,
+GitHub permissions, dry-run review, and CI checks on generated PRs.
+
 ### API Key Authentication
 
 ```bash

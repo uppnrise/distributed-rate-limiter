@@ -39,3 +39,7 @@ examples/web-dashboard/dist-ssr/
 examples/web-dashboard/.DS_Store
 examples/web-dashboard/*.local
 release-*/
+
+### Snyk remediation reports (uploaded as Actions artifacts) ###
+snyk-remediation-report.json
+snyk-remediation-report.sarif
