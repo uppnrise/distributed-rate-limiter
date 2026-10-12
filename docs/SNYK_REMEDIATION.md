@@ -65,6 +65,13 @@ Findings without an exact upgrade remain in reports for manual review. Live-mode
 workflow failures can still open or update an `automation-failure` issue per report
 ID; the engine closes that alert after a successful run.
 
+The dashboard has a temporary, issue-specific Snyk ignore for
+`SNYK-JS-ZOD-20510278`, expiring on 2026-11-11. Snyk currently lists no fixed
+version, and the dashboard's Zod schemas validate scalar form fields rather than
+arrays, the reported vulnerable path. Reassess the advisory and remove the ignore
+when a fix is available or before the expiry date. The policy file lives in
+`examples/web-dashboard/.snyk`, so it applies only to that project.
+
 The existing CI/CD pipeline retains its dependency scans, PR checks, and deployment
 jobs. Remediation runs independently, so a failing security scan does not prevent
 the scheduled workflow from attempting a fix.
