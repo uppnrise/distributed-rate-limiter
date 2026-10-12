@@ -1,7 +1,15 @@
-name: Snyk CLI Remediation Scan
+name: Snyk Auto-Remediation
 
 on:
   workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Scan and report without committing changes or opening PRs'
+        type: boolean
+        required: false
+        default: true
+  schedule:
+    - cron: '0 3 * * 1'
 
 permissions:
   contents: write
@@ -11,35 +19,46 @@ permissions:
 
 jobs:
   scan-maven:
-    name: Scan Maven project
-    uses: uppnrise/snyk-auto-remediate/.github/workflows/snyk-remediate.reusable.yml@f14d5e8e7cc0f81dddb4c154dcb05cef4a6f78ad
+    name: Remediate Maven backend
+    # v1.0.0-rc.2; keep the workflow and engine pinned to the same commit.
+    uses: uppnrise/snyk-auto-remediate/.github/workflows/snyk-remediate.reusable.yml@e4194db787ff0712f20a4c9094045d501257d36d
     with:
-      target-repository: uppnrise/distributed-rate-limiter
       target-branches: main
-      engine-ref: f14d5e8e7cc0f81dddb4c154dcb05cef4a6f78ad
+      engine-ref: e4194db787ff0712f20a4c9094045d501257d36d
       report-id: maven
       working-directory: .
       package-managers: maven
       severity-threshold: low
-      dry-run: false
-      fail-on-no-fix: true
+      dry-run: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run }}
+      node-version: '24'
+      java-version: '21'
+      run-tests: true
+      test-command: ./mvnw --batch-mode clean verify
+      fail-on-no-fix: false
       enable-copilot-agent-fallback: false
     secrets:
       SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+      # Optional: permits remediation PRs to trigger the regular CI checks.
+      GH_PAT: ${{ secrets.SNYK_REMEDIATION_PAT }}
 
   scan-dashboard:
-    name: Scan npm dashboard
-    uses: uppnrise/snyk-auto-remediate/.github/workflows/snyk-remediate.reusable.yml@f14d5e8e7cc0f81dddb4c154dcb05cef4a6f78ad
+    name: Remediate npm dashboard
+    # v1.0.0-rc.2; keep the workflow and engine pinned to the same commit.
+    uses: uppnrise/snyk-auto-remediate/.github/workflows/snyk-remediate.reusable.yml@e4194db787ff0712f20a4c9094045d501257d36d
     with:
-      target-repository: uppnrise/distributed-rate-limiter
       target-branches: main
-      engine-ref: f14d5e8e7cc0f81dddb4c154dcb05cef4a6f78ad
+      engine-ref: e4194db787ff0712f20a4c9094045d501257d36d
       report-id: dashboard
       working-directory: examples/web-dashboard
       package-managers: npm
       severity-threshold: low
-      dry-run: false
-      fail-on-no-fix: true
+      dry-run: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run }}
+      node-version: '24'
+      run-tests: true
+      # The dashboard has no test script; validate lint and the production build.
+      test-command: npm ci --ignore-scripts && npm run lint && npm run build
+      fail-on-no-fix: false
       enable-copilot-agent-fallback: false
     secrets:
       SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+      GH_PAT: ${{ secrets.SNYK_REMEDIATION_PAT }}
