@@ -1,7 +1,0 @@
-version: v1.19.0
-ignore:
-  SNYK-JS-ZOD-20510278:
-    - '*':
-        reason: 'No Zod array schemas are used in the dashboard; Snyk has no fixed version. Reassess before expiry.'
-        created: 2026-10-12T18:51:42.000Z
-        expires: 2026-11-11T18:51:42.000Z

@@ -2,8 +2,8 @@
 
 This repository uses the [snyk-auto-remediate reusable workflow](https://github.com/uppnrise/snyk-auto-remediate)
 for repository-local dependency scans and exact, Snyk-evidenced upgrades. The workflow
-and engine are both pinned to commit `e4194db787ff0712f20a4c9094045d501257d36d`
-from release candidate `v1.0.0-rc.2`. Update both references together when upgrading.
+and engine are both pinned to commit `4e2006f18df4f1bf7f8a7914cae69371f56f8e62`
+from the upstream revision with passing CI and remediation runs. Update both references together when upgrading.
 
 ## Repository setup
 
@@ -65,13 +65,51 @@ Findings without an exact upgrade remain in reports for manual review. Live-mode
 workflow failures can still open or update an `automation-failure` issue per report
 ID; the engine closes that alert after a successful run.
 
-The dashboard has a temporary, issue-specific Snyk ignore for
-`SNYK-JS-ZOD-20510278`, expiring on 2026-11-11. Snyk currently lists no fixed
-version, and the dashboard's Zod schemas validate scalar form fields rather than
-arrays, the reported vulnerable path. Reassess the advisory and remove the ignore
-when a fix is available or before the expiry date. The policy file lives in
-`examples/web-dashboard/.snyk`, so it applies only to that project.
+The dashboard uses patched Zod 4 and a compatible form resolver. The temporary
+`SNYK-JS-ZOD-20510278` ignore has been removed. Neither project suppresses Snyk
+findings; both scan at the low-severity threshold.
 
-The existing CI/CD pipeline retains its dependency scans, PR checks, and deployment
-jobs. Remediation runs independently, so a failing security scan does not prevent
-the scheduled workflow from attempting a fix.
+## Refreshing GitHub Security alerts
+
+Every push to `main` triggers a scan-only remediation run. This publishes complete
+SARIF reports, including valid reports with zero results, under the existing
+`Snyk Auto-Remediation` tool and `snyk-auto-remediation-maven` /
+`snyk-auto-remediation-dashboard` categories. The uploader resolves the scanned
+checkout's commit and waits for GitHub to process the report. Scan failures must
+fail the job rather than publish an empty clean report.
+
+The CI/CD pipeline separately retains its dependency scans, PR checks and report
+artifacts. Its CLI follows Snyk's stable channel to avoid removed binary versions.
+The push-triggered remediation workflow supplies the GitHub code-scanning updates;
+artifact uploads alone do not resolve alerts.
+
+After merging a dependency fix, check both remediation jobs on that exact `main`
+commit, then verify alerts #44, #45 and #46 are fixed. Do not dismiss an alert to
+substitute for a successful scan. Refresh the existing Snyk SCM project separately
+if its inventory has not yet picked up the merge.
+
+Weekly runs still attempt fixes and publish validated remediation PRs; manual runs
+default to scan-only mode. Findings without an exact upgrade remain in reports for
+manual review.
+
+## Authentication failures
+
+`SNYK-0005` / HTTP 401 means Snyk rejected the configured `SNYK_TOKEN`; it is not a
+clean vulnerability result. Replace that repository Actions secret with a valid
+API token provisioned for the Snyk account/organization, then rerun CI and the
+scan-only remediation workflow. The Snyk GitHub integration uses separate
+credentials, so its passing PR check does not validate the Actions secret.
+Never upload an empty SARIF report or dismiss alerts to bypass this failure.
+
+## Additional backend advisories
+
+Both Jackson BOMs are overridden to 2.22.4 and 3.2.4 for the critical
+CVE-2026-110879 advisories `SNYK-JAVA-COMFASTERXMLJACKSONCORE-21761837` and
+`SNYK-JAVA-TOOLSJACKSONCORE-21761838`.
+
+Jakarta Validation API is explicitly overridden to `4.0.0-M1` for
+`SNYK-JAVA-JAKARTAVALIDATION-20936881`. Snyk currently lists no stable fixed
+version. This prerelease override was approved subject to compatibility tests;
+keep the Java 21 validation/controller tests passing and replace it with a stable
+fixed release when one is available. Do not remove the override while the Boot BOM
+still selects affected 3.1.1.
