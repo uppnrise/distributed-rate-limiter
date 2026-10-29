@@ -100,3 +100,16 @@ API token provisioned for the Snyk account/organization, then rerun CI and the
 scan-only remediation workflow. The Snyk GitHub integration uses separate
 credentials, so its passing PR check does not validate the Actions secret.
 Never upload an empty SARIF report or dismiss alerts to bypass this failure.
+
+## Additional backend advisories
+
+Both Jackson BOMs are overridden to 2.22.4 and 3.2.4 for the critical
+CVE-2026-110879 advisories `SNYK-JAVA-COMFASTERXMLJACKSONCORE-21761837` and
+`SNYK-JAVA-TOOLSJACKSONCORE-21761838`.
+
+Jakarta Validation API is explicitly overridden to `4.0.0-M1` for
+`SNYK-JAVA-JAKARTAVALIDATION-20936881`. Snyk currently lists no stable fixed
+version. This prerelease override was approved subject to compatibility tests;
+keep the Java 21 validation/controller tests passing and replace it with a stable
+fixed release when one is available. Do not remove the override while the Boot BOM
+still selects affected 3.1.1.
