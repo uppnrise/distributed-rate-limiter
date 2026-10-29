@@ -1,6 +1,8 @@
 name: Snyk Auto-Remediation
 
 on:
+  push:
+    branches: [ main ]
   workflow_dispatch:
     inputs:
       dry_run:
@@ -20,16 +22,17 @@ permissions:
 jobs:
   scan-maven:
     name: Remediate Maven backend
-    # v1.0.0-rc.2; keep the workflow and engine pinned to the same commit.
-    uses: uppnrise/snyk-auto-remediate/.github/workflows/snyk-remediate.reusable.yml@e4194db787ff0712f20a4c9094045d501257d36d
+    # Keep the workflow and engine pinned to the same reviewed, reachable commit.
+    uses: uppnrise/snyk-auto-remediate/.github/workflows/snyk-remediate.reusable.yml@4e2006f18df4f1bf7f8a7914cae69371f56f8e62
     with:
       target-branches: main
-      engine-ref: e4194db787ff0712f20a4c9094045d501257d36d
+      engine-ref: 4e2006f18df4f1bf7f8a7914cae69371f56f8e62
       report-id: maven
       working-directory: .
       package-managers: maven
       severity-threshold: low
-      dry-run: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run }}
+      # Pushes publish a fresh scan; only scheduled/explicit live runs apply fixes.
+      dry-run: ${{ github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && inputs.dry_run) }}
       node-version: '24'
       java-version: '21'
       run-tests: true
@@ -43,16 +46,17 @@ jobs:
 
   scan-dashboard:
     name: Remediate npm dashboard
-    # v1.0.0-rc.2; keep the workflow and engine pinned to the same commit.
-    uses: uppnrise/snyk-auto-remediate/.github/workflows/snyk-remediate.reusable.yml@e4194db787ff0712f20a4c9094045d501257d36d
+    # Keep the workflow and engine pinned to the same reviewed, reachable commit.
+    uses: uppnrise/snyk-auto-remediate/.github/workflows/snyk-remediate.reusable.yml@4e2006f18df4f1bf7f8a7914cae69371f56f8e62
     with:
       target-branches: main
-      engine-ref: e4194db787ff0712f20a4c9094045d501257d36d
+      engine-ref: 4e2006f18df4f1bf7f8a7914cae69371f56f8e62
       report-id: dashboard
       working-directory: examples/web-dashboard
       package-managers: npm
       severity-threshold: low
-      dry-run: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run }}
+      # Pushes publish a fresh scan; only scheduled/explicit live runs apply fixes.
+      dry-run: ${{ github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && inputs.dry_run) }}
       node-version: '24'
       run-tests: true
       # The dashboard has no test script; validate lint and the production build.

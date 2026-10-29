@@ -5,7 +5,7 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>4.1.1</version>
+        <version>4.1.2</version>
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
     <groupId>dev.bnacar</groupId>
@@ -19,12 +19,12 @@
         <jacoco.min.instruction.coverage>0.50</jacoco.min.instruction.coverage>
         <jacoco.min.branch.coverage>0.50</jacoco.min.branch.coverage>
         <maven.project.sourceRoots.warningsDisabled>true</maven.project.sourceRoots.warningsDisabled>
-        <!-- Security overrides newer than the Spring Boot 4.1.1 dependency BOM. -->
+        <!-- Security overrides newer than the Spring Boot 4.1.2 dependency BOM. -->
         <jackson-2-bom.version>2.22.3</jackson-2-bom.version>
         <jackson-bom.version>3.2.3</jackson-bom.version>
         <logback.version>1.6.5</logback.version>
         <netty.version>4.2.18.Final</netty.version>
-        <tomcat.version>11.0.26</tomcat.version>
+        <tomcat.version>11.0.27</tomcat.version>
     </properties>
 
     <dependencies>

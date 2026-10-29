@@ -194,7 +194,9 @@ jobs:
         restore-keys: ${{ runner.os }}-m2
         
     - name: Install Snyk CLI
-      run: npm install --global snyk@1.1306.1
+      uses: snyk/actions/setup@9adf32b1121593767fc3c057af55b55db032dc04 # v1.0.0
+      with:
+        snyk-version: stable
 
     - name: Verify Snyk authentication
       env:
