@@ -91,3 +91,12 @@ if its inventory has not yet picked up the merge.
 Weekly runs still attempt fixes and publish validated remediation PRs; manual runs
 default to scan-only mode. Findings without an exact upgrade remain in reports for
 manual review.
+
+## Authentication failures
+
+`SNYK-0005` / HTTP 401 means Snyk rejected the configured `SNYK_TOKEN`; it is not a
+clean vulnerability result. Replace that repository Actions secret with a valid
+API token provisioned for the Snyk account/organization, then rerun CI and the
+scan-only remediation workflow. The Snyk GitHub integration uses separate
+credentials, so its passing PR check does not validate the Actions secret.
+Never upload an empty SARIF report or dismiss alerts to bypass this failure.
