@@ -56,6 +56,14 @@ from the upstream revision with passing CI and remediation runs. Update both ref
 
 ## Repository setup
 
+The dashboard overrides transitive `minimatch` to `^11.0.1` (locked to `11.0.5`)
+for GHSA-g3hv-75wg-m249. ESLint and TypeScript ESLint currently request vulnerable
+10.x releases, so a regular lockfile refresh cannot supply the fixed major version.
+Remove the override when both dependency chains request patched versions themselves.
+Validated with Node.js 24: `npm ci --ignore-scripts`, `npm audit --audit-level=low`
+(zero vulnerabilities), `npm run lint`, and `npm run build`. No audit ignores or
+severity-threshold changes are used.
+
 1. Add `SNYK_TOKEN` under **Settings → Secrets and variables → Actions**. Use a
    Snyk token with access to scan this repository's dependencies.
 2. Under **Settings → Actions → General → Workflow permissions**, enable
