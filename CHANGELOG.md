@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.6] - 2026-11-08
+
+### Security
+- Override dashboard minimatch to ^11.0.1 (locked to 11.0.5), resolving GHSA-g3hv-75wg-m249 and the nine moderate npm audit findings that failed v1.4.5 CI.
+- Rebuild release artifacts from the fixed source, including dashboard source and production assets.
+
+## [1.4.5] - 2026-11-08
+
+### Security
+- Upgrade Temurin build/runtime to 21.0.13+9 and enforce patched Alpine 3.23 package minimums while retaining non-root execution and health checks.
+- Snyk verification remains pending because available credentials return HTTP 401; no findings are ignored or claimed scan-clean.
+
 ## [1.4.4] - 2026-09-25
 
 ### Security

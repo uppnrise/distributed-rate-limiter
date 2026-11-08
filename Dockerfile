@@ -1,6 +1,6 @@
 # Multi-stage Docker build for Distributed Rate Limiter
 # Build stage
-FROM eclipse-temurin:21.0.12_8-jdk AS build
+FROM eclipse-temurin:21.0.13_9-jdk AS build
 
 # Set working directory
 WORKDIR /app
@@ -12,10 +12,18 @@ COPY . .
 RUN chmod +x mvnw && ./mvnw package -DskipTests -B
 
 # Runtime stage
-FROM eclipse-temurin:21.0.12_8-jre-alpine-3.23 AS runtime
+FROM eclipse-temurin:21.0.13_9-jre-alpine-3.23 AS runtime
 
 # Apply Alpine security fixes, then create a locked-down high-numbered system user.
+# Require patched package versions; fail the build if repositories cannot supply them.
 RUN apk upgrade --no-cache && \
+    apk add --no-cache \
+      'brotli-libs>=1.2.1-r0' \
+      'libexpat>=2.10.0-r0' \
+      'zlib>=1.4-r0' \
+      'musl>=1.2.5-r24' \
+      'musl-utils>=1.2.5-r24' \
+      'libpng>=1.6.59-r0' && \
     addgroup -S -g 10001 appuser && \
     adduser -S -D -H -u 10001 -G appuser appuser
 
