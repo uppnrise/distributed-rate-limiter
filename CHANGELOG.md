@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.5] - 2026-11-08
+
+### Security
+- Upgrade Temurin build/runtime to 21.0.13+9 and enforce patched Alpine 3.23 package minimums while retaining non-root execution and health checks.
+- Snyk verification remains pending because available credentials return HTTP 401; no findings are ignored or claimed scan-clean.
+
 ## [1.4.4] - 2026-09-25
 
 ### Security
